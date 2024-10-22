@@ -132,7 +132,8 @@ class ProfileView extends HookWidget {
                                 onTap: () =>
                                     selectedMenuItem.value = 'Data Export',
                               ),
-                              EvoBox.h36,
+                              
+                              EvoBox.h40,
                               // Delete account at the bottom
                               buildSidebarItem(
                                 'Delete Account',
@@ -142,7 +143,7 @@ class ProfileView extends HookWidget {
                                 onTap: () =>
                                     selectedMenuItem.value = 'Delete Account',
                               ),
-                              const SizedBox(height: 20),
+                              
                             ],
                           ),
                         ),

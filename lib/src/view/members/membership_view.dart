@@ -19,16 +19,13 @@ class MembershipPage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Membership Details',
-                      style: Theme.of(context).textTheme.titleLarge),
-                  // Add membership content here
-                ],
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Membership Details',
+                    style: Theme.of(context).textTheme.titleLarge),
+                // Add membership content here
+              ],
             ),
           ),
         ],
