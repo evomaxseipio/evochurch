@@ -320,6 +320,8 @@ List<String> _getDropdownItems(String field) {
       'Canada',
       'Mexico'
     ];
+  } else if (field == 'membershipRole') {
+    return ['Pastor', 'Senior'];
   } else {
     return [];
   }

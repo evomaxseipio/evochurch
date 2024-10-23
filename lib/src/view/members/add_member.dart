@@ -1,11 +1,8 @@
 import 'package:evochurch/src/model/addres_model.dart';
 import 'package:evochurch/src/model/contact_model.dart';
 import 'package:evochurch/src/model/member_model.dart';
-import 'package:evochurch/src/model/profile_model.dart';
-import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
-import 'package:evochurch/src/view_model/profile_view_model.dart';
 import 'package:evochurch/src/widgets/modal/modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';

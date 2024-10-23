@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estrellas Orientales</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #006838;
+            --dark-green: #004d2a;
+        }
+
+        body {
+            padding-top: 120px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Top Banner */
+        .top-banner {
+            background: white;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1030;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .site-title {
+            color: var(--primary-green);
+            font-size: 16px;
+            margin: 0;
+            text-align: right;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .search-box {
+            position: relative;
+            max-width: 300px;
+            margin-left: auto;
+        }
+
+        .search-box input {
+            padding: 8px 40px 8px 12px;
+            border: 2px solid #eee;
+            border-radius: 20px;
+            height: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-green);
+            box-shadow: none;
+            outline: none;
+        }
+
+        .search-box .search-btn {
+            position: absolute;
+            right: 4px;
+            top: 4px;
+            background: var(--primary-green);
+            border: none;
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .search-box .search-btn:hover {
+            background: var(--dark-green);
+        }
+
+        /* Main Header */
+        .main-header {
+            background: var(--primary-green);
+            padding: 0;
+            position: fixed;
+            top: 60px;
+            width: 100%;
+            z-index: 1029;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-container {
+            background: white;
+            padding: 10px;
+            border-radius: 50%;
+            margin: -30px 0;
+            position: relative;
+            z-index: 1031;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-container img {
+            width: 100px;
+            height: auto;
+        }
+
+        .main-nav {
+            padding: 15px 0;
+        }
+
+        .main-nav .nav-link {
+            color: white !important;
+            text-transform: uppercase;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .main-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .main-nav .nav-link:hover::after {
+            width: 80%;
+        }
+
+        .navbar-toggler {
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            color: white !important;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-toggler:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        /* Social Media Sidebar */
+        .social-sidebar {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+        }
+
+        .social-sidebar a {
+            display: block;
+            width: 40px;
+            height: 40px;
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            margin: 4px 0;
+            border-radius: 4px 0 0 4px;
+            transition: all 0.3s ease;
+        }
+
+        .social-sidebar a:hover {
+            width: 50px;
+        }
+
+        .social-sidebar .facebook {
+            background: #3b5998;
+        }
+
+        .social-sidebar .twitter {
+            background: #1DA1F2;
+        }
+
+        .social-sidebar .instagram {
+            background: #C13584;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 991.98px) {
+            body {
+                padding-top: 150px;
+            }
+
+            .site-title {
+                text-align: center;
+                margin-bottom: 10px;
+                font-size: 14px;
+            }
+
+            .search-box {
+                margin: 0 auto;
+                margin-bottom: 10px;
+            }
+
+            .main-header {
+                top: 100px;
+            }
+
+            .logo-container {
+                margin: 0 auto;
+                margin-top: -20px;
+                width: 100px;
+                height: 100px;
+            }
+
+            .logo-container img {
+                width: 80px;
+            }
+
+            .navbar-collapse {
+                background: var(--dark-green);
+                padding: 1rem;
+                margin-top: 1rem;
+                border-radius: 8px;
+            }
+
+            .main-nav .nav-link {
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .main-nav .nav-link:last-child {
+                border-bottom: none;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .social-sidebar {
+                display: none;
+            }
+
+            .carousel-item {
+                height: 400px !important;
+            }
+        }
+
+        /* Carousel */
+        .carousel {
+            margin-top: -120px;
+        }
+
+        .carousel-item {
+            height: 600px;
+        }
+
+        .carousel-item img {
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Banner -->
+    <div class="top-banner">
+        <div class="container">
+            <div class="row g-2 align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="site-title">WEB OFICIAL DE LAS ESTRELLAS ORIENTALES</h1>
+                </div>
+                <div class="col-lg-4">
+                    <div class="search-box">
+                        <input type="text" class="form-control" placeholder="Buscar...">
+                        <button class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg">
+                <div class="row w-100 align-items-center">
+                    <div class="col-lg-2 col-12 text-center">
+                        <a href="/" class="d-inline-block">
+                            <div class="logo-container">
+                                <img src="/api/placeholder/100/100" alt="Estrellas Orientales Logo">
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-10">
+                        <button class="navbar-toggler ms-auto d-lg-none" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#mainNav" aria-label="Toggle navigation">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div class="collapse navbar-collapse" id="mainNav">
+                            <ul class="navbar-nav ms-auto main-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#" aria-current="page">INICIO</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">NOTICIAS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">HISTORIA</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">MULTIMEDIA</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">STANDINGS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">ESTADÍSTICAS</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">ROSTER</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Social Media Sidebar -->
+    <div class="social-sidebar">
+        <a href="#" class="facebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="twitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
