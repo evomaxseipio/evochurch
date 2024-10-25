@@ -1,4 +1,5 @@
 import 'package:evochurch/src/utils/utils_index.dart';
+import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -112,7 +113,7 @@ Widget buildEditableField(
         (splitCamelCase(label.capitalize)),
         style: TextStyle(
           color: Colors.grey[600],
-          fontSize: 12,
+          fontSize: 14,
         ),
       ),
       EvoCustomTextField(
@@ -139,11 +140,13 @@ Widget buildDateField(String label, String field, BuildContext context,
     Map<String, TextEditingController> controllers) {
   // Verify is field is null and add the today
   if (controllers[field] == null || controllers[field]!.text.isEmpty) {
-    controllers[field] = TextEditingController(text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+    controllers[field] = TextEditingController(
+        text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
   } else {
-    controllers[field] = TextEditingController(text: formatDate(controllers[field]!.text));
+    controllers[field] =
+        TextEditingController(text: formatDate(controllers[field]!.text));
   }
- 
+
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -192,7 +195,7 @@ Widget buildDateField(String label, String field, BuildContext context,
 }
 
 Widget buildDropdownField(String label, String field,
-    Map<String, TextEditingController> controllers) {
+    Map<String, TextEditingController> controllers, {MembersViewModel? viewModel}) {
   // final theme = Theme.of(context);
 
   String? initialValue = controllers[field]?.text.isNotEmpty == true
@@ -214,66 +217,31 @@ Widget buildDropdownField(String label, String field,
           padding: const EdgeInsets.symmetric(vertical: 0),
           child: StatefulBuilder(
             builder: (context, setState) => DropdownButtonFormField<String>(
-              value: initialValue,
+              value: initialValue ?? _dropdownValues[field],
+              // isExpanded: true,
               isDense: true,
+              hint: Text('Select $label'),
               autovalidateMode: AutovalidateMode.onUserInteraction,
               decoration: InputDecoration(
-                suffixIconConstraints: const BoxConstraints(minWidth: 30),
-                // filled: true,
-                // labelText: label,
-                // hintText: label,
-                // fillColor: theme.inputDecorationTheme.fillColor ??
-                //     theme.colorScheme.surface,
-                // hintStyle: theme.inputDecorationTheme.hintStyle ??
-                //     theme.textTheme.bodyMedium
-                //         ?.copyWith(color: theme.hintColor),
-                // labelStyle: theme.inputDecorationTheme.labelStyle ??
-                //     theme.textTheme.bodyMedium
-                //         ?.copyWith(color: theme.colorScheme.onSurface),
+                suffixIconConstraints: const BoxConstraints(minWidth: 30),              
                 isDense: true,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
-                // suffixIcon: suffixIcon,
-                // errorText: errorText,
-                // errorStyle: theme.inputDecorationTheme.errorStyle ??
-                //     TextStyle(
-                //         fontSize: 14,
-                //         height: 0.7,
-                //         color: theme.colorScheme.error),
                 enabledBorder: OutlineInputBorder(
-                  // borderSide: BorderSide(
-                  //   color: theme.inputDecorationTheme.enabledBorder?.borderSide
-                  //           .color ??
-                  //       theme.colorScheme.outline,
-                  // ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  // borderSide: BorderSide(
-                  //   color: theme.inputDecorationTheme.focusedBorder?.borderSide
-                  //           .color ??
-                  //       theme.colorScheme.primary,
-                  // ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 errorBorder: OutlineInputBorder(
-                  // borderSide: BorderSide(
-                  //   color: theme.inputDecorationTheme.errorBorder?.borderSide
-                  //           .color ??
-                  //       theme.colorScheme.error,
-                  // ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  // borderSide: BorderSide(
-                  //   color: theme.inputDecorationTheme.focusedErrorBorder
-                  //           ?.borderSide.color ??
-                  //       theme.colorScheme.error,
-                  // ),
                   borderRadius: BorderRadius.circular(4),
                 ),
+                errorStyle: TextStyle(fontSize: 14, height: 0.7, color: Colors.red),
               ),
-              items: _getDropdownItems(field)
+              items: _getDropdownItems(field, viewModel: viewModel)
                   .map((item) =>
                       DropdownMenuItem(value: item, child: Text(item)))
                   .toList(),
@@ -281,23 +249,26 @@ Widget buildDropdownField(String label, String field,
                 if (value != null) {
                   _dropdownValues[field] = value;
                   controllers[field]!.text = value;
-                  // if (field == 'rolName') {
-                  //   if (value.toLowerCase() != 'Cobrador'.toLowerCase()) {
-                  //     callEmployeePermissionModal(context, value);
-                  //   }
-                  // }
                   setState(() => _dropdownValues[field] = value);
                 }
               },
               validator: (value) =>
-                  value == null ? 'Please select $label' : null,
+                  value == null ? 'Please select ${splitCamelCase(label.capitalize)}': null,
             ),
           )),
     ],
   );
 }
 
-List<String> _getDropdownItems(String field) {
+List<String> _getDropdownItems(String field, {MembersViewModel? viewModel})  {
+  // Initialize the membershipRoles list
+  List<String> membershipRoles = [];
+
+  // Get the data from database in case field is membershipRole
+  if (field == 'membershipRole') {
+    membershipRoles = viewModel!.memberRoles;
+  }
+
   if (field == 'gender') {
     return ['Male', 'Female'];
   } else if (field == 'identificationType') {
@@ -321,7 +292,7 @@ List<String> _getDropdownItems(String field) {
       'Mexico'
     ];
   } else if (field == 'membershipRole') {
-    return ['Pastor', 'Senior'];
+    return membershipRoles;
   } else {
     return [];
   }

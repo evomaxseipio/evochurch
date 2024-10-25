@@ -6,6 +6,7 @@ import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../widgets/paginateDataTable/paginated_data_table.dart';
 import 'add_member.dart';
@@ -13,15 +14,15 @@ import 'add_member.dart';
 class MemberList extends HookWidget {
   MemberList({super.key});
 
-  // final List<Member> members = MembersData.getMembers();
-
+ 
+  // final viewModel = MembersViewModel();
   final columns = [
     SortColumn(
       label: 'Name',
       field: 'name',
       getValue: (member) => member.firstName,
     ),
-      SortColumn(
+    SortColumn(
       label: 'Nationality',
       field: 'nationality',
       getValue: (member) => member.nationality,
@@ -43,70 +44,16 @@ class MemberList extends HookWidget {
     ),
   ];
 
-  void _handleMemberAction(BuildContext context, String action, Member member) {
-    switch (action) {
-      case 'edit':
-        context.goNamed(MyAppRouteConstants.memberProfileRouteName, extra: member);
-        break;
-
-      case 'donations':
-        // Handle donations
-        debugPrint('Adding donations for: ${member.lastName}');
-        // Example:
-        // showDialog(
-        //   context: context,
-        //   builder: (context) => AddDonationDialog(member: member),
-        // );
-        break;
-
-      case 'message':
-        // Handle messaging
-        debugPrint('Sending message to: ${member.bio}');
-        // Example:
-        // showDialog(
-        //   context: context,
-        //   builder: (context) => SendMessageDialog(member: member),
-        // );
-        break;
-
-      case 'delete':
-        // Show delete confirmation
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Confirm Delete'),
-            content:
-                Text('Are you sure you want to delete ${member.firstName}?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Handle delete
-                  Navigator.pop(context);
-                },
-                child:
-                    const Text('Delete', style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
-        );
-        break;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<MembersViewModel>(context, listen: false);
     final memberList = useState<List<Member>>([]);
     final isLoading = useState<bool>(true);
 
     useEffect(() {
       fetchMembers() async {
-        try {
-          final viewModel = MembersViewModel();
-          // final getMemberList = await viewModel.getMemberList();
+        try {          
           final getProfiles = await viewModel.getMembers();
           memberList.value = getProfiles['member_list'];
         } catch (e) {
@@ -119,6 +66,65 @@ class MemberList extends HookWidget {
       fetchMembers();
       return null;
     }, []);
+
+
+    
+    void _handleMemberAction(
+        BuildContext context, String action, Member member) {
+      switch (action) {
+        case 'edit':
+          viewModel.selectMember(member);
+          context.goNamed(MyAppRouteConstants.memberProfileRouteName,
+              extra: member);
+          break;
+
+        case 'donations':
+          // Handle donations
+          debugPrint('Adding donations for: ${member.lastName}');
+          // Example:
+          // showDialog(
+          //   context: context,
+          //   builder: (context) => AddDonationDialog(member: member),
+          // );
+          break;
+
+        case 'message':
+          // Handle messaging
+          debugPrint('Sending message to: ${member.bio}');
+          // Example:
+          // showDialog(
+          //   context: context,
+          //   builder: (context) => SendMessageDialog(member: member),
+          // );
+          break;
+
+        case 'delete':
+          // Show delete confirmation
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Confirm Delete'),
+              content:
+                  Text('Are you sure you want to delete ${member.firstName}?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Handle delete
+                    Navigator.pop(context);
+                  },
+                  child:
+                      const Text('Delete', style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            ),
+          );
+          break;
+      }
+    }
 
     return Scaffold(
       body: isLoading.value
@@ -133,11 +139,13 @@ class MemberList extends HookWidget {
                         data: memberList.value,
                         columns: columns,
                         getCells: (member) => [
-                          DataCell(Text('${member.firstName} ${member.lastName}')),
+                          DataCell(
+                              Text('${member.firstName} ${member.lastName}')),
                           DataCell(Text(member.nationality)),
                           DataCell(Text(member.contact!.email!)),
                           DataCell(Text(member.contact!.phone!)),
-                          DataCell(Text(formatDate(member.dateOfBirth.toString()))),
+                          DataCell(
+                              Text(formatDate(member.dateOfBirth.toString()))),
                         ],
                         filterFunction: (member, query) {
                           final lowercaseQuery = query.toLowerCase();
@@ -198,7 +206,7 @@ class MemberList extends HookWidget {
                             ),
                           ),
                         ],
-                        onActionSelected: (action, member) {
+                        onActionSelected: (action, member) {                          
                           _handleMemberAction(context, action, member);
                         },
                         tableButtons: [
@@ -221,7 +229,6 @@ class MemberList extends HookWidget {
                               final viewModel = MembersViewModel();
                               final user = await viewModel.updateUserMetaData();
                               debugPrint(user.toString());
-
                             },
                           ),
                           CustomTableButton(

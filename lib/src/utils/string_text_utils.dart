@@ -17,6 +17,20 @@ String formatDate(String dateToConvert) {
   return formatter.format(date);
 }
 
+String convertDateFormat(String dateString) {
+  try {
+    // Parse the input date string
+    DateTime parsedDate = DateFormat('dd/MM/yyyy').parse(dateString);
+
+    // Format the date to 'yyyy-MM-dd'
+    String formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
+
+    return formattedDate;
+  } catch (e) {
+    throw Exception('Error parsing date: $e');  
+  }
+}
+
 
 String textUpper(String text) {
   final temptext = convertUnderscoreToSpace(text.split('/').last);

@@ -27,7 +27,9 @@ final membershipControllers = [
   'baptismDate',
   'baptismChurch',
   'baptismPastor',
-  'membershipRole'
+  'membershipRole',
+  'baptismChurchCity',
+  'baptismChurchCountry'
 ];
 
 final historyControllers = [

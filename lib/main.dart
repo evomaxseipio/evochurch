@@ -55,13 +55,9 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-            create: (_) =>
-                AuthServices()), // AuthServices for handling authentication
+        ChangeNotifierProvider(create: (_) => AuthServices()), // AuthServices for handling authentication
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(
-            create: (_) =>
-                MembersViewModel()) // ThemeProvider for handling theme mode
+        ChangeNotifierProvider(create: (_) => MembersViewModel()) // ThemeProvider for handling theme mode
       ],
       child: MyApp(appRouter: appRouter.router),
     ),
