@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:evochurch/src/model/member_model.dart';
 import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:evochurch/src/utils/string_text_utils.dart';
@@ -14,7 +16,6 @@ import 'add_member.dart';
 class MemberList extends HookWidget {
   MemberList({super.key});
 
- 
   // final viewModel = MembersViewModel();
   final columns = [
     SortColumn(
@@ -44,31 +45,49 @@ class MemberList extends HookWidget {
     ),
   ];
 
-
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MembersViewModel>(context, listen: false);
     final memberList = useState<List<Member>>([]);
     final isLoading = useState<bool>(true);
 
-    useEffect(() {
-      fetchMembers() async {
-        try {          
-          final getProfiles = await viewModel.getMembers();
-          memberList.value = getProfiles['member_list'];
-        } catch (e) {
-          throw Exception('Failed to load members');
-        } finally {
-          isLoading.value = false;
+    useEffect(
+      () {
+        StreamSubscription? membersSubscription;
+        fetchMembers() async {
+          try {
+            isLoading.value = true; // Set loading before fetching
+
+            membersSubscription = viewModel.getMembers().listen(
+              (members) {
+                if (!context.mounted) return;
+                memberList.value = members['member_list'];
+                isLoading.value =
+                    false; // Set loading to false after data arrives
+              },
+              onError: (e) {
+                if (!context.mounted) return;
+                debugPrint('Error loading members: $e');
+                isLoading.value = false; // Set loading to false on error
+              },
+              onDone: () {
+                if (!context.mounted) return;
+                isLoading.value = false; // Set loading to false on done
+              },
+            );
+          } catch (e) {
+            debugPrint('Failed to load members: $e');
+            isLoading.value = false;
+          }
         }
-      }
+       
+        fetchMembers();
+        return () {
+          membersSubscription!.cancel();
+        };
+      }, []
+    );
 
-      fetchMembers();
-      return null;
-    }, []);
-
-
-    
     void _handleMemberAction(
         BuildContext context, String action, Member member) {
       switch (action) {
@@ -206,7 +225,7 @@ class MemberList extends HookWidget {
                             ),
                           ),
                         ],
-                        onActionSelected: (action, member) {                          
+                        onActionSelected: (action, member) {
                           _handleMemberAction(context, action, member);
                         },
                         tableButtons: [

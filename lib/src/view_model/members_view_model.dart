@@ -72,31 +72,28 @@ class MembersViewModel extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> getMembers() async {
+  Stream<Map<String, dynamic>> getMembers() {
     // Initialize Supabase client
     final client = Supabase.instance.client;
 
     try {
-      final response = await client.rpc('spgetprofiles');
-      setLoading(true);
-      final membersList = MembersModel.fromJson(response).member;
-      setMembers(membersList);
+      final response = client.rpc('spgetprofiles').asStream().map((list) {
+        final MembersModel profileList = MembersModel.fromJson(list);
 
-      return {
-        'success': response['success'],
-        'status_code': response['status_code'],
-        'message': response['message'],
-        'member_list': membersList,
-      };
+        return {
+          'success': profileList.success,
+          'status_code': profileList.statusCode,
+          'message': profileList.message,
+          'member_list': profileList.member
+        };
+      }).handleError((error) {
+        debugPrint('Error in stream: $error'); // Debug log
+        throw Exception('Failed to load members: $error');
+      });
+      return response;
     } catch (error) {
-      return {
-        'success': false,
-        'status_code': 500,
-        'message': "An error occurred while fetching members: $error",
-        'member_list': [],
-      };
-    } finally {
-      setLoading(false);
+      debugPrint('Error creating stream: $error');
+      return Stream.error(Exception('Failed to load members: $error'));
     }
   }
 
@@ -206,7 +203,6 @@ class MembersViewModel extends ChangeNotifier {
   // Membership Methods
   Future<Map<String, dynamic>> setMembershipMaintance(
       Map<String, dynamic> membership) async {
-    
     try {
       final Map<String, dynamic> response =
           await _supabaseClient.rpc('spmaintancemembership', params: {

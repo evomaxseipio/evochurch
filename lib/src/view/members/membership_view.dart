@@ -33,6 +33,8 @@ class MembershipPage extends HookWidget {
         _historyControllers.value[field] = TextEditingController();
       }
 
+
+
       return () {
         for (var controller in membershipTextControllers.value.values) {
           controller.dispose();
@@ -41,7 +43,11 @@ class MembershipPage extends HookWidget {
           controller.dispose();
         }
       };
-    });
+    }, []);
+
+    getMembershipData() async {
+      
+    }
 
     updateMembership() async {
       try {
