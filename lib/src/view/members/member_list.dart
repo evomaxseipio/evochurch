@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../widgets/paginateDataTable/paginated_data_table.dart';
 import 'add_member.dart';
@@ -47,13 +48,16 @@ class MemberList extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SupabaseClient _supabaseClient = Supabase.instance.client;
     final viewModel = Provider.of<MembersViewModel>(context, listen: false);
     final memberList = useState<List<Member>>([]);
     final isLoading = useState<bool>(true);
 
+    StreamSubscription? membersSubscription;
+    StreamSubscription? realtimeSubscription;
+
     useEffect(
       () {
-        StreamSubscription? membersSubscription;
         fetchMembers() async {
           try {
             isLoading.value = true; // Set loading before fetching
@@ -62,8 +66,7 @@ class MemberList extends HookWidget {
               (members) {
                 if (!context.mounted) return;
                 memberList.value = members['member_list'];
-                isLoading.value =
-                    false; // Set loading to false after data arrives
+                isLoading.value = false; // Set loading to false after data arrives
               },
               onError: (e) {
                 if (!context.mounted) return;
@@ -80,10 +83,24 @@ class MemberList extends HookWidget {
             isLoading.value = false;
           }
         }
+
+        // Set up realtime subscription
+      void setupRealtimeSubscription() {
+        realtimeSubscription = _supabaseClient
+            .from('profiles')
+            .stream(primaryKey: ['id']).listen((List<Map<String, dynamic>> data) {
+          // Reload data when changes occur
+          fetchMembers();
+        }, onError: (error) {
+          debugPrint('Realtime subscription error: $error');
+        });
+      }
        
         fetchMembers();
+        setupRealtimeSubscription();
         return () {
           membersSubscription!.cancel();
+          realtimeSubscription!.cancel();
         };
       }, []
     );
@@ -158,13 +175,11 @@ class MemberList extends HookWidget {
                         data: memberList.value,
                         columns: columns,
                         getCells: (member) => [
-                          DataCell(
-                              Text('${member.firstName} ${member.lastName}')),
+                          DataCell(Text('${member.firstName} ${member.lastName}')),
                           DataCell(Text(member.nationality)),
                           DataCell(Text(member.contact!.email!)),
                           DataCell(Text(member.contact!.phone!)),
-                          DataCell(
-                              Text(formatDate(member.dateOfBirth.toString()))),
+                          DataCell(Text(formatDate(member.dateOfBirth.toString()))),
                         ],
                         filterFunction: (member, query) {
                           final lowercaseQuery = query.toLowerCase();
@@ -235,6 +250,7 @@ class MemberList extends HookWidget {
                             onPressed: () {
                               debugPrint('Add Member');
                               callAddEmployeeModal(context);
+                              
                               // context.goNamed(
                               // MyAppRouteConstants.memberProfileRouteName,
                               // extra: null);

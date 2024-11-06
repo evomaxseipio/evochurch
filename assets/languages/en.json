@@ -4,6 +4,11 @@
     "members": "Members",
     "services": "Services",
     "events": "Events",
-    "finances": "Finances"
+    "finances": "Finances",
+
+    "contributions": "Contributions",
+    "contributionsList": "Contributions List",
+    "funds": "Funds",
+    "paymentMethods": "Payment Methods"
     
 }

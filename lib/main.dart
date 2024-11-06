@@ -11,6 +11,7 @@ import 'package:url_strategy/url_strategy.dart';
 
 import 'src/localization/multi_language.dart';
 import 'src/routes/app_route_config.dart';
+import 'src/view_model/finance_view_model.dart';
 import 'src/view_model/theme_view_model.dart';
 
 void main() async {
@@ -57,7 +58,8 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthServices()), // AuthServices for handling authentication
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => MembersViewModel()) // ThemeProvider for handling theme mode
+        ChangeNotifierProvider(create: (_) => MembersViewModel()),
+        ChangeNotifierProvider(create: (_) => FinanceViewModel()) // ThemeProvider for handling theme mode
       ],
       child: MyApp(appRouter: appRouter.router),
     ),

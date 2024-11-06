@@ -8,6 +8,13 @@ class MyAppRouteConstants {
   static const String addMemberRouteName = 'add_member';
   static const String editMemberRouteName = 'edit_member';
 
+  // Finance
+  static const String fundsRouteName = 'funds';
+  static const String fundProfileRouteName = 'fund_profile';
+  static const String addFundRouteName = 'add_fund';
+  static const String editFundRouteName = 'edit_fund';
+
+
 
   // Settings
   static const String settingsRouteName = 'settings';

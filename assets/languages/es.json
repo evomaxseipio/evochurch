@@ -4,6 +4,12 @@
   "members": "Miembros",
   "services": "Servicios",
   "events": "Eventos",
-  "finances": "Finanzas"
+  "finances": "Finanzas",
+
+  
+  "contributions": "Contribuciones",
+  "contributionsList": "Lista Contribuciones",
+  "funds": "Fondos",
+  "paymentMethods": "Metodos de Pago"
 
 }

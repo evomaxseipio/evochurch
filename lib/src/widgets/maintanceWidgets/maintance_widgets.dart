@@ -96,15 +96,14 @@ String splitCamelCase(String input) {
 Widget buildEditableField(
   String label,
   String field,
-  Map<String, TextEditingController> controllers,
+  Map<String, TextEditingController> controllers,{
+  bool isRequired = true,
+}
 ) {
   // Add null check and debug information
   final controller = controllers[field];
   if (controller == null) {
-    print('Warning: No controller found for field: $field');
-    print('Available controllers: ${controllers.keys.toList()}');
-    return const SizedBox
-        .shrink(); // Return empty widget if controller not found
+    return const SizedBox.shrink(); // Return empty widget if controller not found
   }
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +118,8 @@ Widget buildEditableField(
       EvoCustomTextField(
         // labelText: label,
         controller: controllers[field],
-        validator: (value) {
+        validator: isRequired
+            ? (value) {
           if (value?.isEmpty == true) {
             return 'Please enter $label';
           }
@@ -130,14 +130,14 @@ Widget buildEditableField(
           }
 
           return null;
-        },
+        } : null,
       ),
     ],
   );
 }
 
 Widget buildDateField(String label, String field, BuildContext context,
-    Map<String, TextEditingController> controllers) {
+    Map<String, TextEditingController> controllers, {bool isRequired = true}) {
   // Verify is field is null and add the today
   if (controllers[field] == null || controllers[field]!.text.isEmpty) {
     controllers[field] = TextEditingController(
@@ -162,8 +162,10 @@ Widget buildDateField(String label, String field, BuildContext context,
         child: EvoCustomTextField(
           controller: controllers[field] ?? TextEditingController(),
           suffixIcon: const Icon(Icons.calendar_today),
-          validator: (value) => value?.isEmpty == true
-              ? 'Please enter ${splitCamelCase(label.capitalize)}'
+          validator: isRequired
+              ? (value) => value?.isEmpty == true
+                ? 'Please enter ${splitCamelCase(label.capitalize)}'
+                : null
               : null,
           onTap: () async {
             DateTime initialDate;
@@ -195,7 +197,7 @@ Widget buildDateField(String label, String field, BuildContext context,
 }
 
 Widget buildDropdownField(String label, String field,
-    Map<String, TextEditingController> controllers, {MembersViewModel? viewModel}) {
+    Map<String, TextEditingController> controllers, {MembersViewModel? viewModel, bool isRequired = true}) {
   // final theme = Theme.of(context);
 
   String? initialValue = controllers[field]?.text.isNotEmpty == true
@@ -252,8 +254,10 @@ Widget buildDropdownField(String label, String field,
                   setState(() => _dropdownValues[field] = value);
                 }
               },
-              validator: (value) =>
-                  value == null ? 'Please select ${splitCamelCase(label.capitalize)}': null,
+              validator: isRequired
+                  ? (value) =>
+                    value == null ? 'Please select ${splitCamelCase(label.capitalize)}': null
+                  : null,
             ),
           )),
     ],
