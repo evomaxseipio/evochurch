@@ -7,6 +7,7 @@ class AuthServices extends ChangeNotifier {
   bool _isLoading = false;
   String? _username;
   String? _userId;
+  int? _churchId;
   Map<String, dynamic>? _userMetadata;
 
 
@@ -15,6 +16,9 @@ class AuthServices extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get username => _username;
   String? get userId => _userId;
+  int get churchId {
+    return _churchId = _userMetadata!['church_id'];
+  }
   Map<String, dynamic>? get userMetaData  {
     _userMetadata = _supabase.auth.currentUser?.userMetadata;
     return _userMetadata;
@@ -72,6 +76,8 @@ class AuthServices extends ChangeNotifier {
       _username = response.user?.userMetadata![ 'username' ];
       _userId = response.user?.id;
       _userMetadata = response.user?.userMetadata;
+      _churchId = response.user?.userMetadata![ 'church_id' ];
+
 
 
       // Notify listeners of changes  

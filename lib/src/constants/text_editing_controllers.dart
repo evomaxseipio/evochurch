@@ -38,4 +38,10 @@ final historyControllers = [
   'observations',
 ];
 
-final paymentControllers = [];
+final fundControllers = [
+  'fundName',
+  'description',
+  'targetAmount',
+  'startDate',
+  'endDate',
+];

@@ -11,40 +11,45 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../constants/grid_columns.dart';
 import '../../widgets/paginateDataTable/paginated_data_table.dart';
 import 'add_member.dart';
+
+
+
+// final viewModel = MembersViewModel();
+final columns = [
+  SortColumn(
+    label: 'Name',
+    field: 'name',
+    getValue: (member) => member.firstName,
+  ),
+  SortColumn(
+    label: 'Nationality',
+    field: 'nationality',
+    getValue: (member) => member.nationality,
+  ),
+  SortColumn(
+    label: 'Email',
+    field: 'email',
+    getValue: (member) => member.contact.email,
+  ),
+  SortColumn(
+    label: 'Phone',
+    field: 'phone',
+    getValue: (member) => member.contact.phone,
+  ),
+  SortColumn(
+    label: 'Date of Birth',
+    field: 'dateOfBirth',
+    getValue: (member) => member.dateOfBirth,
+  ),
+];
+
 
 class MemberList extends HookWidget {
   MemberList({super.key});
 
-  // final viewModel = MembersViewModel();
-  final columns = [
-    SortColumn(
-      label: 'Name',
-      field: 'name',
-      getValue: (member) => member.firstName,
-    ),
-    SortColumn(
-      label: 'Nationality',
-      field: 'nationality',
-      getValue: (member) => member.nationality,
-    ),
-    SortColumn(
-      label: 'Email',
-      field: 'email',
-      getValue: (member) => member.contact.email,
-    ),
-    SortColumn(
-      label: 'Phone',
-      field: 'phone',
-      getValue: (member) => member.contact.phone,
-    ),
-    SortColumn(
-      label: 'Date of Birth',
-      field: 'dateOfBirth',
-      getValue: (member) => member.dateOfBirth,
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
