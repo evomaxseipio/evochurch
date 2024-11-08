@@ -213,7 +213,7 @@ callAddEmployeeModal(BuildContext context) {
                   try {
                     MembersViewModel profileViewModel = MembersViewModel();
                     AuthServices _authServices = AuthServices();
-                    final churchId =await _authServices.userMetaData?['church_id'];
+                    final churchId = await _authServices.userMetaData?['church_id'];
 
                     final newProfile = Member(
                       churchId: churchId,

@@ -2,10 +2,11 @@
 
 import '../widgets/paginateDataTable/paginated_data_table.dart';
 
+
 final contributionColumns = [
   SortColumn(
-    label: 'Fund',
-    field: 'fund',
+    label: 'Fund Name',
+    field: 'fundName',
     getValue: (fund) => fund.fundName,
   ),
   SortColumn(
@@ -17,6 +18,11 @@ final contributionColumns = [
     label: 'Target Amount',
     field: 'targetAmount',
     getValue: (fund) => fund.targetAmount,
+  ),
+  SortColumn(
+    label: 'Total Contributions',
+    field: 'totalContributions',
+    getValue: (fund) => fund.totalContributions,
   ),
   SortColumn(
     label: 'Start Date',

@@ -97,7 +97,7 @@ Widget buildEditableField(
   String label,
   String field,
   Map<String, TextEditingController> controllers,{
-  bool isRequired = true,
+  bool isRequired = true
 }
 ) {
   // Add null check and debug information
@@ -181,7 +181,7 @@ Widget buildDateField(String label, String field, BuildContext context,
               context: context,
               initialDate: initialDate,
               firstDate: DateTime(1900),
-              lastDate: DateTime.now(),
+              lastDate: DateTime.now().add(const Duration(days: 365 * 100))
             );
             if (pickedDate != null) {
               controllers[field]?.text =

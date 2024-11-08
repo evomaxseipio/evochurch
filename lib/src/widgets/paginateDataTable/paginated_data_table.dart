@@ -21,7 +21,8 @@ class CustomDataTableSource<T> extends DataTableSource {
   final List<T> data;
   final List<DataCell> Function(T) getCells;
   final void Function(T)? onRowTap;
-  final List<PopupMenuEntry<String>> Function(BuildContext, T)actionMenuBuilder;
+  final List<PopupMenuEntry<String>> Function(BuildContext, T)
+      actionMenuBuilder;
   final void Function(String, T)? onActionSelected;
 
   CustomDataTableSource({
@@ -34,6 +35,26 @@ class CustomDataTableSource<T> extends DataTableSource {
 
   @override
   DataRow? getRow(int index) {
+    debugPrint(data.toString());
+    if (data.isEmpty) {
+      // Return a single row with a "No Records Found" message
+      return DataRow(
+        cells: [
+          DataCell(
+            Center(
+              child: Text(
+                'No Records Found',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     final item = data[index];
 
     // Create the action menu using PopupMenuButton
@@ -73,6 +94,7 @@ class CustomDataTableSource<T> extends DataTableSource {
   @override
   int get selectedRowCount => 0;
 }
+
 class CustomPaginatedTable<T> extends HookWidget {
   final String title;
   final List<T> data;
@@ -80,7 +102,8 @@ class CustomPaginatedTable<T> extends HookWidget {
   final List<DataCell> Function(T) getCells;
   final bool Function(T, String) filterFunction;
   final void Function(T)? onRowTap;
-  final List<PopupMenuEntry<String>> Function(BuildContext, T)actionMenuBuilder;
+  final List<PopupMenuEntry<String>> Function(BuildContext, T)
+      actionMenuBuilder;
   final void Function(String, T)? onActionSelected;
   final List<CustomTableButton>? tableButtons;
 
@@ -100,8 +123,8 @@ class CustomPaginatedTable<T> extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final searchQuery = useState('');
-    final rowsPerPage = data.length > 10 ? useState<int>(10) : useState<int>(data.length);
-    // final rowsPerPage = useState<int>(10);
+    // final rowsPerPage = data.length < 10 ? useState<int>(10) : useState<int>(data.length);
+    final rowsPerPage = useState<int>(10);
     final sortColumnIndex = useState<int>(0);
     final isAscending = useState<bool>(true);
     final filteredAndSortedData = useState<List<T>>([]);
@@ -205,7 +228,6 @@ class CustomPaginatedTable<T> extends HookWidget {
     );
   }
 }
-
 
 // Custom button class to define button properties
 class CustomTableButton {

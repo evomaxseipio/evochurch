@@ -79,6 +79,7 @@ class EvoModal {
                             SelectionArea(
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                    if (leadingIcon != null)
                                     IconTheme(
@@ -91,7 +92,7 @@ class EvoModal {
                                     )
                                   else
                                     const SizedBox.shrink(),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: 20),
                                   Text(
                                     title,
                                     overflow: TextOverflow.ellipsis,
