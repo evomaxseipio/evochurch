@@ -12,6 +12,7 @@ class MembersViewModel extends ChangeNotifier {
   final AuthServices _authServices = AuthServices();
 
   List<Member> _members = [];
+  List<String> _memberRoles = [];
   Member? _selectedMember; // This is fine as nullable
 
   bool _isLoading = false;
@@ -21,7 +22,9 @@ class MembersViewModel extends ChangeNotifier {
 
   // Updated selectedMember getter with null check
   Member? get selectedMember => _selectedMember;
+  List<String> get memberRoles => _memberRoles;
 
+  // Updated isLoading getter
   bool get isLoading => _isLoading;
 
   // Setters
@@ -69,37 +72,34 @@ class MembersViewModel extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> getMembers() async {
+  Stream<Map<String, dynamic>> getMembers() {
     // Initialize Supabase client
     final client = Supabase.instance.client;
 
     try {
-      final response = await client.rpc('spgetprofiles');
-      setLoading(true);
-      final membersList = MembersModel.fromJson(response).member;
-      setMembers(membersList);
+      final response = client.rpc('spgetprofiles').asStream().map((list) {
+        final MembersModel profileList = MembersModel.fromJson(list);
 
-      return {
-        'success': response['success'],
-        'status_code': response['status_code'],
-        'message': response['message'],
-        'member_list': membersList,
-      };
+        return {
+          'success': profileList.success,
+          'status_code': profileList.statusCode,
+          'message': profileList.message,
+          'member_list': profileList.member
+        };
+      }).handleError((error) {
+        debugPrint('Error in stream: $error'); // Debug log
+        throw Exception('Failed to load members: $error');
+      });
+      return response;
     } catch (error) {
-      return {
-        'success': false,
-        'status_code': 500,
-        'message': "An error occurred while fetching members: $error",
-        'member_list': [],
-      };
-    } finally {
-      setLoading(false);
+      debugPrint('Error creating stream: $error');
+      return Stream.error(Exception('Failed to load members: $error'));
     }
   }
 
-  Future<Map<String, dynamic>?> addMember(Member member, AddressModel address, ContactModel contact) async {
-   
-     try {
+  Future<Map<String, dynamic>?> addMember(
+      Member member, AddressModel address, ContactModel contact) async {
+    try {
       final response = await _supabaseClient.rpc('spinsertprofiles', params: {
         'p_church_id': member.churchId,
         'p_first_name': member.firstName,
@@ -170,6 +170,26 @@ class MembersViewModel extends ChangeNotifier {
     }
   }
 
+  Future<List<String>> getMemberRoles() async {
+    try {
+      final response = await _supabaseClient
+          .from('member_roles')
+          .select('role_name')
+          .order('role_name', ascending: true);
+
+      final List<String> roles = (response as List<dynamic>)
+          .map((role) => role['role_name'] as String)
+          .where((role) => role.isNotEmpty)
+          .toList();
+
+      _memberRoles = roles;
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
+    return _memberRoles;
+  }
+
   Future<User> updateUserMetaData() async {
     final UserResponse res = await _supabaseClient.auth.updateUser(
       UserAttributes(
@@ -178,5 +198,26 @@ class MembersViewModel extends ChangeNotifier {
     );
     final User? updatedUser = res.user;
     return updatedUser!;
+  }
+
+  // Membership Methods
+  Future<Map<String, dynamic>> setMembershipMaintance(
+      Map<String, dynamic> membership) async {
+    try {
+      final Map<String, dynamic> response =
+          await _supabaseClient.rpc('spmaintancemembership', params: {
+        'p_profile_id': membership['profileId'],
+        'p_baptism_date': membership['baptismDate'],
+        'p_baptism_church': membership['baptismChurch'],
+        'p_baptism_pastor': membership['baptismPastor'],
+        'p_membership_role': membership['membershipRole'],
+        'p_baptism_church_city': membership['baptismChurchCity'],
+        'p_baptism_church_country': membership['baptismChurchCountry'],
+      });
+      return response;
+    } catch (e) {
+      debugPrint('Error adding profile: $e');
+      throw Exception('Failed to insert profile: $e');
+    }
   }
 }

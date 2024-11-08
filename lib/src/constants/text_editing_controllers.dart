@@ -22,3 +22,20 @@ final addressControllers = [
 ];
 
 final contactControllers = ['phone', 'mobilePhone', 'email'];
+
+final membershipControllers = [
+  'baptismDate',
+  'baptismChurch',
+  'baptismPastor',
+  'membershipRole',
+  'baptismChurchCity',
+  'baptismChurchCountry'
+];
+
+final historyControllers = [
+  'dateStart',
+  'dateReturn',
+  'observations',
+];
+
+final paymentControllers = [];

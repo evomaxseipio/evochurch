@@ -1,11 +1,8 @@
 import 'package:evochurch/src/model/addres_model.dart';
 import 'package:evochurch/src/model/contact_model.dart';
 import 'package:evochurch/src/model/member_model.dart';
-import 'package:evochurch/src/model/profile_model.dart';
-import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
-import 'package:evochurch/src/view_model/profile_view_model.dart';
 import 'package:evochurch/src/widgets/modal/modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -113,7 +110,7 @@ callAddEmployeeModal(BuildContext context) {
                       children: [
                         Expanded(
                             child: buildDateField('Date of Birth',
-                                'dateOfBirth', context, _memberControllers)),
+                                'dateOfBirth', context, _memberControllers, isRequired: false)),
                         EvoBox.w10,
                         Expanded(
                             child: buildDropdownField(
@@ -133,11 +130,11 @@ callAddEmployeeModal(BuildContext context) {
                         EvoBox.w10,
                         Expanded(
                             child: buildDropdownField(
-                                'Id Type', 'idType', _memberControllers)),
+                                'Id Type', 'idType', _memberControllers, isRequired: false)),
                         EvoBox.w10,
                         Expanded(
                             child: buildEditableField(
-                                'Id number', 'idNumber', _memberControllers)),
+                                'Id number', 'idNumber', _memberControllers, isRequired: false)),
                       ],
                     ),
                   ],
@@ -150,11 +147,11 @@ callAddEmployeeModal(BuildContext context) {
                       children: [
                         Expanded(
                             child: buildEditableField('Street Address',
-                                'streetAddress', _addressControllers)),
+                                'streetAddress', _addressControllers, isRequired: false)),
                         EvoBox.w10,
                         Expanded(
                             child: buildEditableField('Province',
-                                'stateProvince', _addressControllers)),
+                                'stateProvince', _addressControllers, isRequired: false)),
                       ],
                     ),
                     EvoBox.h16,
@@ -187,7 +184,7 @@ callAddEmployeeModal(BuildContext context) {
                         EvoBox.w10,
                         Expanded(
                             child: buildEditableField(
-                                'Email', 'email', _contactControllers)),
+                                'Email', 'email', _contactControllers, isRequired: false)),
                       ],
                     ),
                   ],

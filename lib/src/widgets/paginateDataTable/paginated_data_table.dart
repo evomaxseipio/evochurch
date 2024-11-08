@@ -188,7 +188,7 @@ class CustomPaginatedTable<T> extends HookWidget {
                 onActionSelected: onActionSelected,
               ),
               rowsPerPage: rowsPerPage.value,
-              availableRowsPerPage: [data.length > 10 ? 10 : data.length , 10, 20, 50],
+              availableRowsPerPage: const [10, 20, 50],
               onRowsPerPageChanged: (value) {
                 if (value != null) rowsPerPage.value = value;
               },

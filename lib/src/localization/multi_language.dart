@@ -130,6 +130,12 @@ class _Evochurch {
   String get finances => languageModel.translate('finances');
 
 
+  // Contributions
+  String get contributions => languageModel.translate('contributions');
+  String get constributionsList => languageModel.translate('constributionsList');
+  String get funds => languageModel.translate('funds');
+  String get paymentMethods => languageModel.translate('paymentMethods');
+
 
   
 }
