@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:evochurch/src/model/member_model.dart';
 import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:evochurch/src/utils/string_text_utils.dart';
+import 'package:evochurch/src/view/finances/widgets/add_donations_modal.dart';
+import 'package:evochurch/src/view_model/collection_view_model.dart';
+import 'package:evochurch/src/view_model/finance_view_model.dart';
 
 import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +17,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../constants/grid_columns.dart';
 import '../../widgets/paginateDataTable/paginated_data_table.dart';
 import 'add_member.dart';
-
-
 
 // final viewModel = MembersViewModel();
 final columns = [
@@ -46,69 +47,70 @@ final columns = [
   ),
 ];
 
-
 class MemberList extends HookWidget {
   MemberList({super.key});
-
 
   @override
   Widget build(BuildContext context) {
     final SupabaseClient _supabaseClient = Supabase.instance.client;
     final viewModel = Provider.of<MembersViewModel>(context, listen: false);
+    final fundViewModel = Provider.of<FinanceViewModel>(context, listen: false);
+    final collectionViewModel = Provider.of<CollectionViewModel>(context, listen: false);
+
     final memberList = useState<List<Member>>([]);
     final isLoading = useState<bool>(true);
 
     StreamSubscription? membersSubscription;
     StreamSubscription? realtimeSubscription;
 
-    useEffect(
-      () {
-        fetchMembers() async {
-          try {
-            isLoading.value = true; // Set loading before fetching
+    useEffect(() {
+      fetchMembers() async {
+        try {
+          isLoading.value = true; // Set loading before fetching
 
-            membersSubscription = viewModel.getMembers().listen(
-              (members) {
-                if (!context.mounted) return;
-                memberList.value = members['member_list'];
-                isLoading.value = false; // Set loading to false after data arrives
-              },
-              onError: (e) {
-                if (!context.mounted) return;
-                debugPrint('Error loading members: $e');
-                isLoading.value = false; // Set loading to false on error
-              },
-              onDone: () {
-                if (!context.mounted) return;
-                isLoading.value = false; // Set loading to false on done
-              },
-            );
-          } catch (e) {
-            debugPrint('Failed to load members: $e');
-            isLoading.value = false;
-          }
+          membersSubscription = viewModel.getMembers().listen(
+            (members) {
+              if (!context.mounted) return;
+              memberList.value = members['member_list'];
+              fundViewModel.refreshFunds();
+              collectionViewModel.fetchActiveCollectionTypes();
+              isLoading.value =
+                  false; // Set loading to false after data arrives
+            },
+            onError: (e) {
+              if (!context.mounted) return;
+              debugPrint('Error loading members: $e');
+              isLoading.value = false; // Set loading to false on error
+            },
+            onDone: () {
+              if (!context.mounted) return;
+              isLoading.value = false; // Set loading to false on done
+            },
+          );
+        } catch (e) {
+          debugPrint('Failed to load members: $e');
+          isLoading.value = false;
         }
+      }
 
-        // Set up realtime subscription
+      // Set up realtime subscription
       void setupRealtimeSubscription() {
-        realtimeSubscription = _supabaseClient
-            .from('profiles')
-            .stream(primaryKey: ['id']).listen((List<Map<String, dynamic>> data) {
+        realtimeSubscription = _supabaseClient.from('profiles').stream(
+            primaryKey: ['id']).listen((List<Map<String, dynamic>> data) {
           // Reload data when changes occur
           fetchMembers();
         }, onError: (error) {
           debugPrint('Realtime subscription error: $error');
         });
       }
-       
-        fetchMembers();
-        setupRealtimeSubscription();
-        return () {
-          membersSubscription!.cancel();
-          realtimeSubscription!.cancel();
-        };
-      }, []
-    );
+
+      fetchMembers();
+      // setupRealtimeSubscription();
+      return () {
+        membersSubscription!.cancel();
+        realtimeSubscription!.cancel();
+      };
+    }, []);
 
     void _handleMemberAction(
         BuildContext context, String action, Member member) {
@@ -119,14 +121,16 @@ class MemberList extends HookWidget {
               extra: member);
           break;
 
+        case 'tithes':
+          // Handle donations
+          debugPrint('Adding tithes for: ${member.lastName}');
+          callDonationModal(context, member, 'Diezmo');
+          break;
+
         case 'donations':
           // Handle donations
           debugPrint('Adding donations for: ${member.lastName}');
-          // Example:
-          // showDialog(
-          //   context: context,
-          //   builder: (context) => AddDonationDialog(member: member),
-          // );
+          callDonationModal(context, member, 'Ofrenda');
           break;
 
         case 'message':
@@ -180,11 +184,13 @@ class MemberList extends HookWidget {
                         data: memberList.value,
                         columns: columns,
                         getCells: (member) => [
-                          DataCell(Text('${member.firstName} ${member.lastName}')),
+                          DataCell(
+                              Text('${member.firstName} ${member.lastName}')),
                           DataCell(Text(member.nationality)),
                           DataCell(Text(member.contact!.email!)),
                           DataCell(Text(member.contact!.phone!)),
-                          DataCell(Text(formatDate(member.dateOfBirth.toString()))),
+                          DataCell(
+                              Text(formatDate(member.dateOfBirth.toString()))),
                         ],
                         filterFunction: (member, query) {
                           final lowercaseQuery = query.toLowerCase();
@@ -206,6 +212,15 @@ class MemberList extends HookWidget {
                             child: ListTile(
                               leading: Icon(Icons.edit_outlined),
                               title: Text('Edit Member'),
+                              dense: true,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'tithes',
+                            child: ListTile(
+                              leading: Icon(Icons.paid_outlined),
+                              title: Text('Add Tithes'),
                               dense: true,
                               visualDensity: VisualDensity.compact,
                             ),
@@ -255,7 +270,7 @@ class MemberList extends HookWidget {
                             onPressed: () {
                               debugPrint('Add Member');
                               callAddEmployeeModal(context);
-                              
+
                               // context.goNamed(
                               // MyAppRouteConstants.memberProfileRouteName,
                               // extra: null);

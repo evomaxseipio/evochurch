@@ -1,3 +1,4 @@
+import 'package:evochurch/src/constants/dropdown_list_data.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:flutter/material.dart';
@@ -94,16 +95,13 @@ String splitCamelCase(String input) {
 }
 
 Widget buildEditableField(
-  String label,
-  String field,
-  Map<String, TextEditingController> controllers,{
-  bool isRequired = true
-}
-) {
+    String label, String field, Map<String, TextEditingController> controllers,
+    {bool isRequired = true, bool isNumeric = false}) {
   // Add null check and debug information
   final controller = controllers[field];
   if (controller == null) {
-    return const SizedBox.shrink(); // Return empty widget if controller not found
+    return const SizedBox
+        .shrink(); // Return empty widget if controller not found
   }
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,27 +115,30 @@ Widget buildEditableField(
       ),
       EvoCustomTextField(
         // labelText: label,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         controller: controllers[field],
         validator: isRequired
             ? (value) {
-          if (value?.isEmpty == true) {
-            return 'Please enter $label';
-          }
+                if (value?.isEmpty == true) {
+                  return 'Please enter $label';
+                }
 
-          if (field == 'email' &&
-              !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value!)) {
-            return 'Please enter a valid email address';
-          }
+                if (field == 'email' &&
+                    !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value!)) {
+                  return 'Please enter a valid email address';
+                }
 
-          return null;
-        } : null,
+                return null;
+              }
+            : null,
       ),
     ],
   );
 }
 
 Widget buildDateField(String label, String field, BuildContext context,
-    Map<String, TextEditingController> controllers, {bool isRequired = true}) {
+    Map<String, TextEditingController> controllers,
+    {bool isRequired = true}) {
   // Verify is field is null and add the today
   if (controllers[field] == null || controllers[field]!.text.isEmpty) {
     controllers[field] = TextEditingController(
@@ -164,8 +165,8 @@ Widget buildDateField(String label, String field, BuildContext context,
           suffixIcon: const Icon(Icons.calendar_today),
           validator: isRequired
               ? (value) => value?.isEmpty == true
-                ? 'Please enter ${splitCamelCase(label.capitalize)}'
-                : null
+                  ? 'Please enter ${splitCamelCase(label.capitalize)}'
+                  : null
               : null,
           onTap: () async {
             DateTime initialDate;
@@ -178,11 +179,10 @@ Widget buildDateField(String label, String field, BuildContext context,
             }
 
             DateTime? pickedDate = await showDatePicker(
-              context: context,
-              initialDate: initialDate,
-              firstDate: DateTime(1900),
-              lastDate: DateTime.now().add(const Duration(days: 365 * 100))
-            );
+                context: context,
+                initialDate: initialDate,
+                firstDate: DateTime(1900),
+                lastDate: DateTime.now().add(const Duration(days: 365 * 100)));
             if (pickedDate != null) {
               controllers[field]?.text =
                   DateFormat('dd/MM/yyyy').format(pickedDate);
@@ -196,8 +196,9 @@ Widget buildDateField(String label, String field, BuildContext context,
   );
 }
 
-Widget buildDropdownField(String label, String field,
-    Map<String, TextEditingController> controllers, {MembersViewModel? viewModel, bool isRequired = true}) {
+Widget buildDropdownField(
+    String label, String field, Map<String, TextEditingController> controllers,
+    {MembersViewModel? viewModel, bool isRequired = true, isReadOnly = false}) {
   // final theme = Theme.of(context);
 
   String? initialValue = controllers[field]?.text.isNotEmpty == true
@@ -220,12 +221,14 @@ Widget buildDropdownField(String label, String field,
           child: StatefulBuilder(
             builder: (context, setState) => DropdownButtonFormField<String>(
               value: initialValue ?? _dropdownValues[field],
+
               // isExpanded: true,
               isDense: true,
               hint: Text('Select $label'),
               autovalidateMode: AutovalidateMode.onUserInteraction,
               decoration: InputDecoration(
-                suffixIconConstraints: const BoxConstraints(minWidth: 30),              
+                enabled: isReadOnly ? false : true,
+                suffixIconConstraints: const BoxConstraints(minWidth: 30),
                 isDense: true,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
@@ -241,22 +244,27 @@ Widget buildDropdownField(String label, String field,
                 focusedErrorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
-                errorStyle: TextStyle(fontSize: 14, height: 0.7, color: Colors.red),
+                errorStyle: const TextStyle(
+                    fontSize: 14, height: 0.7, color: Colors.red),
               ),
               items: _getDropdownItems(field, viewModel: viewModel)
                   .map((item) =>
                       DropdownMenuItem(value: item, child: Text(item)))
                   .toList(),
               onChanged: (value) {
-                if (value != null) {
-                  _dropdownValues[field] = value;
-                  controllers[field]!.text = value;
-                  setState(() => _dropdownValues[field] = value);
+                try {
+                  if (value != null) {
+                    controllers[field]!.text = value;
+                    setState(() => _dropdownValues[field] = value);
+                  }
+                } catch (e) {
+                  debugPrint(e.toString());
                 }
               },
               validator: isRequired
-                  ? (value) =>
-                    value == null ? 'Please select ${splitCamelCase(label.capitalize)}': null
+                  ? (value) => value == null
+                      ? 'Please select ${splitCamelCase(label.capitalize)}'
+                      : null
                   : null,
             ),
           )),
@@ -264,7 +272,93 @@ Widget buildDropdownField(String label, String field,
   );
 }
 
-List<String> _getDropdownItems(String field, {MembersViewModel? viewModel})  {
+Widget buildDropdownFieldNew<T>({
+  required String label,
+  required String field,
+  required Map<String, TextEditingController> controllers,
+  required List<Map<String, String>> items, // List of items to show in dropdown
+  required String valueKey, // Key for the value (e.g., 'id')
+  required String displayKey, // Key for display text (e.g., 'fundname')
+  MembersViewModel? viewModel,
+  bool isRequired = true,
+  bool isReadOnly = false,
+}) {
+  // Get initial value based on controller's text
+  String? initialValue = controllers[field]?.text.isNotEmpty == true
+      ? items.firstWhere(
+          (item) => item[valueKey] == controllers[field]?.text,
+          orElse: () => items.first,
+        )[valueKey]
+      : null;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        splitCamelCase(label).capitalize,
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontSize: 14,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 0),
+        child: StatefulBuilder(
+          builder: (context, setState) => DropdownButtonFormField<String>(
+            value: initialValue,
+            isDense: true,
+            hint: Text('Select $label'),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            decoration: InputDecoration(
+              enabled: !isReadOnly,
+              suffixIconConstraints: const BoxConstraints(minWidth: 30),
+              isDense: true,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 13, vertical: 13),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              errorStyle:
+                  const TextStyle(fontSize: 14, height: 0.7, color: Colors.red),
+            ),
+            items: items
+                .map((item) => DropdownMenuItem(
+                      value: item[valueKey],
+                      child: Text(item[displayKey] ?? ''),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              try {
+                if (value != null) {
+                  controllers[field]!.text = value;
+                  setState(() => initialValue = value);
+                }
+              } catch (e) {
+                debugPrint(e.toString());
+              }
+            },
+            validator: isRequired
+                ? (value) => value == null
+                    ? 'Please select ${splitCamelCase(label.capitalize)}'
+                    : null
+                : null,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+List<String> _getDropdownItems(String field, {MembersViewModel? viewModel}) {
   // Initialize the membershipRoles list
   List<String> membershipRoles = [];
 
@@ -286,17 +380,15 @@ List<String> _getDropdownItems(String field, {MembersViewModel? viewModel})  {
   } else if (field == 'isActive') {
     return ['Active', 'Inactive'];
   } else if (field == 'country') {
-    return [
-      'Republica Dominicana',
-      'Haiti',
-      'Guatemala',
-      'Venezuela',
-      'United States',
-      'Canada',
-      'Mexico'
-    ];
+    return countryList;
   } else if (field == 'membershipRole') {
     return membershipRoles;
+  } else if (field == 'fundName') {
+    return fundDataList;
+  } else if (field == 'paymentMethod') {
+    return paymentMethodList;
+  } else if (field == 'expenseCategory') {
+    return categoryExpensetypeList; // For descending order
   } else {
     return [];
   }

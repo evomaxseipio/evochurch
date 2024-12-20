@@ -1,5 +1,7 @@
 import 'package:evochurch/src/app.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
+import 'package:evochurch/src/view_model/collection_view_model.dart';
+import 'package:evochurch/src/view_model/expense_view_model.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -59,7 +61,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthServices()), // AuthServices for handling authentication
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => MembersViewModel()),
-        ChangeNotifierProvider(create: (_) => FinanceViewModel()) // ThemeProvider for handling theme mode
+        ChangeNotifierProvider(create: (_) => FinanceViewModel()), // ThemeProvider for handling theme mode
+        ChangeNotifierProvider(create: (_) => CollectionViewModel()),
+        ChangeNotifierProvider(create: (_) => ExpensesTypeViewModel()), // LanguageModel for handling language selection
       ],
       child: MyApp(appRouter: appRouter.router),
     ),

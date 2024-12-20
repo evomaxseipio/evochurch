@@ -29,10 +29,10 @@ class EvoHover extends StatefulWidget {
   final Widget Function(bool isHover) builder;
   const EvoHover({super.key, required this.builder});
   @override
-  State<EvoHover> createState() => _FxHoverState();
+  State<EvoHover> createState() => _EvoHoverState();
 }
 
-class _FxHoverState extends State<EvoHover> {
+class _EvoHoverState extends State<EvoHover> {
   bool isHover = false;
   @override
   Widget build(BuildContext context) {

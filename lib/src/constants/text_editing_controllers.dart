@@ -39,9 +39,33 @@ final historyControllers = [
 ];
 
 final fundControllers = [
+  'fundId',
+  'churchId',
   'fundName',
   'description',
   'targetAmount',
   'startDate',
   'endDate',
 ];
+
+final collectionControllers = [
+  'fundId',
+  'memberId',
+  'collectionType',
+  'collectionAmount',
+  'isAnonymous',
+  'paymentMethod',
+  'collectionDate',
+  'collectionComments',
+  
+];
+
+final expenseControllers = [
+  'expenseId',
+  'churchId',
+  'expenseName',
+  'expenseCategory',
+  'expenseDescription',
+  'expenseIsActive'
+];
+

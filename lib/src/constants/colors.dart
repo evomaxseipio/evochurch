@@ -12,6 +12,10 @@ class EvoColor {
   static const Color drawerTextColor = Color(0xFFA8C2D8);
   static const Color transparent = Color(0x00000000);
 
+  static const Color lightBackgroundBlue = Color.fromARGB(255, 15, 34, 85);
+
+  static const Color greenDarkChartColor = Color.fromARGB(255, 26, 121, 62);
+
     static const Color grey800 = Color(0xFF424242);
   static const Color blue = Color(0xFF2196F3);
   static const Color teal = Color(0xFF02A499);
@@ -95,4 +99,15 @@ class EvoColor {
   static const Color yellow = Color(0xffFCDD80);
   static const Color lightwhite = Color(0xffDDDDDD);
   static const Color cyan = Color(0xff83EEE6);
+
+  // Card colors
+  static const Color cardHeader = Color(0xffF5F5F5);
+  static const Color  cardBackground = Color.fromARGB(255, 85, 99, 112);
+  static const Color cardFooter = Color(0xffE6E6E6);
+  static const Color cardBorder = Color(0xffBDBDBD);
+  static const Color cardShadow = Color(0x00000000);
+  static const Color cardHeaderText = Color(0xFFF1F1F1);
+  
+
+
 }

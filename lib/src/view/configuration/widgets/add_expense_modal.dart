@@ -1,4 +1,6 @@
 import 'package:evochurch/src/constants/text_editing_controllers.dart';
+import 'package:evochurch/src/model/expense_type_model.dart';
+import 'package:evochurch/src/view_model/expense_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -15,29 +17,29 @@ import '../../../constants/constant_index.dart';
 import '../../../view_model/auth_services.dart';
 import '../../members/widgets/personal_infomation_card.dart';
 
-class AddFund extends HookWidget {
-  const AddFund({super.key});
+class AddExpense extends HookWidget {
+  const AddExpense({super.key});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       child: EvoButton(
-          onPressed: () => callAddFundModal(context), text: 'Add Fund'),
+          onPressed: () => callAddExpenseModal(context), text: 'Add Fund'),
     );
   }
 }
 
 final _formKey = GlobalKey<FormState>();
-final Map<String, TextEditingController> _fundControllers = {};
+final Map<String, TextEditingController> _expenseControllers = {};
 
-callAddFundModal(BuildContext context) {
+callAddExpenseModal(BuildContext context) {
   // Assign Fund Controllers
-  for (var field in fundControllers) {
-    _fundControllers[field] = TextEditingController();
+  for (var field in expenseControllers) {
+    _expenseControllers[field] = TextEditingController();
   }
 
   void dispose() {
-    _fundControllers.forEach((key, value) {
+    _expenseControllers.forEach((key, value) {
       value.dispose();
     });
   }
@@ -46,16 +48,15 @@ callAddFundModal(BuildContext context) {
     barrierDismissible: true,
     context: context,
     modelType: ModalType.extraLarge,
-    modalType: ModalType.large,
-    title: "Add Fund",
+    modalType: ModalType.normal,
+    title: "Add Expense Type",
     leadingIcon: const Icon(
       FontAwesomeIcons.handHoldingDollar,
-      // color: EvoColor.appleDark,
+      color: EvoColor.cardBackground,
       size: 24,
     ),
     content: Card(
       elevation: 2,
-      // color: Colors.white,
       child: Container(
         padding: const EdgeInsets.all(0),
         child: Form(
@@ -66,15 +67,16 @@ callAddFundModal(BuildContext context) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InformationCard(
-                  title: 'Fund Information',
+                  // backgroundColor: const Color.fromARGB(255, 173, 181, 189),
+                  title: 'Expense Type Information',
                   children: [
                     Row(
                       children: [
                         Expanded(
                             child: buildEditableField(
-                          'Fund Name',
-                          'fundName',
-                          _fundControllers,
+                          'Expense Name',
+                          'expenseName',
+                          _expenseControllers,
                           isRequired: true,
                         )),
                       ],
@@ -85,37 +87,16 @@ callAddFundModal(BuildContext context) {
                         Expanded(
                             child: buildEditableField(
                           'Description',
-                          'description',
-                          _fundControllers,
+                          'expenseDescription',
+                          _expenseControllers,
                           isRequired: true,
                         )),
                       ],
                     ),
                     EvoBox.h16,
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildDateField('Start Date', 'startDate',
-                                context, _fundControllers)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDateField('End Date', 'endDate',
-                                context, _fundControllers,
-                                isRequired: true)),
-                      ],
-                    ),
+                    buildDropdownField(
+                        'Category', 'expenseCategory', _expenseControllers),
                     EvoBox.h16,
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField(
-                          'Target Amount',
-                          'targetAmount',
-                          _fundControllers,
-                          isRequired: true,
-                        )),
-                      ],
-                    ),
                   ],
                 ),
               ],
@@ -133,43 +114,40 @@ callAddFundModal(BuildContext context) {
 
           if (_formKey.currentState!.validate()) {
             try {
-              final viewModel = Provider.of<FinanceViewModel>(context, listen: false);
+              final viewModel =
+                  Provider.of<ExpensesTypeViewModel>(context, listen: false);
               AuthServices _authServices = AuthServices();
               int churchId = await _authServices.userMetaData?['church_id'];
 
-              DateTime startDate = DateFormat('dd/MM/yyyy')
-                  .parse(_fundControllers['startDate']!.text);
-              DateTime? endDate;
-              if (_fundControllers['endDate']!.text.isNotEmpty) {
-                endDate = DateFormat('dd/MM/yyyy')
-                    .parse(_fundControllers['endDate']!.text);
-              }
+              // DateTime startDate = DateFormat('dd/MM/yyyy')
+              //     .parse(_expenseControllers['startDate']!.text);
+              // DateTime? endDate;
+              // if (_expenseControllers['endDate']!.text.isNotEmpty) {
+              //   endDate = DateFormat('dd/MM/yyyy')
+              //       .parse(_expenseControllers['endDate']!.text);
+              // }
 
-              final newFund = FundModel(
-                churchId: churchId,
-                fundName: _fundControllers['fundName']!.text,
-                description: _fundControllers['description']!.text,
-                targetAmount: double.tryParse(_fundControllers['targetAmount']!.text),
-                startDate: startDate,
-                endDate: endDate,
-                isActive: true,
-                isPrimary: false
-              );
+              final newExpenseType = ExpensesTypeModel(
+                  expensesTypeId: 0,
+                  churchId: churchId,
+                  expensesName: _expenseControllers['expenseName']!.text,
+                  expensesDescription: _expenseControllers['expenseDescription']!.text,
+                  expensesCategory: _expenseControllers['expenseCategory']!.text,                 
+                  isActive: true);
 
-             
-
-              final responseData = await viewModel.addFund(newFund);
+              final responseData = await viewModel.addExpensesType(newExpenseType);
 
               if (responseData!['status'] == 'Success') {
-                message = 'New fund added with ID: ${responseData['fund_id']}';
+                message = 'New Expenses Type added with Name: ${responseData['expensesName']}';
                 // Process the form data
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-                clear();               
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text(message)));
+                clear();
                 Navigator.of(context, rootNavigator: true).pop();
               } else {
                 message =
-                    'Failed to add new fund, error: ${responseData['message']}';
+                    'Failed to add new Expenses type, error: ${responseData['message']}';
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context)
                     .showSnackBar(SnackBar(content: Text(message)));
@@ -200,7 +178,7 @@ callAddFundModal(BuildContext context) {
 }
 
 void clear() {
-  _fundControllers.forEach((key, value) {
+  _expenseControllers.forEach((key, value) {
     value.clear();
   });
 }

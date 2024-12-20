@@ -3,8 +3,10 @@ import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view/auth/login_view.dart';
 import 'package:evochurch/src/view/auth/sign_up_view.dart';
+import 'package:evochurch/src/view/configuration/expenses_list_view.dart';
 import 'package:evochurch/src/view/error_view.dart';
 import 'package:evochurch/src/view/finances/funds_list_view.dart';
+import 'package:evochurch/src/view/finances/transaction_list_view.dart';
 import 'package:evochurch/src/view/home/dashboard_view.dart';
 import 'package:evochurch/src/view/layout/admin_scaffold.dart';
 import 'package:evochurch/src/view/members/member_list.dart';
@@ -68,14 +70,30 @@ class MyAppRouter {
                 );
               }),
 
-            // Finance
-             GoRoute(
-              name: MyAppRouteConstants.fundsRouteName,
-              path: '/funds',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: FundsListView(),
-              ),
+          // Transactions
+          GoRoute(
+            name: MyAppRouteConstants.transactionRouteName,
+            path: '/finances/transactions',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: TransactionListView(),
             ),
+          ),
+          // Finance
+          GoRoute(
+            name: MyAppRouteConstants.fundsRouteName,
+            path: '/finances/funds',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: FundsListView(),
+            ),
+          ),
+          // Expenses
+          GoRoute(
+            name: MyAppRouteConstants.expensesRouteName,
+            path: '/expenses',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: ExpensesListView(),
+            ),
+          ),
 
           // Other routes (profile, about, contact) can be added here
         ],

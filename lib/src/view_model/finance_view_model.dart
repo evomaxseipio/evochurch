@@ -1,4 +1,5 @@
 import 'package:evochurch/src/model/fund_model.dart';
+import 'package:evochurch/src/model/transaction_model.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,15 +9,24 @@ class FinanceViewModel extends ChangeNotifier {
   final AuthServices _authServices = AuthServices();
 
   List<FundModel> _fundsList = [];
+  List<TransactionModel> _transactionsList = [];
   FundModel? _selectedFund;
+  TransactionModel? _selectedTransaction;
 
   // Getters
   List<FundModel> get fundsList => _fundsList;
+  List<TransactionModel> get transactionsList => _transactionsList;
   FundModel? get selectedFund => _selectedFund;
+  TransactionModel? get selectedTransaction => _selectedTransaction;
 
   // Setters
   set selectedFund(FundModel? value) {
     _selectedFund = value;
+    notifyListeners();
+  }
+
+  set selectedTransaction(TransactionModel? value) {
+    _selectedTransaction = value;
     notifyListeners();
   }
 
@@ -25,22 +35,32 @@ class FinanceViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  set setTransactionsList(List<TransactionModel> value) {
+    _transactionsList = value;
+    notifyListeners();
+  }
+
   // Methods
   Stream<Map<String, dynamic>> getFundList() {
     try {
-      final response = _supabaseClient.rpc('spgetfunds', params: { 'p_church_id': _authServices.userMetaData!['church_id'] }).asStream().map((list) {
-        final FundsModel fundList = FundsModel.fromJson(list);
-        setFundsList = fundList.fund;
-        return {
-          'success': fundList.success,
-          'status_code': fundList.statusCode,
-          'message': fundList.message,
-          'fund_list': fundList.fund
-        };
-      }).handleError((error) {
-        debugPrint('Error in stream: $error'); // Debug log
-        throw Exception('Failed to load members: $error');
-      });
+      final response = _supabaseClient
+          .rpc('spgetfunds',
+              params: {'p_church_id': _authServices.userMetaData!['church_id']})
+          .asStream()
+          .map((list) {
+            final FundsModel fundList = FundsModel.fromJson(list);
+            setFundsList = fundList.fund;
+            return {
+              'success': fundList.success,
+              'status_code': fundList.statusCode,
+              'message': fundList.message,
+              'fund_list': fundList.fund
+            };
+          })
+          .handleError((error) {
+            debugPrint('Error in stream: $error'); // Debug log
+            throw Exception('Failed to load members: $error');
+          });
       return response;
     } catch (error) {
       debugPrint('Error creating stream: $error');
@@ -48,22 +68,19 @@ class FinanceViewModel extends ChangeNotifier {
     }
   }
 
-
-
-    // Add a method to force refresh the funds list
+  // Add a method to force refresh the funds list
   Future<void> refreshFunds() async {
     try {
-      final response = await _supabaseClient.rpc('spgetfunds', params: { 'p_church_id': _authServices.userMetaData!['church_id'] });
+      final response = await _supabaseClient.rpc('spgetfunds',
+          params: {'p_church_id': _authServices.userMetaData!['church_id']});
       final FundsModel fundList = FundsModel.fromJson(response);
       setFundsList = fundList.fund;
+      notifyListeners();
     } catch (error) {
       debugPrint('Error refreshing funds: $error');
       throw Exception('Failed to refresh funds: $error');
     }
   }
-
-
-
 
   // Add Method
   Future<Map<String, dynamic>> addFund(FundModel fund) async {
@@ -99,13 +116,13 @@ class FinanceViewModel extends ChangeNotifier {
     }
   }
 
-    // Method to delete a fund
+  // Method to delete a fund
   Future<void> deleteFund(String fundId) async {
     try {
       // Your existing delete fund logic here
       await _supabaseClient.from('funds').delete().eq('fund_id', fundId);
       // rpc('your_delete_fund_procedure', params: {'fund_id': fundId});
-      
+
       // Refresh the list after deleting
       await refreshFunds();
     } catch (error) {
@@ -114,4 +131,32 @@ class FinanceViewModel extends ChangeNotifier {
     }
   }
 
+  // Transaction Management
+  // Get the list of transactions
+  Stream<Map<String, dynamic>> getTransactionList() {
+    try {
+      final response = _supabaseClient
+          .rpc('sp_get_transaction_list',
+              params: {'p_church_id': _authServices.userMetaData!['church_id']})
+          .asStream()
+          .map((list) {
+            final TransactionListModel transactionList = TransactionListModel.fromJson(list);
+            setTransactionsList = transactionList.transactionListModel;
+            return {
+              'success': transactionList.success,
+              'status_code': transactionList.statusCode,
+              'message': transactionList.message,
+              'transaction_list': transactionList.transactionListModel
+            };
+          })
+          .handleError((onError) {
+            debugPrint('Error in stream: $onError');
+            throw Exception('Failed to load transactions: $onError');
+          });
+      return response;
+    } catch (error) {
+      debugPrint('Error in stream: $error');
+      return Stream.error(Exception('Failed to load transactions: $error'));
+    }
+  }
 }

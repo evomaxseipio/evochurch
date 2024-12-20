@@ -9,12 +9,14 @@ class MyAppRouteConstants {
   static const String editMemberRouteName = 'edit_member';
 
   // Finance
-  static const String fundsRouteName = 'funds';
+  static const String financesRouteName = 'finances';
+  static const String fundsRouteName = '/finances/funds';
   static const String fundProfileRouteName = 'fund_profile';
   static const String addFundRouteName = 'add_fund';
   static const String editFundRouteName = 'edit_fund';
-
-
+  static const String expensesRouteName = 'expenses';
+  static const String expenseProfileRouteName = 'expense_profile';
+  static const String transactionRouteName = '/finances/transactions';
 
   // Settings
   static const String settingsRouteName = 'settings';
