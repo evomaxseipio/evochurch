@@ -1,5 +1,5 @@
 
-import '../model/event_model.dart';
+import '../../model/event_model.dart';
 
 class EventsData {
   

@@ -1,3 +1,5 @@
+import 'package:evochurch/src/model/transaction_model.dart';
+
 final membersControllers = [
   'firstName',
   'lastName',
@@ -67,5 +69,25 @@ final expenseControllers = [
   'expenseCategory',
   'expenseDescription',
   'expenseIsActive'
+];
+
+final transactionControllers = [
+'church_id',
+'transaction_id',
+'expenses_type_id',
+'fund_id',
+'created_by_profile_id',
+'createdBy',
+'authorized_by_profile_id',
+'authorizedBy',
+'authorization_status',
+'authorization_date',
+'authorization_comments',
+'transaction_amount',
+'transaction_date',
+'transaction_description',
+'payment_method',
+'reference_number',
+'is_verified'
 ];
 

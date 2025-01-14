@@ -94,9 +94,14 @@ String splitCamelCase(String input) {
       RegExp(r'([a-z])([A-Z])'), (Match m) => '${m[1]} ${m[2]}');
 }
 
-Widget buildEditableField(
+Widget  buildEditableField(
     String label, String field, Map<String, TextEditingController> controllers,
-    {bool isRequired = true, bool isNumeric = false}) {
+    {bool isRequired = true, 
+    bool isNumeric = false, 
+    bool isReadOnly = false,
+    int? maxLength,
+    int? maxLine = 1
+    }) {
   // Add null check and debug information
   final controller = controllers[field];
   if (controller == null) {
@@ -117,6 +122,8 @@ Widget buildEditableField(
         // labelText: label,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         controller: controllers[field],
+        maxLength: maxLength,
+        readOnly: isReadOnly,
         validator: isRequired
             ? (value) {
                 if (value?.isEmpty == true) {
@@ -385,7 +392,7 @@ List<String> _getDropdownItems(String field, {MembersViewModel? viewModel}) {
     return membershipRoles;
   } else if (field == 'fundName') {
     return fundDataList;
-  } else if (field == 'paymentMethod') {
+  } else if (field == 'paymentMethod' || field == 'payment_method') {
     return paymentMethodList;
   } else if (field == 'expenseCategory') {
     return categoryExpensetypeList; // For descending order

@@ -57,6 +57,7 @@ class TransactionModel {
   int transactionAmount;
   String transactionDescription;
   String transactionStatus;
+  int expensesTypeId;
   String profileId;
   String createdBy;
   String? authorizedProfileId;
@@ -65,6 +66,7 @@ class TransactionModel {
   DateTime? authorizationDate;
   String fundId;
   String fundName;
+  String paymentMethod;
 
   TransactionModel({
     required this.churchId,
@@ -73,6 +75,7 @@ class TransactionModel {
     required this.transactionAmount,
     required this.transactionDescription,
     required this.transactionStatus,
+    required this.expensesTypeId,
     required this.profileId,
     required this.createdBy,
     this.authorizedProfileId,
@@ -81,6 +84,7 @@ class TransactionModel {
     this.authorizationDate,
     required this.fundId,
     required this.fundName,
+    required this.paymentMethod,
   });
 
   TransactionModel copyWith({
@@ -90,6 +94,7 @@ class TransactionModel {
     int? transactionAmount,
     String? transactionDescription,
     String? transactionStatus,
+    int? expensesTypeId,
     String? profileId,
     String? createdBy,
     String? authorizedProfileId,
@@ -98,15 +103,16 @@ class TransactionModel {
     DateTime? authorizationDate,
     String? fundId,
     String? fundName,
+    String? paymentMethod,
   }) =>
       TransactionModel(
         churchId: churchId ?? this.churchId,
         transactionId: transactionId ?? this.transactionId,
         transactionDate: transactionDate ?? this.transactionDate,
         transactionAmount: transactionAmount ?? this.transactionAmount,
-        transactionDescription:
-            transactionDescription ?? this.transactionDescription,
+        transactionDescription:transactionDescription ?? this.transactionDescription,
         transactionStatus: transactionStatus ?? this.transactionStatus,
+        expensesTypeId: expensesTypeId ?? this.expensesTypeId,
         profileId: profileId ?? this.profileId,
         createdBy: createdBy ?? this.createdBy,
         authorizedProfileId: authorizedProfileId ?? this.authorizedProfileId,
@@ -115,6 +121,7 @@ class TransactionModel {
         authorizationDate: authorizationDate ?? this.authorizationDate,
         fundId: fundId ?? this.fundId,
         fundName: fundName ?? this.fundName,
+        paymentMethod: paymentMethod ?? this.paymentMethod,
       );
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) =>
@@ -125,6 +132,7 @@ class TransactionModel {
         transactionAmount: json["transactionAmount"],
         transactionDescription: json["transactionDescription"],
         transactionStatus: json["transactionStatus"],
+        expensesTypeId: json["expensesTypeId"],
         profileId: json["profileId"],
         createdBy: json["createdBy"],
         authorizedProfileId: json["authorizedProfileId"],
@@ -136,6 +144,7 @@ class TransactionModel {
             : DateTime.now(),
         fundId: json["fundId"],
         fundName: json["fundName"],
+        paymentMethod: json["paymentMethod"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -146,6 +155,7 @@ class TransactionModel {
         "transactionAmount": transactionAmount,
         "transactionDescription": transactionDescription,
         "transactionStatus": transactionStatus,
+        "expensesTypeId": expensesTypeId,
         "profileId": profileId,
         "createdBy": createdBy,
         "authorizedProfileId": authorizedProfileId,
@@ -155,5 +165,6 @@ class TransactionModel {
         "authorizationDate": authorizationDate?.toIso8601String(),
         "fundId": fundId,
         "fundName": fundName,
+        "paymentMethod": paymentMethod,
       };
 }

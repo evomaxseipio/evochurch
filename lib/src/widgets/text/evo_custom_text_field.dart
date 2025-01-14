@@ -21,6 +21,7 @@ class EvoCustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.validator,
     this.maxLength,
+    this.maxLines 
   });
 
   final TextEditingController? controller;
@@ -41,6 +42,7 @@ class EvoCustomTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final int? maxLength;
+  final int? maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +57,8 @@ class EvoCustomTextField extends StatelessWidget {
       obscureText: obscureText,
       onChanged: onChanged,
       onFieldSubmitted: onSubmitted,
-      maxLines: 1,
-      minLines: 1,
+      maxLines: maxLines ?? 1,
+      // minLines: 1,
       onTap: onTap,
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,

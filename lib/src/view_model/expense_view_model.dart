@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:evochurch/src/model/expense_type_model.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
 import 'package:flutter/material.dart';
@@ -7,12 +9,43 @@ class ExpensesTypeViewModel extends ChangeNotifier {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
   final AuthServices _authServices = AuthServices();
 
+  StreamSubscription? _expensesTypeListSubscription;
+
   List<ExpensesTypeModel> _expensesTypeList = [];
   ExpensesTypeModel? _selectedExpensesType;
 
   // Getters
   List<ExpensesTypeModel> get expensesTypeList => _expensesTypeList;
   ExpensesTypeModel? get selectedExpensesType => _selectedExpensesType;
+
+  // Initialize Expenses Type List
+  ExpensesTypeViewModel() {
+    _initialize();
+  }
+
+  void _initialize() {
+    _loadExpensesTypes();
+  }
+
+  @override
+  void dispose() {
+    _expensesTypeListSubscription?.cancel();
+    super.dispose();
+  }
+
+  // Load Expenses Type List
+  void _loadExpensesTypes() {
+    _expensesTypeListSubscription?.cancel();
+    _expensesTypeListSubscription = getExpensesTypeList().listen(
+      (response) {
+        _expensesTypeList = response['expenses_type_list'];
+        notifyListeners();
+      },
+      onError: (error) {
+        debugPrint('Error loading expenses types: $error');
+      },
+    );
+  }
 
   // Setters
   set selectedExpensesType(ExpensesTypeModel? value) {
@@ -29,10 +62,12 @@ class ExpensesTypeViewModel extends ChangeNotifier {
   Stream<Map<String, dynamic>> getExpensesTypeList() {
     try {
       final response = _supabaseClient
-          .rpc('spgetexpensestypes', params: {'p_church_id': _authServices.userMetaData!['church_id']})
+          .rpc('spgetexpensestypes',
+              params: {'p_church_id': _authServices.userMetaData!['church_id']})
           .asStream()
           .map((list) {
-            final ExpensesTypeResponse expensesTypeResponse = ExpensesTypeResponse.fromJson(list);
+            final ExpensesTypeResponse expensesTypeResponse =
+                ExpensesTypeResponse.fromJson(list);
             setExpensesTypeList = expensesTypeResponse.expenseTypes;
             return {
               'success': expensesTypeResponse.success,
@@ -54,15 +89,7 @@ class ExpensesTypeViewModel extends ChangeNotifier {
 
   // Refresh Expenses Types
   Future<void> refreshExpensesTypes() async {
-    try {
-      final response = await _supabaseClient.rpc('spgetexpensestypes', params: {'p_church_id': _authServices.userMetaData!['church_id']});
-      final ExpensesTypeResponse expensesTypeResponse = ExpensesTypeResponse.fromJson(response);
-      setExpensesTypeList = expensesTypeResponse.expenseTypes;
-      notifyListeners();
-    } catch (error) {
-      debugPrint('Error refreshing expenses types: $error');
-      throw Exception('Failed to refresh expenses types: $error');
-    }
+    _loadExpensesTypes();
   }
 
   // Add Expenses Type
@@ -119,7 +146,8 @@ class ExpensesTypeViewModel extends ChangeNotifier {
   }
 
   // Update Expenses Type
-  Future<Map<String, dynamic>> updateExpensesType(ExpensesTypeModel expensesType) async {
+  Future<Map<String, dynamic>> updateExpensesType(
+      ExpensesTypeModel expensesType) async {
     Map<String, dynamic> response = {};
     try {
       // Convert the ExpensesType to a Map
