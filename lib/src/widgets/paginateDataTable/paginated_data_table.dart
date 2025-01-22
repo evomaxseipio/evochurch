@@ -1,4 +1,3 @@
-import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/widgets/button/button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -35,7 +34,7 @@ class CustomDataTableSource<T> extends DataTableSource {
 
   @override
   DataRow? getRow(int index) {
-    debugPrint(data.toString());
+    // debugPrint(data.toString());
     if (data.isEmpty) {
       // Return a single row with a "No Records Found" message
       return DataRow(
@@ -156,7 +155,7 @@ class CustomPaginatedTable<T> extends HookWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   Text(

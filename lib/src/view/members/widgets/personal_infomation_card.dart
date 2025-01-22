@@ -4,17 +4,20 @@ class InformationCard extends StatelessWidget {
   final String title;
   final List<Widget> children;
   final VoidCallback? onEdit;
+  final Color? backgroundColor;
 
-  const InformationCard({super.key, 
+  const InformationCard({
+    super.key,
     required this.title,
     required this.children,
     this.onEdit,
-    
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      // color: backgroundColor ?? Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -30,7 +33,7 @@ class InformationCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-               /*  IconButton(
+                /*  IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: onEdit,
                 ), */

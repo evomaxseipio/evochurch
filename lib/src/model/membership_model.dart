@@ -41,7 +41,7 @@ class MembershipModel {
          success: json['success'] ?? false,
         statusCode: json['status_code'] ?? 500,
         message: json['message'] ?? 'Error',
-        membership: json["membership"] == null
+        membership: json["membership"] == null && json["membership"] == []
             ? []
             : List<Membership>.from(
                 json["membership"]!.map((x) => Membership.fromJson(x))),
@@ -65,7 +65,7 @@ class Membership {
   final String? membershipRole;
   final String? baptismChurchCity;
   final String? baptismChurchCountry;
-  final MembershipHistory? membershipHistory;
+  final List<MembershipHistory>? membershipHistory; 
 
   Membership({
     this.profileId,
@@ -75,7 +75,7 @@ class Membership {
     this.membershipRole,
     this.baptismChurchCity,
     this.baptismChurchCountry,
-    this.membershipHistory,
+    this.membershipHistory ,
   });
 
   Membership copyWith({
@@ -86,7 +86,7 @@ class Membership {
     String? membershipRole,
     String? baptismChurchCity,
     String? baptismChurchCountry,
-    MembershipHistory? membershipHistory,
+    List<MembershipHistory>? membershipHistory,
   }) =>
       Membership(
         profileId: profileId ?? this.profileId,
@@ -110,8 +110,10 @@ class Membership {
         baptismChurchCity: json["baptismChurchCity"],
         baptismChurchCountry: json["baptismChurchCountry"],
         membershipHistory: json["membershipHistory"] == null
-            ? null
-            : MembershipHistory.fromJson(json["membershipHistory"]),
+            ? []
+            : List<MembershipHistory>.from(
+                json["membershipHistory"]!.map((x) => MembershipHistory.fromJson(x))),
+
       );
 
   Map<String, dynamic> toJson() => {
@@ -123,13 +125,15 @@ class Membership {
         "membershipRole": membershipRole,
         "baptismChurchCity": baptismChurchCity,
         "baptismChurchCountry": baptismChurchCountry,
-        "membershipHistory": membershipHistory?.toJson(),
+        "membershipHistory": membershipHistory == null
+            ? []
+            : List<dynamic>.from(membershipHistory!.map((x) => x.toJson())),
       };
 }
 
 class MembershipHistory {
-  final dynamic dateStart;
-  final dynamic dateReturned;
+  final DateTime? dateStart;
+  final DateTime? dateReturned;
   final String? observations;
 
   MembershipHistory({
@@ -139,8 +143,8 @@ class MembershipHistory {
   });
 
   MembershipHistory copyWith({
-    dynamic dateStart,
-    dynamic dateReturned,
+    DateTime? dateStart,
+    DateTime? dateReturned,
     String? observations,
   }) =>
       MembershipHistory(
@@ -151,8 +155,14 @@ class MembershipHistory {
 
   factory MembershipHistory.fromJson(Map<String, dynamic> json) =>
       MembershipHistory(
-        dateStart: json["dateStart"],
-        dateReturned: json["dateReturned"],
+        dateStart: json["dateStart"] == null
+            ? null
+            : DateTime.parse(json["dateStart"]),
+        dateReturned: json["dateReturned"] == null
+            ? null
+            : DateTime.parse(json["dateReturned"]),
+
+
         observations: json["observations"],
       );
 

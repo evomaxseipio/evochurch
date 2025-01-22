@@ -64,12 +64,13 @@ class Member {
   bool isActive;
   bool isMember;
   String bio;
+  String? membershipRole;
   AddressModel? address;
   ContactModel? contact;
 
   Member({
-     this.memberId,
-     this.churchId,
+    this.memberId,
+    this.churchId,
     required this.firstName,
     required this.lastName,
     required this.nickName,
@@ -82,6 +83,7 @@ class Member {
     required this.isActive,
     required this.isMember,
     required this.bio,
+    this.membershipRole,
     this.address,
     this.contact,
   });
@@ -101,6 +103,7 @@ class Member {
     bool? isActive,
     bool? isMember,
     String? bio,
+    String? membershipRole,
     AddressModel? address,
     ContactModel? contact,
   }) =>
@@ -119,6 +122,7 @@ class Member {
         isActive: isActive ?? this.isActive,
         isMember: isMember ?? this.isMember,
         bio: bio ?? this.bio,
+        membershipRole: membershipRole ?? this.membershipRole,
         address: address ?? this.address,
         contact: contact ?? this.contact,
       );
@@ -138,6 +142,7 @@ class Member {
         isActive: json["isActive"],
         isMember: json["isMember"],
         bio: json["bio"],
+        membershipRole: json["membershipRole"],
         address: AddressModel.fromJson(json["address"]),
         contact: ContactModel.fromJson(json["contact"]),
       );
@@ -158,6 +163,7 @@ class Member {
         "isActive": isActive,
         "isMember": isMember,
         "bio": bio,
+        "membershipRole": membershipRole,
         "address": address!.toJson(),
         "contact": contact!.toJson(),
       };

@@ -5,16 +5,39 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+double getTotalFromList(String key, List<Map<String, dynamic>> list) {
+  double total = 0;
+
+  for (var map in list) {
+    total += double.parse(map[key]);
+  }
+  return total;
+}
+
+String formatCurrency(String value) {
+  double number = double.parse(value);
+  final formatter = NumberFormat.currency(
+    locale: 'en_US',
+    symbol: 'RD\$ ',
+    decimalDigits: 2,
+  );
+  return formatter.format(number);
+}
 
 String formatDouble(double value) {
   final formatter = NumberFormat("#,##0.00", "en_US");
   return formatter.format(value);
 }
 
+
 String formatDate(String dateToConvert) {
-  DateTime date = DateTime.parse(dateToConvert);
-  final formatter = DateFormat('dd/MM/yyyy');
-  return formatter.format(date);
+  try {     
+    DateTime? date = DateTime.tryParse(dateToConvert);
+    final formatter = DateFormat('dd/MM/yyyy');
+    return formatter.format(date!);
+  } catch (e) {
+    return dateToConvert; 
+  }
 }
 
 String convertDateFormat(String dateString) {

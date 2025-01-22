@@ -152,6 +152,8 @@ callAddFundModal(BuildContext context) {
                 targetAmount: double.tryParse(_fundControllers['targetAmount']!.text),
                 startDate: startDate,
                 endDate: endDate,
+                isActive: true,
+                isPrimary: false
               );
 
              

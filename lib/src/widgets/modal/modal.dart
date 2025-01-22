@@ -1,6 +1,6 @@
-
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:flutter/material.dart';
+
 enum ModalType { large, extraLarge, normal }
 
 class EvoModal {
@@ -12,7 +12,8 @@ class EvoModal {
     Widget? trailingIcon,
     required String title,
     required Widget content,
-    List<Widget>? actions, required ModalType modelType,
+    List<Widget>? actions,
+    required ModalType modelType,
   }) {
     return showGeneralDialog(
       barrierDismissible: barrierDismissible,
@@ -60,7 +61,8 @@ class EvoModal {
                           ? theme.colorScheme.outline
                           : theme.colorScheme.onSurface.withOpacity(0.25),
                     ),
-                    color: theme.colorScheme.surface,
+                    color: isDark ? EvoTheme.darkTheme.colorScheme.surface : EvoTheme.lightTheme.colorScheme
+                            .surface, // theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Column(
@@ -70,7 +72,7 @@ class EvoModal {
                       Container(
                         color: isDark
                             ? theme.colorScheme.surfaceContainerHighest
-                            :  theme.colorScheme.surface.withOpacity(0.94),
+                            : theme.colorScheme.surface.withOpacity(0.94),
                         padding: const EdgeInsets.all(16),
                         height: 60,
                         child: Row(
@@ -81,12 +83,13 @@ class EvoModal {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                   if (leadingIcon != null)
+                                  if (leadingIcon != null)
                                     IconTheme(
                                       data: IconThemeData(
                                         color: isDark
                                             ? EvoColor.white
-                                            : theme.colorScheme.onSurfaceVariant,
+                                            : theme
+                                                .colorScheme.onSurfaceVariant,
                                       ),
                                       child: leadingIcon,
                                     )
@@ -100,7 +103,7 @@ class EvoModal {
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontSize: 22,
                                       fontWeight: FontWeight.w600,
-                                      color:theme.colorScheme.onSurfaceVariant,
+                                      color: theme.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -128,7 +131,8 @@ class EvoModal {
                           children: [
                             EvoBox.h16,
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: content,
                             ),
                             EvoBox.h16,
@@ -139,17 +143,19 @@ class EvoModal {
                         Divider(
                           height: 0,
                           color: isDark
-                              ? theme.colorScheme.outline
-                              : theme.colorScheme.secondary.withOpacity(0.25),
+                              ? EvoTheme.darkTheme.colorScheme.outline
+                              : EvoTheme.lightTheme.colorScheme.secondary.withOpacity(0.25),
                         ),
                         Container(
                           padding: const EdgeInsets.all(12),
+                         
                           height: 68,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: actions
                                 .map((e) => Padding(
-                                      padding: const EdgeInsets.only(right: 8.0),
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
                                       child: e,
                                     ))
                                 .toList(),

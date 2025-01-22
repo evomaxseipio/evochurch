@@ -1,5 +1,5 @@
 
-import '../model/services_model.dart';
+import '../../model/services_model.dart';
 
 class ServicesData {
 

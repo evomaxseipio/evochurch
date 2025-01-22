@@ -1,5 +1,6 @@
 // Add pages for each menu item
 import 'package:evochurch/src/constants/constant_index.dart';
+import 'package:evochurch/src/model/membership_model.dart';
 import 'package:evochurch/src/utils/string_text_utils.dart';
 import 'package:evochurch/src/view/members/personal_information.dart';
 import 'package:evochurch/src/view/members/widgets/personal_infomation_card.dart';
@@ -18,11 +19,23 @@ class MembershipPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    MembersViewModel viewModel = Provider.of<MembersViewModel>(context, listen: false);
     final formKey = useState(GlobalKey<FormState>());
-    final membershipTextControllers = useState<Map<String, TextEditingController>>({});
+    MembersViewModel viewModel = Provider.of<MembersViewModel>(context, listen: false);
+
+    final membershipTextControllers =useState<Map<String, TextEditingController>>({});
     final _historyControllers = useState<Map<String, TextEditingController>>({});
-    context.read<MembersViewModel>().getMemberRoles();
+    final membershipData = useState<Map<String, dynamic>>({});
+
+    disposeControllers() {
+      for (var controller in membershipTextControllers.value.values) {
+        controller.dispose();
+      }
+      for (var controller in _historyControllers.value.values) {
+        controller.dispose();
+      }
+    }
+
+    
 
     useEffect(() {
       for (var field in membershipControllers) {
@@ -33,37 +46,58 @@ class MembershipPage extends HookWidget {
         _historyControllers.value[field] = TextEditingController();
       }
 
+      // Fetch membership data when the widget is built the first time
+      getMembershipData() async {
+      try {
 
+        // Get the membership roles
+        await viewModel.getMemberRoles();
+
+        // Get the membership data and history
+        membershipData.value = await viewModel.getMembershipByMemberId(viewModel.selectedMember!.memberId.toString());
+        if (membershipData.value['membership'].isNotEmpty) {
+          membershipTextControllers.value['baptismChurch']!.text = membershipData.value['membership'][0]['baptismChurch'];
+          membershipTextControllers.value['baptismPastor']!.text = membershipData.value['membership'][0]['baptismPastor'];
+          membershipTextControllers.value['membershipRole']!.text = membershipData.value['membership'][0]['membershipRole'];
+          membershipTextControllers.value['baptismChurchCity']!.text = membershipData.value['membership'][0]['baptismChurchCity'];
+          membershipTextControllers.value['baptismChurchCountry']!.text = membershipData.value['membership'][0]['baptismChurchCountry'];
+          membershipTextControllers.value['baptismDate']!.text = membershipData.value['membership'][0]['baptismDate'].toString();
+        }
+
+        // return membershipData.value;
+      } catch (e) {
+        throw Exception('Failed to load members $e');
+      }
+    }
+      
+      getMembershipData();
 
       return () {
-        for (var controller in membershipTextControllers.value.values) {
-          controller.dispose();
-        }
-        for (var controller in _historyControllers.value.values) {
-          controller.dispose();
-        }
+        disposeControllers();
       };
     }, []);
 
-    getMembershipData() async {
-      
-    }
-
     updateMembership() async {
       try {
-
         if (!formKey.value.currentState!.validate()) {
-           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('Please fill in all required fields.')));
         } else {
           final response = await viewModel.setMembershipMaintance({
             'profileId': viewModel.selectedMember!.memberId,
-            'baptismDate': convertDateFormat(membershipTextControllers.value['baptismDate']!.text),
-            'baptismChurch': membershipTextControllers.value['baptismChurch']!.text,
-            'baptismPastor':membershipTextControllers.value['baptismPastor']!.text,
-            'membershipRole': membershipTextControllers.value['membershipRole']!.text,
-            'baptismChurchCity': membershipTextControllers.value['baptismChurchCity']!.text,
-            'baptismChurchCountry': membershipTextControllers.value['baptismChurchCountry']!.text,
+            'baptismDate': convertDateFormat(membershipTextControllers
+                .value['baptismDate']!.text
+                .toString()),
+            'baptismChurch':
+                membershipTextControllers.value['baptismChurch']!.text,
+            'baptismPastor':
+                membershipTextControllers.value['baptismPastor']!.text,
+            'membershipRole':
+                membershipTextControllers.value['membershipRole']!.text,
+            'baptismChurchCity':
+                membershipTextControllers.value['baptismChurchCity']!.text,
+            'baptismChurchCountry':
+                membershipTextControllers.value['baptismChurchCountry']!.text,
           });
 
           if (!context.mounted) return;
@@ -79,9 +113,8 @@ class MembershipPage extends HookWidget {
           }
           formKey.value.currentState!.save();
         }
-        
       } catch (e) {
-         throw Exception('Failed to load members $e');
+        throw Exception('Failed to load members $e');
       }
     }
 
@@ -104,27 +137,29 @@ class MembershipPage extends HookWidget {
                           context, membershipTextControllers.value)),
                   EvoBox.w16,
                   Expanded(
-                      child: buildEditableField('Baptism Church', 'baptismChurch',
-                          membershipTextControllers.value)),
+                      child: buildEditableField('Baptism Church',
+                          'baptismChurch', membershipTextControllers.value)),
                 ]),
                 EvoBox.h16,
                 Row(children: [
                   Expanded(
-                      child: buildEditableField('Baptism Pastor', 'baptismPastor',
-                          membershipTextControllers.value)),
+                      child: buildEditableField('Baptism Pastor',
+                          'baptismPastor', membershipTextControllers.value)),
                   EvoBox.w10,
                   Expanded(child: Consumer<MembersViewModel>(
                       builder: (context, viewModel, child) {
-                    return buildDropdownField('Membership Role', 'membershipRole',
-                        membershipTextControllers.value,
+                    return buildDropdownField('Membership Role',
+                        'membershipRole', membershipTextControllers.value,
                         viewModel: viewModel);
                   })),
                 ]),
                 EvoBox.h16,
                 Row(children: [
                   Expanded(
-                      child: buildEditableField('Baptism City',
-                          'baptismChurchCity', membershipTextControllers.value)),
+                      child: buildEditableField(
+                          'Baptism City',
+                          'baptismChurchCity',
+                          membershipTextControllers.value)),
                   EvoBox.w10,
                   Expanded(
                       child: buildEditableField(

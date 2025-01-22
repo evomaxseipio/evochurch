@@ -9,6 +9,19 @@
     "contributions": "Contributions",
     "contributionsList": "Contributions List",
     "funds": "Funds",
-    "paymentMethods": "Payment Methods"
+    "paymentMethods": "Payment Methods",
+    "expenses": "Expenses",
+
+    "expenseName": "Expense Name",
+    "expenseCategory": "Expense Category",
+    "expenseDescription": "Expense Description",
+    "expenseIsActive": "Expense Status",
+    "expenseCreate": "Create Expense",
+    "expenseEdit": "Edit Expense",
+    "expenseDelete": "Delete Expense"
+
+    
+
+    
     
 }

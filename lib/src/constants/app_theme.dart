@@ -9,6 +9,7 @@ class EvoTheme {
   static const Color _lightBackgroundColor =Color(0xFFF8F9FA); // Light background
   static const Color _darkBackgroundColor =Color(0xFF212529); // Dark background
   static const Color _darkSurfaceColor = Color(0xFF343A40); // Dark surface
+  static const Color _lightSurfaceColor =Color.fromARGB(255, 234, 238, 243);  
   static const Color _lightTextColor = Color(0xFF495057); // Light mode text
   static const Color _darkTextColor = Color(0xFFDEE2E6); // Dark mode text
 
@@ -59,7 +60,7 @@ class EvoTheme {
     colorScheme: const ColorScheme.light(
       primary: _primaryColor,
       secondary: _secondaryColor,
-      surface: Colors.white,
+      surface: _lightSurfaceColor,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: _lightTextColor,

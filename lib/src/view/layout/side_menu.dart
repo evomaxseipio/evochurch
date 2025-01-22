@@ -1,3 +1,4 @@
+import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:evochurch/src/constants/constant_index.dart';
@@ -17,8 +18,12 @@ class SideMenu extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final menuGroupName = useState<String>('');
     final isExpanded = useState<Map<String, bool>>({
       'Configurations': false,
+      'Finances': false,
+      'Services': false,
+      'Events': false,
       'Pictures': false,
       'Reports': false,
       'Constributions': false,
@@ -40,12 +45,22 @@ class SideMenu extends HookWidget {
                 Icons.dashboard, '/'),
             _buildMenuItem(context, languageModel.evochurch.members,
                 Icons.supervisor_account_rounded, '/members'),
-            _buildMenuItem(context, languageModel.evochurch.finances,
-                Icons.monetization_on_rounded, '/finances'),
-            _buildMenuItem(context, languageModel.evochurch.services,
-                Icons.church_rounded, '/services'),
-            _buildMenuItem(context, languageModel.evochurch.events,
-                Icons.event_available_rounded, '/events'),
+            _buildExpandableGroup(
+              context,
+              'Finances',
+              Icons.monetization_on_rounded,
+              isExpanded,
+              '/finances',
+              [
+                _buildMenuItem(context, 'Transaction List', FontAwesomeIcons.listCheck, MyAppRouteConstants.transactionRouteName),
+                _buildMenuItem(context, 'Funds', FontAwesomeIcons.handHoldingDollar, '/finances/funds'),
+                _buildMenuItem(context, 'Payment Methods', Icons.payments_rounded, '/donations/one-time'),
+              ],
+            ),
+            // _buildMenuItem(context, languageModel.evochurch.finances,
+            //     Icons.monetization_on_rounded, '/finances'),
+            _buildMenuItem(context, languageModel.evochurch.services, Icons.church_rounded, '/services'),
+            _buildMenuItem(context, languageModel.evochurch.events, Icons.event_available_rounded, '/events'),
 
             EvoBox.h10,
             showOnlyIcon
@@ -59,15 +74,14 @@ class SideMenu extends HookWidget {
               'Configurations',
               Icons.settings,
               isExpanded,
+              '/',
               [
-                _buildMenuItem(context, languageModel.evochurch.members,
-                    Icons.supervisor_account_rounded, '/members'),
-                _buildMenuItem(context, languageModel.evochurch.finances,
-                    Icons.monetization_on_rounded, '/finances'),
-                _buildMenuItem(context, languageModel.evochurch.services,
-                    Icons.church_rounded, '/services'),
-                _buildMenuItem(context, languageModel.evochurch.events,
-                    Icons.event_available_rounded, '/events'),
+                _buildMenuItem(context, languageModel.evochurch.expenses, Icons.supervisor_account_rounded, '/expenses'),
+
+                // _buildMenuItem(context, languageModel.evochurch.finances,
+                //     Icons.monetization_on_rounded, '/finances'),
+                _buildMenuItem(context, languageModel.evochurch.services, Icons.church_rounded, '/services'),
+                _buildMenuItem(context, languageModel.evochurch.events, Icons.event_available_rounded, '/events'),
               ],
             ),
             _buildExpandableGroup(
@@ -75,6 +89,7 @@ class SideMenu extends HookWidget {
               'Constributions',
               Icons.monetization_on_outlined,
               isExpanded,
+              '/donations/one-time',
               [
                 _buildMenuItem(context, 'Contributions List',
                     FontAwesomeIcons.sackDollar, '/donations/one-time'),
@@ -91,6 +106,7 @@ class SideMenu extends HookWidget {
               'Pictures',
               Icons.photo_library_outlined,
               isExpanded,
+              '/',
               [
                 _buildMenuItem(context, 'Albums', Icons.photo_album_outlined,
                     '/pictures/albums'),
@@ -103,6 +119,7 @@ class SideMenu extends HookWidget {
               'Reports',
               Icons.insert_chart_outlined,
               isExpanded,
+              '/reports',
               [
                 _buildMenuItem(context, 'Attendance Report',
                     Icons.bar_chart_outlined, '/reports/attendance'),
@@ -116,6 +133,7 @@ class SideMenu extends HookWidget {
               'Attendance',
               Icons.schedule,
               isExpanded,
+              '/attendance',
               [
                 _buildMenuItem(context, 'Check-in', Icons.touch_app,
                     '/attendance/checkin'),
@@ -178,12 +196,13 @@ class SideMenu extends HookWidget {
   }
 
   Widget _buildExpandableGroup(
-    BuildContext context,
-    String title,
-    IconData icon,
-    ValueNotifier<Map<String, bool>> isExpanded,
-    List<Widget> children,
-  ) {
+      BuildContext context,
+      String title,
+      IconData icon,
+      ValueNotifier<Map<String, bool>> isExpanded,
+      String route,
+      List<Widget> children) {
+    final isActive = GoRouterState.of(context).matchedLocation == route;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -193,6 +212,8 @@ class SideMenu extends HookWidget {
               ...isExpanded.value,
               title: !isExpanded.value[title]!,
             };
+           
+
           },
           child: Padding(
             padding: const EdgeInsets.only(left: 8.0, right: 8.0),
@@ -201,7 +222,7 @@ class SideMenu extends HookWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: isExpanded.value[title] == true
+                color: isExpanded.value[title] == true && isActive
                     ? Colors.orange.withOpacity(0.1)
                     : Colors.transparent,
               ),
@@ -209,8 +230,8 @@ class SideMenu extends HookWidget {
                 children: [
                   Icon(
                     icon,
-                    color: isExpanded.value[title] == true
-                        ? Colors.orange.shade700
+                    color: isExpanded.value[title] == true && isActive
+                        ? Colors.orange.withOpacity(0.1)
                         : Colors.grey.shade400,
                     size: 20,
                   ),
@@ -219,8 +240,8 @@ class SideMenu extends HookWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        color: isExpanded.value[title] == true
-                            ? Colors.orange.shade700
+                        color: isExpanded.value[title] == true && isActive
+                            ? Colors.orange.withOpacity(0.1)
                             : Colors.grey.shade400,
                         fontWeight: FontWeight.w600,
                       ),

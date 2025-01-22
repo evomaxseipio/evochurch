@@ -1,4 +1,3 @@
-
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/localization/multi_language.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
@@ -28,7 +27,7 @@ class AdminScaffold extends StatelessWidget {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor:
-          context.isDarkMode ? EvoColor.cardDark : EvoColor.appbarLightBG,
+          context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
       drawer: isLargeOrMediumWeb ? null : _buildSliderMenu(),
       body: Row(
         children: [
@@ -52,8 +51,9 @@ class AdminScaffold extends StatelessWidget {
             EvoResponsive.isMediumWeb(context);
 
         return Drawer(
-          backgroundColor:
-              context.isDarkMode ? EvoColor.cardDark : EvoColor.appbarLightBG,
+          backgroundColor: context.isDarkMode
+              ? EvoColor.cardDark
+              : EvoColor.lightBackgroundBlue,
           width: isLargeOrMediumWeb
               ? (!showOnlyIcon ? 230 : 80)
               : MediaQuery.of(context).size.width * 0.33,
@@ -86,6 +86,7 @@ class AdminScaffold extends StatelessWidget {
           EvoBox.w12,
           Text(
             EvoStrings.projectName.toUpperCase(),
+            style: const TextStyle(color: EvoColor.white, fontSize: 18),
           ),
         ],
       ],
@@ -95,7 +96,8 @@ class AdminScaffold extends StatelessWidget {
   AppBar _buildInnerAppBar(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return AppBar(
-      backgroundColor: context.isDarkMode ? EvoColor.cardDark : EvoColor.appbarLightBG,
+      backgroundColor:
+          context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
       elevation: 0,
       toolbarHeight: 50,
       automaticallyImplyLeading: false,
@@ -157,26 +159,32 @@ class AdminScaffold extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        EvoBox.h10,
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-            child: body,
+    return Container(
+      color: !context.isDarkMode
+          ? EvoColor.lightBackgroundBlue
+          : EvoColor.cardDark,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          EvoBox.h10,
+          Expanded(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: body,
+            ),
           ),
-        ),
-        EvoBox.h2,
-        const Center(
-          child: EvoCustomText(
-            title: EvoStrings.footerText,
-            textColor: EvoColor.boxgreylight,
+          EvoBox.h2,
+          const Center(
+            child: EvoCustomText(
+              title: EvoStrings.footerText,
+              textColor: EvoColor.lightGray,
+            ),
           ),
-        ),
-        SafeArea(child: EvoBox.h2),
-      ],
+          SafeArea(child: EvoBox.h2),
+        ],
+      ),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:evochurch/src/model/member_model.dart';
+import 'package:evochurch/src/model/membership_model.dart';
 import 'package:evochurch/src/model/model_index.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class MembersViewModel extends ChangeNotifier {
   List<Member> _members = [];
   List<String> _memberRoles = [];
   Member? _selectedMember; // This is fine as nullable
+  MembershipModel? _membershipProfile;
 
   bool _isLoading = false;
 
@@ -22,6 +24,7 @@ class MembersViewModel extends ChangeNotifier {
 
   // Updated selectedMember getter with null check
   Member? get selectedMember => _selectedMember;
+  MembershipModel? get membershipProfile => _membershipProfile;
   List<String> get memberRoles => _memberRoles;
 
   // Updated isLoading getter
@@ -126,8 +129,6 @@ class MembersViewModel extends ChangeNotifier {
       // Handle the JSON response from the stored procedure
       final Map<String, dynamic> responseData =
           response as Map<String, dynamic>;
-      debugPrint(
-          'Profile added successfully with ID: ${responseData['profile_id']}');
       return responseData;
     } catch (e) {
       debugPrint('Error adding profile: $e');
@@ -200,6 +201,38 @@ class MembersViewModel extends ChangeNotifier {
     return updatedUser!;
   }
 
+  // Get Memberships data
+  Future<Map<String, dynamic>> getMembershipByMemberId(String profileId) async {
+    try {
+      // final response = await _supabaseClient.from('membership').select().eq('profile_id', profileId);
+      final response = await _supabaseClient
+          .rpc('sp_get_membership_history_by_profile', params: {
+        'p_church_id': _authServices.userMetaData!['church_id'],
+        'p_profile_id': profileId,
+      });
+
+      _membershipProfile = MembershipModel.fromJson(response);
+      // if (_membershipProfile!.membership!.isEmpty) {
+      //   // Handle the case where the response is empty
+      //   _membershipProfile = MembershipModel(
+      //     success: false,
+      //     statusCode: 404,
+      //     message: 'No membership data found',
+      //     membership: [],
+      //   );
+      // } else {
+      //   // Handle the case where the response is not empty
+      //   _membershipProfile = _membershipProfile;
+      // }
+      notifyListeners();
+
+      // final membershipsList = response.map((element) => element).first;
+      return _membershipProfile!.toJson();
+    } catch (e) {
+      throw Exception('Failed to load memberships: ${e.toString()}');
+    }
+  }
+
   // Membership Methods
   Future<Map<String, dynamic>> setMembershipMaintance(
       Map<String, dynamic> membership) async {
@@ -214,6 +247,10 @@ class MembersViewModel extends ChangeNotifier {
         'p_baptism_church_city': membership['baptismChurchCity'],
         'p_baptism_church_country': membership['baptismChurchCountry'],
       });
+
+      
+
+
       return response;
     } catch (e) {
       debugPrint('Error adding profile: $e');

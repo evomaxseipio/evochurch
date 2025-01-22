@@ -136,6 +136,9 @@ class _Evochurch {
   String get funds => languageModel.translate('funds');
   String get paymentMethods => languageModel.translate('paymentMethods');
 
+  // Configurations
+  String get expenses => languageModel.translate('expenses');
+
 
   
 }

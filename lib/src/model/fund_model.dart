@@ -56,6 +56,8 @@ class FundModel {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isPrimary;
+
 
   FundModel({
     String? fundId,
@@ -69,6 +71,7 @@ class FundModel {
     this.isActive = true,
     DateTime? createdAt,
     DateTime? updatedAt,
+    this.isPrimary = false,
   })  : fundId = fundId ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
@@ -87,6 +90,7 @@ class FundModel {
       isActive: map['is_active'],
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
+      isPrimary: map['is_primary'],
     );
   }
 

@@ -10,6 +10,15 @@
   "contributions": "Contribuciones",
   "contributionsList": "Lista Contribuciones",
   "funds": "Fondos",
-  "paymentMethods": "Metodos de Pago"
+  "paymentMethods": "Metodos de Pago",
+  "expenses": "Gastos",
+
+  "expenseName": "Nombre del Gasto",
+  "expenseCategory": "Categoria del Gasto",
+  "expenseDescription": "Descripcion del Gasto",
+  "expenseIsActive": "Estatus del Gasto",
+  "expenseCreate": "Crear Gasto",
+  "expenseEdit": "Editar Gasto",
+  "expenseDelete": "Eliminar Gasto"
 
 }
