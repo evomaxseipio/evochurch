@@ -31,9 +31,13 @@ String formatDouble(double value) {
 
 
 String formatDate(String dateToConvert) {
-  DateTime date = DateTime.parse(dateToConvert);
-  final formatter = DateFormat('dd/MM/yyyy');
-  return formatter.format(date);
+  try {     
+    DateTime? date = DateTime.tryParse(dateToConvert);
+    final formatter = DateFormat('dd/MM/yyyy');
+    return formatter.format(date!);
+  } catch (e) {
+    return dateToConvert; 
+  }
 }
 
 String convertDateFormat(String dateString) {

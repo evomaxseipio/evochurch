@@ -17,49 +17,49 @@ class FundsListView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<FinanceViewModel>(context, listen: true);
+    final fundsViewModel = Provider.of<FinanceViewModel>(context, listen: true);
 
     final isLoading = useState<bool>(true);
 
-    StreamSubscription? fundsSubscription;
+    // StreamSubscription? fundsSubscription;
 
-    useEffect(() {
-      fetchFunds() async {
-        try {
-          isLoading.value = true; // Set loading before fetching
+    // useEffect(() {
+    //   fetchFunds() async {
+    //     try {
+    //       isLoading.value = true; // Set loading before fetching
 
-          fundsSubscription = viewModel.getFundList().listen(
-            (funds) {
-              if (!context.mounted) return;
-              isLoading.value = false; // Set loading to false after data arrives
-            },
-            onError: (e) {
-              if (!context.mounted) return;
-              debugPrint('Error loading funds: $e');
-              isLoading.value = false; // Set loading to false on error
-            },
-            onDone: () {
-              if (!context.mounted) return;
-              isLoading.value = false; // Set loading to false on done
-            },
-          );
-        } catch (e) {
-          debugPrint('Failed to load funds: $e');
-          isLoading.value = false;
-        }
-      }
+    //       fundsSubscription = viewModel.getFundList().listen(
+    //         (funds) {
+    //           if (!context.mounted) return;
+    //           isLoading.value = false; // Set loading to false after data arrives
+    //         },
+    //         onError: (e) {
+    //           if (!context.mounted) return;
+    //           debugPrint('Error loading funds: $e');
+    //           isLoading.value = false; // Set loading to false on error
+    //         },
+    //         onDone: () {
+    //           if (!context.mounted) return;
+    //           isLoading.value = false; // Set loading to false on done
+    //         },
+    //       );
+    //     } catch (e) {
+    //       debugPrint('Failed to load funds: $e');
+    //       isLoading.value = false;
+    //     }
+    //   }
 
-      fetchFunds();
-      return () {
-        fundsSubscription!.cancel();
-      };
-    }, []);
+    //   fetchFunds();
+    //   return () {
+    //     fundsSubscription!.cancel();
+    //   };
+    // }, []);
 
     void _handlefundAction(
         BuildContext context, String action, FundModel fund) {
       switch (action) {
         case 'edit':
-          viewModel.selectedFund!;
+          fundsViewModel.selectedFund!;
           // context.goNamed(MyAppRouteConstants.fundProfileRouteName,extra: fund);
           break;
 
@@ -88,7 +88,7 @@ class FundsListView extends HookWidget {
                 TextButton(
                   onPressed: () {
                     // Handle delete
-                    viewModel.deleteFund(fund.fundId);                    
+                    fundsViewModel.deleteFund(fund.fundId);                    
                     Navigator.pop(context);
                   },
                   child:
@@ -102,110 +102,130 @@ class FundsListView extends HookWidget {
     }
 
     return Scaffold(
-      body: isLoading.value
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  CustomPaginatedTable<FundModel>(
-                    title: 'funds Directory',
-                    data: viewModel.fundsList,
-                    columns: contributionColumns,
-                    getCells: (fund) => [
-                      DataCell(Text(fund.fundName)),
-                      DataCell(Text(fund.description!)),
-                      DataCell(Text(fund.targetAmount.toString())),
-                      DataCell(Text(fund.totalContributions.toString())),
-                      DataCell(Text(formatDate(fund.startDate.toString()))),
-                      DataCell(Text(formatDate(fund.endDate.toString()))),
-                    ],
-                    filterFunction: (fund, query) {
-                      final lowercaseQuery = query.toLowerCase();
-                      return fund.fundName
-                              .toLowerCase()
-                              .contains(lowercaseQuery) ||
-                          fund.description!
-                              .toLowerCase()
-                              .contains(lowercaseQuery);
-                    },
-                    onRowTap: (fund) {
-                      // Handle fund selection
-                      debugPrint('Selected fund: ${fund.fundName}');
-                    },
-                    actionMenuBuilder: (context, fund) => [
-                      const PopupMenuItem<String>(
-                        value: 'edit',
-                        child: ListTile(
-                          leading: Icon(Icons.edit_outlined),
-                          title: Text('Edit fund'),
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'donations',
-                        child: ListTile(
-                          leading: Icon(Icons.attach_money_outlined),
-                          title: Text('Add Donations'),
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ),
-                      const PopupMenuDivider(),
-                      const PopupMenuItem<String>(
-                        value: 'delete',
-                        child: ListTile(
-                          leading: Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
+      body:Consumer<FinanceViewModel>(            
+            builder: (context, viewModel, child) {
+              if (viewModel.isLoadingFunds) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (viewModel.error != null) {
+                return Text('Error: ${viewModel.error}');
+              }
+             
+              if (viewModel.fundsList.isEmpty) {
+                return const Center(
+                  child: Text('No funds found'),
+                );
+              }
+
+              if (viewModel.fundsList.isNotEmpty) {
+                viewModel.refreshFunds();
+              }
+
+              return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      CustomPaginatedTable<FundModel>(
+                        title: 'funds Directory',
+                        data: viewModel.fundsList,
+                        columns: contributionColumns,
+                        getCells: (fund) => [
+                          DataCell(Text(fund.fundName)),
+                          DataCell(Text(fund.description!)),
+                          DataCell(Text(fund.targetAmount.toString())),
+                          DataCell(Text(fund.totalContributions.toString())),
+                          DataCell(Text(formatDate(fund.startDate.toString()))),
+                          DataCell(Text(formatDate(fund.endDate.toString()))),
+                        ],
+                        filterFunction: (fund, query) {
+                          final lowercaseQuery = query.toLowerCase();
+                          return fund.fundName
+                                  .toLowerCase()
+                                  .contains(lowercaseQuery) ||
+                              fund.description!
+                                  .toLowerCase()
+                                  .contains(lowercaseQuery);
+                        },
+                        onRowTap: (fund) {
+                          // Handle fund selection
+                          debugPrint('Selected fund: ${fund.fundName}');
+                        },
+                        actionMenuBuilder: (context, fund) => [
+                          const PopupMenuItem<String>(
+                            value: 'edit',
+                            child: ListTile(
+                              leading: Icon(Icons.edit_outlined),
+                              title: Text('Edit fund'),
+                              dense: true,
+                              visualDensity: VisualDensity.compact,
+                            ),
                           ),
-                          title: Text(
-                            'Delete fund',
-                            style: TextStyle(color: Colors.red),
+                          const PopupMenuItem<String>(
+                            value: 'donations',
+                            child: ListTile(
+                              leading: Icon(Icons.attach_money_outlined),
+                              title: Text('Add Donations'),
+                              dense: true,
+                              visualDensity: VisualDensity.compact,
+                            ),
                           ),
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ),
-                    ],
-                    onActionSelected: (action, fund) {
-                      _handlefundAction(context, action, fund);
-                    },
-                    tableButtons: [
-                      CustomTableButton(
-                        text: 'Add Fund',
-                        icon: const Icon(
-                          FontAwesomeIcons.handHoldingDollar,
-                          size: 22,
-                        ),
-                        onPressed: () {
-                          debugPrint('Add fund');
-                          callAddFundModal(context);                         
+                          const PopupMenuDivider(),
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            child: ListTile(
+                              leading: Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                              title: Text(
+                                'Delete fund',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              dense: true,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ),
+                        ],
+                        onActionSelected: (action, fund) {
+                          _handlefundAction(context, action, fund);
                         },
+                        tableButtons: [
+                          CustomTableButton(
+                            text: 'Add Fund',
+                            icon: const Icon(
+                              FontAwesomeIcons.handHoldingDollar,
+                              size: 22,
+                            ),
+                            onPressed: () {
+                              debugPrint('Add fund');
+                              callAddFundModal(context);                         
+                            },
+                          ),
+                          CustomTableButton(
+                            text: 'Print',
+                            icon: const Icon(Icons.print),
+                            onPressed: () async {
+                              debugPrint('Print PDF');
+                              // final viewModel = FinanceViewModel();
+                              // final user = await viewModel.updateUserMetaData();
+                              // debugPrint(user.toString());
+                            },
+                          ),
+                          CustomTableButton(
+                            text: 'Export',
+                            icon: const Icon(Icons.download),
+                            onPressed: () {
+                              debugPrint('debugPrint PDF');
+                            },
+                          ),
+                          // Add more buttons as needed
+                        ],
                       ),
-                      CustomTableButton(
-                        text: 'Print',
-                        icon: const Icon(Icons.print),
-                        onPressed: () async {
-                          debugPrint('Print PDF');
-                          // final viewModel = FinanceViewModel();
-                          // final user = await viewModel.updateUserMetaData();
-                          // debugPrint(user.toString());
-                        },
-                      ),
-                      CustomTableButton(
-                        text: 'Export',
-                        icon: const Icon(Icons.download),
-                        onPressed: () {
-                          debugPrint('debugPrint PDF');
-                        },
-                      ),
-                      // Add more buttons as needed
                     ],
                   ),
-                ],
-              ),
-            ),
+                );
+            }
+          ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: const Icon(Icons.add),

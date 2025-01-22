@@ -21,38 +21,6 @@ class TransactionListView extends HookWidget {
     // final viewModel = Provider.of<FinanceViewModel>(context, listen: false);
 
     final isLoading = useState<bool>(true);
-    late StreamSubscription transacSubscription;
-
-    // useEffect(() {
-    //   fetchTransac() async {
-    //     try {
-    //       isLoading.value = true; // Set loading before fetching
-    //       transacSubscription = viewModel.getTransactionList().listen(
-    //         (transac) {
-    //           if (!context.mounted) return;
-    //           isLoading.value = false; // Set loading to false after data arrives
-    //         },
-    //         onError: (e) {
-    //           if (!context.mounted) return;
-    //           debugPrint('Error loading transacs: $e');
-    //           isLoading.value = false; // Set loading to false on error
-    //         },
-    //         onDone: () {
-    //           if (!context.mounted) return;
-    //           isLoading.value = false; // Set loading to false on done
-    //         },
-    //       );
-    //     } catch (e) {
-    //       debugPrint('Failed to load transacs: $e');
-    //       isLoading.value = false;
-    //     }
-    //   }
-
-    //   fetchTransac();
-    //   return () => transacSubscription.cancel();
-    // }, []);
-
- 
 
     void _handletransacAction(
         BuildContext context, String action, TransactionModel transac) {

@@ -33,65 +33,73 @@ class MemberMaintance extends HookWidget {
     }
 
    useEffect(() {
-      // Initialize member controllers
-      for (var field in membersControllers) {
-        memberTextControllers.value[field] = TextEditingController();
-      }
 
-      // Initialize address controllers
-      for (var field in addressControllers) {
-        addressTextControllers.value[field] = TextEditingController();
-      }
+    try {
+      
 
-      // Initialize contact controllers
-      for (var field in contactControllers) {
-        contactTextControllers.value[field] = TextEditingController();
-      }
+        // Initialize member controllers
+        for (var field in membersControllers) {
+          memberTextControllers.value[field] = TextEditingController();
+        }
 
-      // Populate controllers if profile exists
-      if (profile.value != null) {
-        currentMember = profile.value;
+        // Initialize address controllers
+        for (var field in addressControllers) {
+          addressTextControllers.value[field] = TextEditingController();
+        }
 
-        // Member Information
-        final memberFields = {
-          'firstName': currentMember?.firstName ?? '',
-          'lastName': currentMember?.lastName ?? '',
-          'nickName': currentMember?.nickName ?? '',
-          'dateOfBirth': currentMember?.dateOfBirth.toString() ?? '',
-          'gender': currentMember?.gender ?? '',
-          'maritalStatus': currentMember?.maritalStatus ?? '',
-          'nationality': currentMember?.nationality ?? '',
-          'idType': currentMember?.idType ?? '',
-          'idNumber': currentMember?.idNumber ?? '',
-        };
+        // Initialize contact controllers
+        for (var field in contactControllers) {
+          contactTextControllers.value[field] = TextEditingController();
+        }
 
-        memberFields.forEach((key, value) {
-          memberTextControllers.value[key]?.text = value;
-        });
+        // Populate controllers if profile exists
+        if (profile.value != null) {
+          currentMember = profile.value;
 
-        // Address Information
-        final addressFields = {
-          'streetAddress': currentMember?.address!.streetAddress ?? '',
-          'cityState': currentMember?.address!.cityState ?? '',
-          'country': currentMember?.address!.country ?? '',
-          'stateProvince': currentMember?.address!.stateProvince ?? '',
-        };
+          // Member Information
+          final memberFields = {
+            'firstName': currentMember?.firstName ?? '',
+            'lastName': currentMember?.lastName ?? '',
+            'nickName': currentMember?.nickName ?? '',
+            'dateOfBirth': currentMember?.dateOfBirth.toString() ?? '',
+            'gender': currentMember?.gender ?? '',
+            'maritalStatus': currentMember?.maritalStatus ?? '',
+            'nationality': currentMember?.nationality ?? '',
+            'idType': currentMember?.idType ?? '',
+            'idNumber': currentMember?.idNumber ?? '',
+          };
 
-        addressFields.forEach((key, value) {
-          addressTextControllers.value[key]?.text = value;
-        });
+          memberFields.forEach((key, value) {
+            memberTextControllers.value[key]?.text = value;
+          });
 
-        // Contact Information
-        final contactFields = {
-          'phone': currentMember!.contact!.phone ?? '',
-          'mobilePhone': currentMember?.contact!.mobilePhone ?? '',
-          'email': currentMember?.contact!.email ?? '',
-        };
+          // Address Information
+          final addressFields = {
+            'streetAddress': currentMember?.address!.streetAddress ?? '',
+            'cityState': currentMember?.address!.cityState ?? '',
+            'country': currentMember?.address!.country ?? '',
+            'stateProvince': currentMember?.address!.stateProvince ?? '',
+          };
 
-        contactFields.forEach((key, value) {
-          contactTextControllers.value[key]?.text = value;
-        });
-      }
+          addressFields.forEach((key, value) {
+            addressTextControllers.value[key]?.text = value;
+          });
+
+          // Contact Information
+          final contactFields = {
+            'phone': currentMember!.contact!.phone ?? '',
+            'mobilePhone': currentMember?.contact!.mobilePhone ?? '',
+            'email': currentMember?.contact!.email ?? '',
+          };
+
+          contactFields.forEach((key, value) {
+            contactTextControllers.value[key]?.text = value;
+          });
+        }
+ 
+    } catch (e) {
+      print(e); 
+    }
 
       // Cleanup function
       return () {
@@ -147,8 +155,7 @@ class MemberMaintance extends HookWidget {
                 nickName: memberTextControllers.value['nickName']!.text,
                 dateOfBirth: DateTime.parse(birthDate.toString()),
                 gender: memberTextControllers.value['gender']!.text,
-                maritalStatus:
-                    memberTextControllers.value['maritalStatus']!.text,
+                maritalStatus:memberTextControllers.value['maritalStatus']!.text,
                 nationality: memberTextControllers.value['nationality']!.text,
                 idType: memberTextControllers.value['idType']!.text,
                 idNumber: memberTextControllers.value['idNumber']!.text,

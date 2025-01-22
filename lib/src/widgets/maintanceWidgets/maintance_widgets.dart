@@ -147,12 +147,12 @@ Widget buildDateField(String label, String field, BuildContext context,
     Map<String, TextEditingController> controllers,
     {bool isRequired = true}) {
   // Verify is field is null and add the today
-  if (controllers[field] == null || controllers[field]!.text.isEmpty) {
-    controllers[field] = TextEditingController(
-        text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+  final fecha = controllers[field];
+  debugPrint('Fecha: $fecha');
+  if (controllers[field]!.text.isEmpty) {
+    controllers[field] = TextEditingController(text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
   } else {
-    controllers[field] =
-        TextEditingController(text: formatDate(controllers[field]!.text));
+    controllers[field] = TextEditingController(text: formatDate(controllers[field]!.text));
   }
 
   return Column(

@@ -46,7 +46,7 @@ class MyAppRouter {
           GoRoute(
             name: MyAppRouteConstants.membersListRouteName,
             path: '/members',
-            pageBuilder: (context, state) => NoTransitionPage(
+            pageBuilder: (context, state) => const NoTransitionPage(
               child: MemberList(),
             ),
           ),

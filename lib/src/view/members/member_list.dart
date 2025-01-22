@@ -8,6 +8,7 @@ import 'package:evochurch/src/view_model/collection_view_model.dart';
 import 'package:evochurch/src/view_model/finance_view_model.dart';
 
 import 'package:evochurch/src/view_model/members_view_model.dart';
+import 'package:evochurch/src/widgets/maintanceWidgets/status_chip_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +25,11 @@ final columns = [
     label: 'Name',
     field: 'name',
     getValue: (member) => member.firstName,
+  ),
+  SortColumn(
+    label: 'Role',
+    field: 'role',
+    getValue: (member) => member.membershipRole,
   ),
   SortColumn(
     label: 'Nationality',
@@ -48,7 +54,7 @@ final columns = [
 ];
 
 class MemberList extends HookWidget {
-  MemberList({super.key});
+  const MemberList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -91,24 +97,12 @@ class MemberList extends HookWidget {
           debugPrint('Failed to load members: $e');
           isLoading.value = false;
         }
-      }
-
-      // Set up realtime subscription
-      void setupRealtimeSubscription() {
-        realtimeSubscription = _supabaseClient.from('profiles').stream(
-            primaryKey: ['id']).listen((List<Map<String, dynamic>> data) {
-          // Reload data when changes occur
-          fetchMembers();
-        }, onError: (error) {
-          debugPrint('Realtime subscription error: $error');
-        });
-      }
+      }     
 
       fetchMembers();
-      // setupRealtimeSubscription();
       return () {
         membersSubscription!.cancel();
-        realtimeSubscription!.cancel();
+        // realtimeSubscription!.cancel();
       };
     }, []);
 
@@ -176,133 +170,133 @@ class MemberList extends HookWidget {
           ? const Center(child: CircularProgressIndicator())
           : memberList.value.isEmpty
               ? const Center(child: Text('No Members Found'))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      CustomPaginatedTable<Member>(
-                        title: 'Members Directory',
-                        data: memberList.value,
-                        columns: columns,
-                        getCells: (member) => [
-                          DataCell(
-                              Text('${member.firstName} ${member.lastName}')),
-                          DataCell(Text(member.nationality)),
-                          DataCell(Text(member.contact!.email!)),
-                          DataCell(Text(member.contact!.phone!)),
-                          DataCell(
-                              Text(formatDate(member.dateOfBirth.toString()))),
-                        ],
-                        filterFunction: (member, query) {
-                          final lowercaseQuery = query.toLowerCase();
-                          return member.firstName
-                                  .toLowerCase()
-                                  .contains(lowercaseQuery) ||
-                              member.contact!.email!
-                                  .toLowerCase()
-                                  .contains(lowercaseQuery) ||
-                              member.contact!.phone!.contains(query);
-                        },
-                        onRowTap: (member) {
-                          // Handle member selection
-                          debugPrint('Selected member: ${member.firstName}');
-                        },
-                        actionMenuBuilder: (context, member) => [
-                          const PopupMenuItem<String>(
-                            value: 'edit',
-                            child: ListTile(
-                              leading: Icon(Icons.edit_outlined),
-                              title: Text('Edit Member'),
-                              dense: true,
-                              visualDensity: VisualDensity.compact,
+              : Column(
+                children: [
+                  Expanded(
+                    child: CustomPaginatedTable<Member>(
+                      title: 'Members Directory',
+                      data: memberList.value,
+                      columns: columns,
+                      getCells: (member) => [
+                        DataCell(Text('${member.firstName} ${member.lastName}')),
+                        DataCell(StatusChip(status: member.membershipRole!)),
+                        DataCell(Text(member.nationality)),
+                        DataCell(Text(member.contact!.email!)),
+                        DataCell(Text(member.contact!.phone!)),
+                        DataCell(
+                            Text(formatDate(member.dateOfBirth.toString()))),
+                      ],
+                      filterFunction: (member, query) {
+                        final lowercaseQuery = query.toLowerCase();
+                        return member.firstName
+                                .toLowerCase()
+                                .contains(lowercaseQuery) ||
+                            member.contact!.email!
+                                .toLowerCase()
+                                .contains(lowercaseQuery) ||
+                            member.membershipRole!
+                                .toLowerCase()
+                                .contains(lowercaseQuery) ||
+                            member.contact!.phone!.contains(query);
+                      },
+                      onRowTap: (member) {
+                        // Handle member selection
+                        debugPrint('Selected member: ${member.firstName}');
+                      },
+                      actionMenuBuilder: (context, member) => [
+                        const PopupMenuItem<String>(
+                          value: 'edit',
+                          child: ListTile(
+                            leading: Icon(Icons.edit_outlined),
+                            title: Text('Edit Member'),
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'tithes',
+                          child: ListTile(
+                            leading: Icon(Icons.paid_outlined),
+                            title: Text('Add Tithes'),
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'donations',
+                          child: ListTile(
+                            leading: Icon(Icons.attach_money_outlined),
+                            title: Text('Add Donations'),
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'message',
+                          child: ListTile(
+                            leading: Icon(Icons.message_outlined),
+                            title: Text('Send Message'),
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        const PopupMenuItem<String>(
+                          value: 'delete',
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
                             ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'tithes',
-                            child: ListTile(
-                              leading: Icon(Icons.paid_outlined),
-                              title: Text('Add Tithes'),
-                              dense: true,
-                              visualDensity: VisualDensity.compact,
+                            title: Text(
+                              'Delete Member',
+                              style: TextStyle(color: Colors.red),
                             ),
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
                           ),
-                          const PopupMenuItem<String>(
-                            value: 'donations',
-                            child: ListTile(
-                              leading: Icon(Icons.attach_money_outlined),
-                              title: Text('Add Donations'),
-                              dense: true,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'message',
-                            child: ListTile(
-                              leading: Icon(Icons.message_outlined),
-                              title: Text('Send Message'),
-                              dense: true,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                          const PopupMenuDivider(),
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-                              title: Text(
-                                'Delete Member',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                              dense: true,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                        ],
-                        onActionSelected: (action, member) {
-                          _handleMemberAction(context, action, member);
-                        },
-                        tableButtons: [
-                          CustomTableButton(
-                            text: 'Add Member',
-                            icon: const Icon(Icons.person_add_alt_1_rounded),
-                            onPressed: () {
-                              debugPrint('Add Member');
-                              callAddEmployeeModal(context);
-
-                              // context.goNamed(
-                              // MyAppRouteConstants.memberProfileRouteName,
-                              // extra: null);
-                            },
-                          ),
-                          CustomTableButton(
-                            text: 'Print',
-                            icon: const Icon(Icons.print),
-                            onPressed: () async {
-                              debugPrint('Print PDF');
-                              final viewModel = MembersViewModel();
-                              final user = await viewModel.updateUserMetaData();
-                              debugPrint(user.toString());
-                            },
-                          ),
-                          CustomTableButton(
-                            text: 'Export',
-                            icon: const Icon(Icons.download),
-                            onPressed: () {
-                              debugPrint('debugPrint PDF');
-                            },
-                          ),
-                          // Add more buttons as needed
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                      onActionSelected: (action, member) {
+                        _handleMemberAction(context, action, member);
+                      },
+                      tableButtons: [
+                        CustomTableButton(
+                          text: 'Add Member',
+                          icon: const Icon(Icons.person_add_alt_1_rounded),
+                          onPressed: () {
+                            debugPrint('Add Member');
+                            callAddEmployeeModal(context);
+                    
+                            // context.goNamed(
+                            // MyAppRouteConstants.memberProfileRouteName,
+                            // extra: null);
+                          },
+                        ),
+                        CustomTableButton(
+                          text: 'Print',
+                          icon: const Icon(Icons.print),
+                          onPressed: () async {
+                            debugPrint('Print PDF');
+                            final viewModel = MembersViewModel();
+                            final user = await viewModel.updateUserMetaData();
+                            debugPrint(user.toString());
+                          },
+                        ),
+                        CustomTableButton(
+                          text: 'Export',
+                          icon: const Icon(Icons.download),
+                          onPressed: () {
+                            debugPrint('debugPrint PDF');
+                          },
+                        ),
+                        // Add more buttons as needed
+                      ],
+                    ),
                   ),
-                ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
-      ),
+                ],
+              ),
+      
     );
   }
 }
