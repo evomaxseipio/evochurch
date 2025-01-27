@@ -24,24 +24,30 @@ class ProfileView extends HookWidget {
         case 'Membership':
           return const MembershipPage();
         case 'Finances':
-          return TeamsPage();
+          return const MemberFinances();
         case 'Contacts':
           return Container(
             padding: const EdgeInsets.all(24),
-            child: Text('Contacts Family Members',
-                style: Theme.of(context).textTheme.headlineMedium),
+            child: Center(
+              child: Text('Contacts Family Members',
+                  style: Theme.of(context).textTheme.headlineMedium),
+            ),
           );
         case 'Notifications':
           return Container(
             padding: const EdgeInsets.all(24),
-            child: Text('Notifications Content',
-                style: Theme.of(context).textTheme.headlineMedium),
+            child: Center(
+              child: Text('Notifications Content',
+                  style: Theme.of(context).textTheme.headlineMedium),
+            ),
           );
         case 'Reports':
           return Container(
             padding: const EdgeInsets.all(24),
-            child: Text('Data Export Content',
-                style: Theme.of(context).textTheme.headlineMedium),
+            child: Center(
+              child: Text('Data Export Content',
+                  style: Theme.of(context).textTheme.headlineMedium),
+            ),
           );
         case 'Delete Account':
           return Container(
@@ -105,13 +111,13 @@ class ProfileView extends HookWidget {
                                 selectedMenuItem.value,
                                 Icons.attach_money,
                                 onTap: () =>
-                                    selectedMenuItem.value = 'finances',
+                                    selectedMenuItem.value = 'Finances',
                               ),
                               buildSidebarItem(
                                 'Contact Family',
                                 selectedMenuItem.value,
                                 Icons.family_restroom,
-                                onTap: () => selectedMenuItem.value = 'contact',
+                                onTap: () => selectedMenuItem.value = 'Contacts',
                               ),
                               buildSidebarItem(
                                 'Notifications',
@@ -130,7 +136,7 @@ class ProfileView extends HookWidget {
                                 selectedMenuItem.value,
                                 Icons.data_thresholding_outlined,
                                 onTap: () =>
-                                    selectedMenuItem.value = 'Data Export',
+                                    selectedMenuItem.value = 'Reports',
                               ),
                               
                               EvoBox.h40,

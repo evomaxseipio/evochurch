@@ -1,4 +1,5 @@
 // Add pages for each menu item
+import 'package:intl/intl.dart';
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/model/membership_model.dart';
 import 'package:evochurch/src/utils/string_text_utils.dart';
@@ -8,7 +9,6 @@ import 'package:evochurch/src/view/members/widgets/top_bar_menus.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/button/button.dart';
