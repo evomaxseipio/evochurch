@@ -34,62 +34,28 @@ class CustomDataTableSource<T> extends DataTableSource {
 
   @override
   DataRow? getRow(int index) {
-    // debugPrint(data.toString());
-    if (data.isEmpty) {
-      // Return a single row with a "No Records Found" message
-      return DataRow(
-        cells: [
-          DataCell(
-            Center(
-              child: Text(
-                'No Records Found',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
+    if (index >= data.length) return null;
     final item = data[index];
-
-    // Create the action menu using PopupMenuButton
     final actionMenu = DataCell(
       Builder(
         builder: (context) => PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
-          onSelected: (value) {
-            if (onActionSelected != null) {
-              onActionSelected!(value, item);
-            }
-          },
+          icon: const Icon(Icons.menu_outlined),
+          onSelected: (value) => onActionSelected?.call(value, item),
           itemBuilder: (context) => actionMenuBuilder(context, item),
         ),
       ),
     );
-
-    // Add the action menu to the row cells
-    final rowCells = [actionMenu, ...getCells(item)];
-
     return DataRow(
-      cells: rowCells,
-      onSelectChanged: (selected) {
-        if (selected != null && selected && onRowTap != null) {
-          onRowTap!(item);
-        }
-      },
+      cells: [actionMenu, ...getCells(item)],
+      onSelectChanged: (selected) =>
+          selected == true ? onRowTap?.call(item) : null,
     );
   }
 
   @override
   bool get isRowCountApproximate => false;
-
   @override
   int get rowCount => data.length;
-
   @override
   int get selectedRowCount => 0;
 }
@@ -122,30 +88,25 @@ class CustomPaginatedTable<T> extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final searchQuery = useState('');
-    // final rowsPerPage = data.length < 10 ? useState<int>(10) : useState<int>(data.length);
     final rowsPerPage = useState<int>(10);
     final sortColumnIndex = useState<int>(0);
     final isAscending = useState<bool>(true);
-    final filteredAndSortedData = useState<List<T>>([]);
 
-    useEffect(() {
+    final filteredAndSortedData = useMemoized(() {
       var newData = searchQuery.value.isEmpty
           ? List<T>.from(data)
           : data
               .where((item) => filterFunction(item, searchQuery.value))
               .toList();
-
-      final sortColumn = columns[sortColumnIndex.value];
-      newData.sort((a, b) {
-        final aValue = sortColumn.getValue!(a);
-        final bValue = sortColumn.getValue!(b);
-        return isAscending.value
-            ? Comparable.compare(aValue, bValue)
-            : Comparable.compare(bValue, aValue);
-      });
-
-      filteredAndSortedData.value = newData;
-      return null;
+      if (columns[sortColumnIndex.value].getValue != null) {
+        final sortColumn = columns[sortColumnIndex.value];
+        newData.sort((a, b) => isAscending.value
+            ? Comparable.compare(
+                sortColumn.getValue!(a), sortColumn.getValue!(b))
+            : Comparable.compare(
+                sortColumn.getValue!(b), sortColumn.getValue!(a)));
+      }
+      return newData;
     }, [searchQuery.value, data, sortColumnIndex.value, isAscending.value]);
 
     return Card(
@@ -158,13 +119,9 @@ class CustomPaginatedTable<T> extends HookWidget {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  Text(title, style: Theme.of(context).textTheme.titleLarge),
                   const Spacer(),
-                  // Render custom buttons if provided
-                  if (tableButtons != null) ...[
+                  if (tableButtons != null)
                     ...tableButtons!.map((button) => Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: EvoButton(
@@ -174,7 +131,6 @@ class CustomPaginatedTable<T> extends HookWidget {
                             onPressed: button.onPressed,
                           ),
                         )),
-                  ],
                   SizedBox(
                     width: 250,
                     height: 40,
@@ -203,7 +159,7 @@ class CustomPaginatedTable<T> extends HookWidget {
                     )),
               ],
               source: CustomDataTableSource<T>(
-                data: filteredAndSortedData.value,
+                data: filteredAndSortedData,
                 getCells: getCells,
                 onRowTap: onRowTap,
                 actionMenuBuilder: actionMenuBuilder,
@@ -211,9 +167,7 @@ class CustomPaginatedTable<T> extends HookWidget {
               ),
               rowsPerPage: rowsPerPage.value,
               availableRowsPerPage: const [10, 20, 50],
-              onRowsPerPageChanged: (value) {
-                if (value != null) rowsPerPage.value = value;
-              },
+              onRowsPerPageChanged: (value) => rowsPerPage.value = value ?? 10,
               sortColumnIndex: sortColumnIndex.value + 1,
               sortAscending: isAscending.value,
               showCheckboxColumn: false,
@@ -228,15 +182,10 @@ class CustomPaginatedTable<T> extends HookWidget {
   }
 }
 
-// Custom button class to define button properties
 class CustomTableButton {
   final String text;
   final Icon? icon;
   final VoidCallback onPressed;
-
-  CustomTableButton({
-    required this.text,
-    this.icon,
-    required this.onPressed,
-  });
+  const CustomTableButton(
+      {required this.text, this.icon, required this.onPressed});
 }

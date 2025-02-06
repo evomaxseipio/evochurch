@@ -4,6 +4,7 @@ import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view/auth/login_view.dart';
 import 'package:evochurch/src/view/auth/sign_up_view.dart';
 import 'package:evochurch/src/view/configuration/expenses_list_view.dart';
+import 'package:evochurch/src/view/configuration/users_list_view.dart';
 import 'package:evochurch/src/view/error_view.dart';
 import 'package:evochurch/src/view/finances/funds_list_view.dart';
 import 'package:evochurch/src/view/finances/transaction_list_view.dart';
@@ -92,6 +93,15 @@ class MyAppRouter {
             path: '/expenses',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: ExpensesListView(),
+            ),
+          ),
+          // Admin routes (settings, products, etc.) can be added here
+          // Settings
+          GoRoute(
+            name: MyAppRouteConstants.usersConfigRouteName,
+            path: '/configurations/users',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: UsersListView(),
             ),
           ),
 

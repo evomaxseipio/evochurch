@@ -128,6 +128,7 @@ class _Evochurch {
   String get services => languageModel.translate('services');
   String get events => languageModel.translate('events');
   String get finances => languageModel.translate('finances');
+  String get users => languageModel.translate('users');
 
 
   // Contributions

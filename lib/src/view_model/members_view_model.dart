@@ -13,6 +13,7 @@ class MembersViewModel extends ChangeNotifier {
   final AuthServices _authServices = AuthServices();
 
   List<Member> _members = [];
+  List<Map<String , String>> _memberList = [];
   List<String> _memberRoles = [];
   Member? _selectedMember; // This is fine as nullable
   MembershipModel? _membershipProfile;
@@ -21,6 +22,7 @@ class MembersViewModel extends ChangeNotifier {
 
   // Getters
   List<Member> get members => _members;
+  List<Map<String , String>> get memberList => _memberList;
 
   // Updated selectedMember getter with null check
   Member? get selectedMember => _selectedMember;
@@ -29,6 +31,10 @@ class MembersViewModel extends ChangeNotifier {
 
   // Updated isLoading getter
   bool get isLoading => _isLoading;
+
+  MembersViewModel() {
+    getMembers();
+  }
 
   // Setters
   set selectedMember(Member? value) {
@@ -41,11 +47,6 @@ class MembersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // void clearSelectedMember() {
-  //   _selectedMember = null;
-  //   notifyListeners();
-  // }
-
   void setMembers(List<Member> value) {
     _members = value;
     notifyListeners();
@@ -56,23 +57,32 @@ class MembersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Get the list of Members
-  Future<List<Member>> getMemberList() async {
+
+
+    /// Fetch all roles from Supabase
+  Future<void> fetchMemberList() async {
     try {
-      setLoading(true);
-
-      final String jsonString =
-          await rootBundle.loadString('assets/data/members_data.json');
-      final jsonData = jsonDecode(jsonString);
-      final membersList = MembersModel.fromJson(jsonData).member;
-
-      setMembers(membersList);
-      return membersList;
+       final response = await _supabaseClient
+          .from('profiles')
+          .select()
+          .eq('church_id', _authServices.userMetaData!['church_id'])
+          .eq('is_active', true)
+          .eq('is_member', true)
+          .order('first_name', ascending: true);
+      // _members = response.map((member) => Member.fromJson(member)).toList();
+      _memberList = response
+          .map((e) => {
+                'name': '${e['first_name']} ${e['last_name']}',
+                'value': e['id'].toString()
+              })
+          .toList();
+      notifyListeners(); 
     } catch (e) {
-      throw Exception('Failed to load members: ${e.toString()}');
-    } finally {
-      setLoading(false);
+      debugPrint(e.toString()); 
     }
+   
+   
+   
   }
 
   Stream<Map<String, dynamic>> getMembers() {
@@ -194,7 +204,7 @@ class MembersViewModel extends ChangeNotifier {
   Future<User> updateUserMetaData() async {
     final UserResponse res = await _supabaseClient.auth.updateUser(
       UserAttributes(
-        data: {'church_id': 1, 'role': 'pastor'},
+        data: {'church_id': 1, 'role': 'pastor', 'profile_id': 'db5b04fd-5993-443f-bc00-713ef8a2d3ce', 'is_active': true, },
       ),
     );
     final User? updatedUser = res.user;

@@ -22,7 +22,7 @@ class MyAppRouteConstants {
   // Settings
   static const String settingsRouteName = 'settings';
   static const String productsConfigRouteName = 'products_config';
-  static const String usersConfigRouteName = 'users_config';
+  static const String usersConfigRouteName = '/configurations/users';
   static const String templatesConfigRouteName = 'templates_config';
 
   // Product
@@ -32,4 +32,6 @@ class MyAppRouteConstants {
 
   // Display Offer
   static const String displayOfferRouteName = 'display_offer';
+
+ 
 }

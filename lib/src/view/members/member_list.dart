@@ -13,61 +13,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants/grid_columns.dart';
 import '../../widgets/paginateDataTable/paginated_data_table.dart';
 import 'add_member.dart';
 
 // final viewModel = MembersViewModel();
-final columns = [
-  SortColumn(
-    label: 'Name',
-    field: 'name',
-    getValue: (member) => member.firstName,
-  ),
-  SortColumn(
-    label: 'Role',
-    field: 'role',
-    getValue: (member) => member.membershipRole,
-  ),
-  SortColumn(
-    label: 'Nationality',
-    field: 'nationality',
-    getValue: (member) => member.nationality,
-  ),
-  SortColumn(
-    label: 'Email',
-    field: 'email',
-    getValue: (member) => member.contact.email,
-  ),
-  SortColumn(
-    label: 'Phone',
-    field: 'phone',
-    getValue: (member) => member.contact.phone,
-  ),
-  SortColumn(
-    label: 'Date of Birth',
-    field: 'dateOfBirth',
-    getValue: (member) => member.dateOfBirth,
-  ),
-];
+
 
 class MemberList extends HookWidget {
   const MemberList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final SupabaseClient _supabaseClient = Supabase.instance.client;
     final viewModel = Provider.of<MembersViewModel>(context, listen: false);
     final fundViewModel = Provider.of<FinanceViewModel>(context, listen: false);
     final collectionViewModel = Provider.of<CollectionViewModel>(context, listen: false);
 
     final memberList = useState<List<Member>>([]);
     final isLoading = useState<bool>(true);
+    final columns = memberListColumns;
 
     StreamSubscription? membersSubscription;
-    StreamSubscription? realtimeSubscription;
 
     useEffect(() {
       fetchMembers() async {
@@ -183,8 +150,7 @@ class MemberList extends HookWidget {
                         DataCell(Text(member.nationality)),
                         DataCell(Text(member.contact!.email!)),
                         DataCell(Text(member.contact!.phone!)),
-                        DataCell(
-                            Text(formatDate(member.dateOfBirth.toString()))),
+                        DataCell(Text(formatDate(member.dateOfBirth.toString()))),
                       ],
                       filterFunction: (member, query) {
                         final lowercaseQuery = query.toLowerCase();
@@ -240,6 +206,15 @@ class MemberList extends HookWidget {
                             visualDensity: VisualDensity.compact,
                           ),
                         ),
+                        const PopupMenuItem<String>(
+                            value: 'configusers',
+                            child: ListTile(
+                              leading: Icon(Icons.supervisor_account_outlined),
+                              title: Text('Create App User'),
+                              dense: true,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ),
                         const PopupMenuDivider(),
                         const PopupMenuItem<String>(
                           value: 'delete',

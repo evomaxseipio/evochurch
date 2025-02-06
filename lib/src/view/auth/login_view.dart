@@ -1,4 +1,6 @@
 
+import 'dart:async';
+
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
@@ -9,6 +11,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginView extends HookWidget {
   const LoginView({super.key});
@@ -23,6 +26,9 @@ class LoginView extends HookWidget {
     final isPasswordVisible = useState(false);
     final rememberMe = useState(false);
 
+    final  _redirecting = useState(false);
+    late final StreamSubscription<AuthState> _authStateSubscription;
+
 
     Future<void> login() async {
       if (formKey.currentState!.validate()) {
@@ -34,6 +40,9 @@ class LoginView extends HookWidget {
           );
           if (success) {
             if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Login successful')),
+            );
             context.go('/');
           } else {
             if (!context.mounted) return;

@@ -1,8 +1,5 @@
 import 'package:evochurch/src/app.dart';
-import 'package:evochurch/src/view_model/auth_services.dart';
-import 'package:evochurch/src/view_model/collection_view_model.dart';
-import 'package:evochurch/src/view_model/expense_view_model.dart';
-import 'package:evochurch/src/view_model/members_view_model.dart';
+import 'package:evochurch/src/view_model/index_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,8 +10,6 @@ import 'package:url_strategy/url_strategy.dart';
 
 import 'src/localization/multi_language.dart';
 import 'src/routes/app_route_config.dart';
-import 'src/view_model/finance_view_model.dart';
-import 'src/view_model/theme_view_model.dart';
 
 void main() async {
   // Set up the SettingsController, which will glue user settings to multiple
@@ -63,7 +58,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => MembersViewModel()),
         ChangeNotifierProvider(create: (_) => FinanceViewModel()), // ThemeProvider for handling theme mode
         ChangeNotifierProvider(create: (_) => CollectionViewModel()),
-        ChangeNotifierProvider(create: (_) => ExpensesTypeViewModel()), // LanguageModel for handling language selection
+        ChangeNotifierProvider(create: (_) => ExpensesTypeViewModel()),
+        ChangeNotifierProvider(create: (_) => ConfigurationsViewModel()), 
+         ChangeNotifierProvider(create: (_) => AppUserRoleViewModel()), // LanguageModel for handling language selection
       ],
       child: MyApp(appRouter: appRouter.router),
     ),

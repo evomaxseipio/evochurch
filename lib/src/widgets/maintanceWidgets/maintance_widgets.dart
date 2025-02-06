@@ -99,6 +99,7 @@ Widget  buildEditableField(
     {bool isRequired = true, 
     bool isNumeric = false, 
     bool isReadOnly = false,
+    bool isPassword = false,
     int? maxLength,
     int? maxLine = 1
     }) {
@@ -122,6 +123,7 @@ Widget  buildEditableField(
         // labelText: label,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         controller: controllers[field],
+        obscureText: isPassword,
         maxLength: maxLength,
         readOnly: isReadOnly,
         validator: isRequired

@@ -27,7 +27,7 @@ class SideMenu extends HookWidget {
       'Pictures': false,
       'Reports': false,
       'Constributions': false,
-      'Attendance': false,
+      'Attendance': false, 
     });
 
     return Container(
@@ -76,12 +76,13 @@ class SideMenu extends HookWidget {
               isExpanded,
               '/',
               [
-                _buildMenuItem(context, languageModel.evochurch.expenses, Icons.supervisor_account_rounded, '/expenses'),
+                _buildMenuItem(context, languageModel.evochurch.expenses, Icons.money_off_outlined, '/expenses'),
 
                 // _buildMenuItem(context, languageModel.evochurch.finances,
                 //     Icons.monetization_on_rounded, '/finances'),
                 _buildMenuItem(context, languageModel.evochurch.services, Icons.church_rounded, '/services'),
                 _buildMenuItem(context, languageModel.evochurch.events, Icons.event_available_rounded, '/events'),
+                _buildMenuItem(context, languageModel.evochurch.users, Icons.supervisor_account_rounded, MyAppRouteConstants.usersConfigRouteName, ),
               ],
             ),
             _buildExpandableGroup(
