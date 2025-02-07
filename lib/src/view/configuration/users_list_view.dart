@@ -66,6 +66,16 @@ class UsersListView extends HookWidget {
             visualDensity: VisualDensity.compact,
           ),
         ),
+         const PopupMenuItem<String>(
+          value: 'change_password',
+          child: ListTile(
+            leading: Icon(Icons.lock_reset_outlined),
+            title: Text('Change Password'),
+            dense: true,
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
+        
         const PopupMenuDivider(),
         const PopupMenuItem<String>(
           value: 'delete',

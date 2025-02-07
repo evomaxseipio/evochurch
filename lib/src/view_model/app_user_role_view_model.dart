@@ -28,6 +28,8 @@ class AppUserRoleViewModel extends ChangeNotifier {
     fetchRoles(); // Refresh list
   }
 
+  
+
   /// Update a role
   Future<void> updateRole(AppUserRole role) async {
     await _supabase

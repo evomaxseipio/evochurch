@@ -1,6 +1,19 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 
+/// Response type for sign up operation
+class SignUpResult {
+  final AuthResponse? response;
+  final String? message;
+  final bool success;
+
+  SignUpResult({
+    this.response,
+    this.message,
+    required this.success,
+  });
+}
+
 class AuthServices extends ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
   String? _errorMessage;
@@ -10,8 +23,7 @@ class AuthServices extends ChangeNotifier {
   int? _churchId;
   Map<String, dynamic>? _userMetadata;
 
-
-  // Getters  
+  // Getters
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
   String? get username => _username;
@@ -19,46 +31,82 @@ class AuthServices extends ChangeNotifier {
   int get churchId {
     return _churchId = _userMetadata!['church_id'];
   }
-  Map<String, dynamic>? get userMetaData  {
+
+  Map<String, dynamic>? get userMetaData {
     _userMetadata = _supabase.auth.currentUser?.userMetadata;
     return _userMetadata;
   }
-  
- 
-
-
 
   // Sign Up
-  Future<bool> signUp({required String email, required String password, 
-  required String username, required String fullName}) async {
-    _setLoading(true);
-    _clearError();
+  Future<SignUpResult> signUp({
+    required String email,
+    required String password,
+    required Map<String, dynamic> userAttributes,
+  }) async {
     try {
+      _setLoading(true);
+      _clearError();
+
       final response = await _supabase.auth.signUp(
         email: email,
         password: password,
-        data: {'username': username, 'full_name': fullName}
+        data: userAttributes,
       );
 
-      if (response.user != null) {
-        debugPrint('Sign up successful.');
-        _setError('Please check your email for confirmation link.');
-        return true;
-      } else {
-        debugPrint('Sign up failed.');
+      if (response.user == null) {
         _setError('Sign up failed. Please try again.');
-        return false;
+        return SignUpResult(
+          success: false,
+          message: 'Sign up failed. Please try again.',
+        );
       }
+
+      if (response.user?.identities?.isEmpty ?? true) {
+        _setError('Email already registered. Please sign in instead.');
+        return SignUpResult(
+          success: false,
+          message: 'Email already registered. Please sign in instead.',
+        );
+      }
+
+      _setError('Please check your email for the confirmation link.');
+      return SignUpResult(
+        response: response,
+        success: true,
+        message: 'Please check your email for the confirmation link.',
+      );
     } on AuthException catch (error) {
       debugPrint('Sign up failed: ${error.message}');
-      _setError(error.message);
-      return false;
+      final errorMessage = _getReadableErrorMessage(error.message);
+      _setError(errorMessage);
+      return SignUpResult(
+        success: false,
+        message: errorMessage,
+      );
     } catch (error) {
-      debugPrint('An unexpected error occurred: $error');
-      _setError('An unexpected error occurred: $error');
-      return false;
+      debugPrint('Unexpected error during sign up: $error');
+      const errorMessage = 'An unexpected error occurred. Please try again.';
+      _setError(errorMessage);
+      return SignUpResult(
+        success: false,
+        message: errorMessage,
+      );
     } finally {
       _setLoading(false);
+    }
+  }
+
+  String _getReadableErrorMessage(String message) {
+    // Common Supabase auth error messages
+    switch (message.toLowerCase()) {
+      case 'user already registered':
+        return 'This email is already registered. Please sign in instead.';
+      case 'invalid email':
+        return 'Please enter a valid email address.';
+      case 'weak password':
+        return 'Password is too weak. Please use at least 6 characters with numbers and letters.';
+      default:
+        return message;
     }
   }
 
@@ -73,14 +121,12 @@ class AuthServices extends ChangeNotifier {
       );
 
       // Set username and userId
-      _username = response.user?.userMetadata![ 'username' ];
+      _username = response.user?.userMetadata!['username'];
       _userId = response.user?.id;
       _userMetadata = response.user?.userMetadata;
-      _churchId = response.user?.userMetadata![ 'church_id' ];
+      _churchId = int.tryParse(response.user?.userMetadata!['church_id']);
 
-
-
-      // Notify listeners of changes  
+      // Notify listeners of changes
       notifyListeners();
       _setLoading(false);
       return response.user != null;
@@ -92,7 +138,7 @@ class AuthServices extends ChangeNotifier {
       _setLoading(false);
       _setError('An unexpected error occurred: $error');
       return false;
-    } 
+    }
   }
 
   // Sign In with OTP
@@ -100,8 +146,9 @@ class AuthServices extends ChangeNotifier {
     _setLoading(true);
     _clearError();
     try {
-      await _supabase.auth.signInWithOtp(email: email,
-         emailRedirectTo:
+      await _supabase.auth.signInWithOtp(
+        email: email,
+        emailRedirectTo:
             kIsWeb ? null : 'io.supabase.flutterquickstart://login-callback/',
       );
       _setError('Check your email for the OTP.');
@@ -137,7 +184,7 @@ class AuthServices extends ChangeNotifier {
       _setLoading(false);
       _setError('An unexpected error occurred: $error');
       return false;
-    } 
+    }
   }
 
   // Sign Out

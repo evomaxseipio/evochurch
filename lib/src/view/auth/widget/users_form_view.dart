@@ -9,6 +9,7 @@ import 'package:evochurch/src/view_model/index_view_model.dart';
 import 'package:evochurch/src/widgets/button/button.dart';
 import 'package:evochurch/src/widgets/maintanceWidgets/maintance_widgets.dart';
 import 'package:evochurch/src/widgets/modal/modal.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void callUserFormModal(BuildContext context, {AdminUser? user}) {
   final memberViewModel = Provider.of<MembersViewModel>(context, listen: false);
@@ -16,16 +17,16 @@ void callUserFormModal(BuildContext context, {AdminUser? user}) {
   final _formKey = GlobalKey<FormState>();
   final Map<String, TextEditingController> _userControllers = {
     'email': TextEditingController(text: user?.userEmail),
-    'profileId': TextEditingController(text: user?.profileData.profileId.toString()),
+    'profileId':
+        TextEditingController(text: user?.profileData.profileId.toString()),
     'role': TextEditingController(text: user?.profileData.role),
     'password': TextEditingController(),
     'confirmPassword': TextEditingController(),
   };
-  ValueNotifier<String> selectedRole = ValueNotifier(user?.profileData.roleName ?? 'member');
+  ValueNotifier<String> selectedRole = ValueNotifier(user?.profileData.role ?? 'member');
   ValueNotifier<String> memberId = ValueNotifier(user?.profileData.profileId.toString() ?? '');
   _userControllers['profileId']!.text = user?.profileData.profileId.toString() ?? '';
-  _userControllers['role']!.text = user?.profileData.roleName ?? '';
-
+  _userControllers['role']!.text = user?.profileData.role ?? '';
 
   void clearControllers() {
     _userControllers.forEach((key, controller) => controller.clear());
@@ -81,8 +82,7 @@ void callUserFormModal(BuildContext context, {AdminUser? user}) {
                         return ValueListenableBuilder<String>(
                           valueListenable: selectedRole,
                           builder: (context, value, child) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
                               return const Center(
                                   child: CircularProgressIndicator());
                             }
@@ -91,10 +91,10 @@ void callUserFormModal(BuildContext context, {AdminUser? user}) {
                                 controllers: _userControllers,
                                 items: viewModel.roles
                                     .map((e) =>
-                                        {'name': e.name, 'value': e.name})
+                                        {'name': e.name, 'value': e.id.toString()})
                                     .toList(),
                                 displayKey: 'name',
-                                valueKey:  'value',
+                                valueKey: 'value',
                                 label: 'Role',
                                 field: 'role');
                           },
@@ -134,11 +134,45 @@ void callUserFormModal(BuildContext context, {AdminUser? user}) {
     actions: [
       EvoButton(
         icon: const Icon(Icons.save),
-        onPressed: () {
+        onPressed: () async {
           if (_formKey.currentState!.validate()) {
             // Handle save logic
             // Example:
-            // saveUser(_userControllers, selectedRole.value);
+           try {
+             final authService = Provider.of<AuthServices>(context, listen: false); 
+
+             /// Compare the password and confirm password
+             /// If they are not the same, show a snackbar with the error message
+             /// Else, proceed with the sign up process
+              if (_userControllers['password']!.text !=
+                  _userControllers['confirmPassword']!.text) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Password and Confirm Password do not match.')));
+                return;
+              }
+
+            final response = await authService.signUp(
+              email: _userControllers['email']!.text,
+              password: _userControllers['confirmPassword']!.text,
+              userAttributes: {
+                'church_id': authService.userMetaData?['church_id'],
+                'role': _userControllers['role']!.text,
+                'profile_id': _userControllers['profileId']!.text,
+                'is_active': true,
+              },
+            );
+             if (response.success) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        'User ${user == null ? 'created' : 'updated'} successfully.')));
+                debugPrint(authService.errorMessage);
+              } else {
+                debugPrint(authService.errorMessage);
+              }
+ 
+           } catch (e) {
+             debugPrint(e.toString()); 
+           };
 
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(
@@ -165,3 +199,4 @@ void callUserFormModal(BuildContext context, {AdminUser? user}) {
     ],
   );
 }
+
