@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:evochurch/src/model/admin_users_model.dart';
 import 'package:evochurch/src/model/users_model.dart';
 import 'package:evochurch/src/view_model/index_view_model.dart';
@@ -11,39 +13,32 @@ class ConfigurationsViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? error;
 
-  // ConfigurationsViewModel() {
-  //   loadUsers();
-  // }
+  
+  final _adminUsersController = StreamController<List<AdminUser>>.broadcast();
+  Stream<List<AdminUser>> get adminUsersStream => _adminUsersController.stream;
 
-  Future<void> loadUsers() async {
-    isLoading = true;
-    error = null;
-    notifyListeners();
+late final Stream<List<AdminUser>> adminUsersStream1;
 
-    
+  ConfigurationsViewModel() {
+    loadUsers();
+  }
+
+   Future<void> loadUsers() async {
     final churchId = await authServices.userMetaData?['church_id'];
 
     try {
-      final response = await _supabaseClient.rpc('sp_get_admin_user_list',
-        params: {'p_church_id': churchId},);
-
-        users = AdminListResponse.fromJson((response)).adminList;
-        // users = (response as List).map((data) => AdminUserModel.fromJson(data)).toList();
-        // debugPrint('Users: $users');
-
-      //await _supabaseClient.auth.admin.listUsers(page: 1, perPage: 10);
-      // .from('auth.users')
-      // .select()
-      // .order('created_at', ascending: false);
-
-      // users = (response as List).map((data) => UserModel.fromJson(data)).toList();
+      final response = await _supabaseClient.rpc(
+        'sp_get_admin_user_list',
+        params: {'p_church_id': churchId},
+      );
+      final users = AdminListResponse.fromJson(response).adminList;
+      _adminUsersController.add(users);
     } catch (e) {
-      error = 'Failed to load users: $e';
-    } finally {
-      isLoading = false;
-      notifyListeners();
+      _adminUsersController.addError(e);
     }
   }
+
+
 
   Future<void> createUser({
     required String email,

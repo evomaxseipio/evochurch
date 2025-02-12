@@ -201,15 +201,7 @@ class MembersViewModel extends ChangeNotifier {
     return _memberRoles;
   }
 
-  Future<User> updateUserMetaData() async {
-    final UserResponse res = await _supabaseClient.auth.updateUser(
-      UserAttributes(
-        data: {'church_id': 1, 'role': 'pastor', 'profile_id': 'db5b04fd-5993-443f-bc00-713ef8a2d3ce', 'is_active': true, },
-      ),
-    );
-    final User? updatedUser = res.user;
-    return updatedUser!;
-  }
+ 
 
   // Get Memberships data
   Future<Map<String, dynamic>> getMembershipByMemberId(String profileId) async {

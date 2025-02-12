@@ -27,7 +27,7 @@ class UsersListView extends HookWidget {
         adminUserList.value = userProvider.users;
       });
       return null; // No cleanup needed
-    }, []); // Empty dependency array ensures this runs only once
+    }, [userProvider]); // Empty dependency array ensures this runs only once
 
     return Scaffold(
       body: _buildBody(context, userProvider, adminUserList.value),
@@ -39,63 +39,122 @@ class UsersListView extends HookWidget {
     ConfigurationsViewModel userProvider,
     List<AdminUser> adminUserList,
   ) {
-    if (userProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    return StreamBuilder<List<AdminUser>>(
+      stream: userProvider.adminUsersStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text(snapshot.error.toString()));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    if (userProvider.error != null) {
-      return Center(child: Text(userProvider.error!));
-    }
-
-    return CustomPaginatedTable<AdminUser>(
-      title: 'Admin Users Directory',
-      data: adminUserList,
-      columns: adminUserColumns,
-      getCells: (user) => [
-        ..._buildUserCells(user), // User data columns
-      ],
-      filterFunction: (user, query) => _filterUser(user, query),
-      onRowTap: (user) => _handleRowTap(user),
-      actionMenuBuilder: (context, member) => [
-        const PopupMenuItem<String>(
-          value: 'edit',
-          child: ListTile(
-            leading: Icon(Icons.edit_outlined),
-            title: Text('Edit User'),
-            dense: true,
-            visualDensity: VisualDensity.compact,
-          ),
-        ),
-         const PopupMenuItem<String>(
-          value: 'change_password',
-          child: ListTile(
-            leading: Icon(Icons.lock_reset_outlined),
-            title: Text('Change Password'),
-            dense: true,
-            visualDensity: VisualDensity.compact,
-          ),
-        ),
-        
-        const PopupMenuDivider(),
-        const PopupMenuItem<String>(
-          value: 'delete',
-          child: ListTile(
-            leading: Icon(
-              Icons.delete_outline,
-              color: Colors.red,
-            ),
-            title: Text(
-              'Delete User',
-              style: TextStyle(color: Colors.red),
-            ),
-            dense: true,
-            visualDensity: VisualDensity.compact,
-          ),
-        ),
-      ],
-      onActionSelected: (action, user) => _handleAction(context, action, user),
-      tableButtons: _buildTableButtons(context),
+        return CustomPaginatedTable<AdminUser>(
+          title: 'Admin Users Directory',
+          data: snapshot.data!,
+          columns: adminUserColumns,
+          getCells: (user) => _buildUserCells(user),
+          filterFunction: _filterUser,
+          onRowTap: _handleRowTap,
+          actionMenuBuilder: _buildActionMenu,
+          onActionSelected: (action, user) =>
+              _handleAction(context, action, user),
+          tableButtons: _buildTableButtons(context),
+        );
+      },
     );
+
+    // if (userProvider.isLoading) {
+    //   return const Center(child: CircularProgressIndicator());
+    // }
+
+    // if (userProvider.error != null) {
+    //   return Center(child: Text(userProvider.error!));
+    // }
+
+    // return CustomPaginatedTable<AdminUser>(
+    //   title: 'Admin Users Directory',
+    //   data: userProvider.users,
+    //   columns: adminUserColumns,
+    //   getCells: (user) => [
+    //     ..._buildUserCells(user), // User data columns
+    //   ],
+    //   filterFunction: (user, query) => _filterUser(user, query),
+    //   onRowTap: (user) => _handleRowTap(user),
+    //   actionMenuBuilder: (context, member) => [
+    //     const PopupMenuItem<String>(
+    //       value: 'edit',
+    //       child: ListTile(
+    //         leading: Icon(Icons.edit_outlined),
+    //         title: Text('Edit User'),
+    //         dense: true,
+    //         visualDensity: VisualDensity.compact,
+    //       ),
+    //     ),
+    //      const PopupMenuItem<String>(
+    //       value: 'change_password',
+    //       child: ListTile(
+    //         leading: Icon(Icons.lock_reset_outlined),
+    //         title: Text('Change Password'),
+    //         dense: true,
+    //         visualDensity: VisualDensity.compact,
+    //       ),
+    //     ),
+
+    //     const PopupMenuDivider(),
+    //     const PopupMenuItem<String>(
+    //       value: 'delete',
+    //       child: ListTile(
+    //         leading: Icon(
+    //           Icons.delete_outline,
+    //           color: Colors.red,
+    //         ),
+    //         title: Text(
+    //           'Delete User',
+    //           style: TextStyle(color: Colors.red),
+    //         ),
+    //         dense: true,
+    //         visualDensity: VisualDensity.compact,
+    //       ),
+    //     ),
+    //   ],
+    //   onActionSelected: (action, user) => _handleAction(context, action, user),
+    //   tableButtons: _buildTableButtons(context),
+    // );
+  }
+
+  List<PopupMenuEntry<String>> _buildActionMenu(
+      BuildContext context, AdminUser member) {
+    return [
+      const PopupMenuItem<String>(
+        value: 'edit',
+        child: ListTile(
+          leading: Icon(Icons.edit_outlined),
+          title: Text('Edit User'),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      const PopupMenuItem<String>(
+        value: 'change_password',
+        child: ListTile(
+          leading: Icon(Icons.lock_reset_outlined),
+          title: Text('Change Password'),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      const PopupMenuDivider(),
+      const PopupMenuItem<String>(
+        value: 'delete',
+        child: ListTile(
+          leading: Icon(Icons.delete_outline, color: Colors.red),
+          title: Text('Delete User', style: TextStyle(color: Colors.red)),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+    ];
   }
 
   List<DataCell> _buildUserCells(AdminUser user) {
@@ -136,7 +195,8 @@ class UsersListView extends HookWidget {
     ];
   }
 
-  void _handleAction(BuildContext context, String action, AdminUser user) {
+  void _handleAction(
+      BuildContext context, String action, AdminUser user) async {
     switch (action) {
       case 'edit':
         _showEditDialog(context, user: user);

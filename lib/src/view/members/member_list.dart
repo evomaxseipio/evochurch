@@ -254,8 +254,8 @@ class MemberList extends HookWidget {
                           onPressed: () async {
                             debugPrint('Print PDF');
                             final viewModel = MembersViewModel();
-                            final user = await viewModel.updateUserMetaData();
-                            debugPrint(user.toString());
+                            // final user = await viewModel.updateUserMetaData();
+                            // debugPrint(user.toString());
                           },
                         ),
                         CustomTableButton(

@@ -1,4 +1,6 @@
 // user_model.dart
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 class UserModel {
   final String id;
   final String email;
@@ -33,3 +35,44 @@ class UserModel {
     };
   }
 }
+
+/// Response type for sign up operation
+class SignUpResult {
+  final AuthResponse? response;
+  final String? message;
+  final bool success;
+
+  SignUpResult({
+    this.response,
+    this.message,
+    required this.success,
+  });
+}
+
+class AuthResult {
+  final bool success;
+  final String message;
+  final int? statusCode;
+  final AuthResponse? response;
+  final User? user;
+
+  AuthResult({
+    required this.success,
+    required this.message,
+    this.statusCode,
+    this.response,
+    this.user,
+  });
+
+  factory AuthResult.fromJson(Map<String, dynamic> json) {
+    return AuthResult(
+      success: json['success'],
+      message: json['message'],
+      statusCode: json['status_code'],
+      response: json['response']?.map((e) => AuthResponse.fromJson(e),
+      user: json['user']?.map((e) => User.fromJson(e))),
+  );
+}
+}
+
+

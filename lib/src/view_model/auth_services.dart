@@ -1,18 +1,8 @@
+import 'dart:async';
+
+import 'package:evochurch/src/model/model_index.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
-
-/// Response type for sign up operation
-class SignUpResult {
-  final AuthResponse? response;
-  final String? message;
-  final bool success;
-
-  SignUpResult({
-    this.response,
-    this.message,
-    required this.success,
-  });
-}
 
 class AuthServices extends ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -22,6 +12,7 @@ class AuthServices extends ChangeNotifier {
   String? _userId;
   int? _churchId;
   Map<String, dynamic>? _userMetadata;
+  
 
   // Getters
   String? get errorMessage => _errorMessage;
@@ -38,7 +29,7 @@ class AuthServices extends ChangeNotifier {
   }
 
   // Sign Up
-  Future<SignUpResult> signUp({
+  Future<AuthResult> signUp({
     required String email,
     required String password,
     required Map<String, dynamic> userAttributes,
@@ -55,7 +46,7 @@ class AuthServices extends ChangeNotifier {
 
       if (response.user == null) {
         _setError('Sign up failed. Please try again.');
-        return SignUpResult(
+        return AuthResult(
           success: false,
           message: 'Sign up failed. Please try again.',
         );
@@ -63,14 +54,14 @@ class AuthServices extends ChangeNotifier {
 
       if (response.user?.identities?.isEmpty ?? true) {
         _setError('Email already registered. Please sign in instead.');
-        return SignUpResult(
+        return AuthResult(
           success: false,
           message: 'Email already registered. Please sign in instead.',
         );
       }
 
       _setError('Please check your email for the confirmation link.');
-      return SignUpResult(
+      return AuthResult(
         response: response,
         success: true,
         message: 'Please check your email for the confirmation link.',
@@ -79,7 +70,7 @@ class AuthServices extends ChangeNotifier {
       debugPrint('Sign up failed: ${error.message}');
       final errorMessage = _getReadableErrorMessage(error.message);
       _setError(errorMessage);
-      return SignUpResult(
+      return AuthResult(
         success: false,
         message: errorMessage,
       );
@@ -87,7 +78,7 @@ class AuthServices extends ChangeNotifier {
       debugPrint('Unexpected error during sign up: $error');
       const errorMessage = 'An unexpected error occurred. Please try again.';
       _setError(errorMessage);
-      return SignUpResult(
+      return AuthResult(
         success: false,
         message: errorMessage,
       );
@@ -96,17 +87,62 @@ class AuthServices extends ChangeNotifier {
     }
   }
 
-  String _getReadableErrorMessage(String message) {
-    // Common Supabase auth error messages
-    switch (message.toLowerCase()) {
-      case 'user already registered':
-        return 'This email is already registered. Please sign in instead.';
-      case 'invalid email':
-        return 'Please enter a valid email address.';
-      case 'weak password':
-        return 'Password is too weak. Please use at least 6 characters with numbers and letters.';
-      default:
-        return message;
+  Future<AuthResult> updateUserMetadata({
+    // String? email,
+    // String? password,
+    required int churchId,
+    required String profileId,
+    required int role,
+    required bool isActive,
+  }) async {
+    try {
+      _setLoading(true);
+      _clearError();
+      late AuthResult? authResult;
+
+      final response = await _supabase.rpc('sp_admin_update_user', params: {
+        // 'email': email,
+        // 'password': password,
+        'p_church_id': churchId,
+        'p_profile_id': profileId,
+        'p_role_id': role,
+        'p_is_active': isActive,
+      });   
+
+      authResult = AuthResult.fromJson(response);
+      _setLoading(false);
+      _setError(authResult.message);
+      return authResult;
+    } on AuthException catch (error) {
+      debugPrint('Metadata update failed: ${error.message}');
+      final errorMessage = _getReadableErrorMessage(error.message);
+      _setError(errorMessage);
+      return AuthResult(
+        success: false,
+        statusCode: 400,
+        message: errorMessage,
+      );
+    } on PostgrestException catch (error) {
+      debugPrint('Database error during metadata update: ${error.message}');
+      final errorMessage = 'Failed to update user data: ${error.message}';
+      _setError(errorMessage);
+      return AuthResult(
+        success: false,
+        statusCode: 400,
+        message: errorMessage,
+      );
+    } catch (error) {
+      debugPrint('Unexpected error during metadata update: $error');
+      const errorMessage =
+          'An unexpected error occurred while updating user data';
+      _setError(errorMessage);
+      return AuthResult(
+        success: false,
+        statusCode: 400,
+        message: errorMessage,
+      );
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -214,5 +250,25 @@ class AuthServices extends ChangeNotifier {
 
   void _clearError() {
     _errorMessage = null;
+  }
+
+  String _getReadableErrorMessage(String message) {
+    // Common Supabase auth error messages
+    switch (message.toLowerCase()) {
+      case 'user already registered':
+        return 'This email is already registered. Please sign in instead.';
+      case 'invalid email':
+        return 'Please enter a valid email address.';
+      case 'weak password':
+        return 'Password is too weak. Please use at least 6 characters with numbers and letters.';
+      case 'user not found':
+        return 'User account not found. Please sign in again.';
+      case 'invalid claims':
+        return 'Invalid user data provided.';
+      case 'invalid permissions':
+        return 'You don\'t have permission to update this information.';
+      default:
+        return message;
+    }
   }
 }

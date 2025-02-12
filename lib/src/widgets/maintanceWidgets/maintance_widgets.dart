@@ -319,7 +319,7 @@ Widget buildDropdownFieldNew<T>({
             hint: Text('Select $label'),
             autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: InputDecoration(
-              enabled: !isReadOnly,
+              // enabled: isReadOnly,
               suffixIconConstraints: const BoxConstraints(minWidth: 30),
               isDense: true,
               contentPadding:
@@ -342,6 +342,7 @@ Widget buildDropdownFieldNew<T>({
             items: items
                 .map((item) => DropdownMenuItem(
                       value: item[valueKey],
+                      // enabled: isReadOnly,
                       child: Text(item[displayKey] ?? ''),
                     ))
                 .toList(),
