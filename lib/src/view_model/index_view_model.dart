@@ -6,5 +6,4 @@ export '../view_model/members_view_model.dart';
 export '../view_model/collection_view_model.dart';
 export '../view_model/expense_view_model.dart';
 export '../view_model/profile_view_model.dart';
-export '../view_model/transaction_view_model.dart';
 export '../view_model/auth_services.dart';

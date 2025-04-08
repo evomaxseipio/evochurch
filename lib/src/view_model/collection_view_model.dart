@@ -2,6 +2,7 @@ import 'package:evochurch/src/model/collection_model_type.dart';
 import 'package:evochurch/src/model/expense_type_model.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 class CollectionViewModel extends ChangeNotifier {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
 
@@ -9,6 +10,7 @@ class CollectionViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> _collections = [];
   List<CollectionType> _collectionTypes = [];
   bool _isLoading = false;
+  bool _isComplete = false;
   String? _error;
 
   // Getters
@@ -16,6 +18,7 @@ class CollectionViewModel extends ChangeNotifier {
   List<CollectionType> get collectionTypes => _collectionTypes;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get isComplete => _isComplete;
 
   // Constructor
   CollectionViewModel() {
@@ -65,7 +68,13 @@ class CollectionViewModel extends ChangeNotifier {
       final response = await _supabaseClient
           .from('collections')
           .insert(newCollection)
-          .select();
+          .select()
+          .count(CountOption.exact);
+
+      if (response.count > 0) {
+        _isComplete = true;
+        notifyListeners();
+      }
 
       await _fetchCollections();
 

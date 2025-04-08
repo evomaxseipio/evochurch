@@ -23,6 +23,7 @@ class DashboardView extends HookWidget {
             EvoBox.h20,
             const RevenueView(),
             EvoBox.h12,
+
             if (EvoResponsive.isMediumWeb(context) &&
                 MediaQuery.sizeOf(context).width > 760) ...{
               Row(

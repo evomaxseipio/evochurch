@@ -1,6 +1,6 @@
-
 import 'dart:async';
 
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -25,9 +25,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
-
-late StreamSubscription _sub;
+  late StreamSubscription _sub;
 
   @override
   void initState() {
@@ -76,13 +74,12 @@ late StreamSubscription _sub;
   }
 
   bool get _isWeb => kIsWeb;
-  
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    
+
     return MaterialApp.router(
-      
       debugShowCheckedModeBanner: false,
       restorationScopeId: 'app',
       routerConfig: widget.appRouter,
@@ -99,12 +96,16 @@ late StreamSubscription _sub;
       onGenerateTitle: (BuildContext context) =>
           AppLocalizations.of(context)!.appTitle,
       title: 'Evo Church Admin',
-      
+
       scrollBehavior: SBehavior(),
-      theme: EvoTheme.lightTheme, // Light theme
-      darkTheme: EvoTheme.darkTheme, // Dark theme
-      themeMode: themeProvider.themeMode, // Dynamic theme mode
-     
+      theme: EvoTheme.light, // Light theme
+      darkTheme: EvoTheme.dark, // Dark theme
+      // The Mandy red, light theme.
+      // theme: FlexThemeData.light(scheme: FlexScheme.blueM3),
+      // // The Mandy red, dark theme.
+      // darkTheme: FlexThemeData.dark(scheme: FlexScheme.blumineBlue),
+      // Use dark or light theme based on system setting.
+      themeMode: themeProvider.themeMode, // DynamicmandyRed),heme mode
     );
   }
 }

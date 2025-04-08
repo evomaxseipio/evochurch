@@ -61,7 +61,7 @@ class EvoModal {
                           ? theme.colorScheme.outline
                           : theme.colorScheme.onSurface.withOpacity(0.25),
                     ),
-                    color: isDark ? EvoTheme.darkTheme.colorScheme.surface : EvoTheme.lightTheme.colorScheme
+                    color: isDark ? EvoTheme.dark.colorScheme.surface : EvoTheme.light.colorScheme
                             .surface, // theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -143,8 +143,8 @@ class EvoModal {
                         Divider(
                           height: 0,
                           color: isDark
-                              ? EvoTheme.darkTheme.colorScheme.outline
-                              : EvoTheme.lightTheme.colorScheme.secondary.withOpacity(0.25),
+                              ? EvoTheme.dark.colorScheme.outline
+                              : EvoTheme.light.colorScheme.secondary.withOpacity(0.25),
                         ),
                         Container(
                           padding: const EdgeInsets.all(12),

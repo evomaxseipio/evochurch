@@ -93,6 +93,16 @@ final contributionColumns = [
     getValue: (fund) => fund.description,
   ),
   SortColumn(
+    label: 'IS Primary',
+    field: 'isPrimary',
+    getValue: (fund) => fund.isPrimary,
+  ),
+  SortColumn(
+    label: 'Is Active',
+    field: 'isActive',
+    getValue: (fund) => fund.isActive,
+    ),
+  SortColumn(
     label: 'Target Amount',
     field: 'targetAmount',
     getValue: (fund) => fund.targetAmount,

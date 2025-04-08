@@ -1,10 +1,12 @@
 import 'package:evochurch/src/routes/app_route_constants.dart';
+import 'package:evochurch/src/view_model/menu_state_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/localization/multi_language.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class SideMenu extends HookWidget {
   final bool showOnlyIcon;
@@ -18,17 +20,7 @@ class SideMenu extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final menuGroupName = useState<String>('');
-    final isExpanded = useState<Map<String, bool>>({
-      'Configurations': false,
-      'Finances': false,
-      'Services': false,
-      'Events': false,
-      'Pictures': false,
-      'Reports': false,
-      'Constributions': false,
-      'Attendance': false, 
-    });
+    final menuState = context.watch<MenuStateProvider>();
 
     return Container(
       color: Theme.of(context).appBarTheme.surfaceTintColor,
@@ -47,14 +39,14 @@ class SideMenu extends HookWidget {
                 Icons.supervisor_account_rounded, '/members'),
             _buildExpandableGroup(
               context,
-              'Finances',
-              Icons.monetization_on_rounded,
-              isExpanded,
-              '/finances',
-              [
-                _buildMenuItem(context, 'Transaction List', FontAwesomeIcons.listCheck, MyAppRouteConstants.transactionRouteName),
-                _buildMenuItem(context, 'Funds', FontAwesomeIcons.handHoldingDollar, '/finances/funds'),
-                _buildMenuItem(context, 'Payment Methods', Icons.payments_rounded, '/donations/one-time'),
+              title:'Finances',
+              icon: Icons.monetization_on_rounded,
+              // isExpanded,
+              // '/finances',
+              childrenRoutes: [
+                _buildMenuItem(context, 'Transaction List', FontAwesomeIcons.listCheck, MyAppRouteConstants.transactionRouteName, isChild: true),
+                _buildMenuItem(context, 'Funds', FontAwesomeIcons.handHoldingDollar, '/finances/funds', isChild: true),
+                _buildMenuItem(context, 'Contributions List', FontAwesomeIcons.sackDollar, '/finances/contributions', isChild: true),
               ],
             ),
             // _buildMenuItem(context, languageModel.evochurch.finances,
@@ -71,13 +63,15 @@ class SideMenu extends HookWidget {
             // "Configurations" Section
             _buildExpandableGroup(
               context,
-              'Configurations',
-              Icons.settings,
-              isExpanded,
-              '/',
-              [
+              title: 'Configurations',
+              icon: Icons.settings,
+              // isExpanded,
+              // '/',
+              childrenRoutes: [
                 _buildMenuItem(context, languageModel.evochurch.expenses, Icons.money_off_outlined, '/expenses'),
 
+                _buildMenuItem(context, 'Payment Methods',
+                    Icons.payments_rounded, '/donations/one-time'),
                 // _buildMenuItem(context, languageModel.evochurch.finances,
                 //     Icons.monetization_on_rounded, '/finances'),
                 _buildMenuItem(context, languageModel.evochurch.services, Icons.church_rounded, '/services'),
@@ -87,11 +81,11 @@ class SideMenu extends HookWidget {
             ),
             _buildExpandableGroup(
               context,
-              'Constributions',
-              Icons.monetization_on_outlined,
-              isExpanded,
-              '/donations/one-time',
-              [
+              title: 'Constributions',
+              icon: Icons.monetization_on_outlined,
+              // isExpanded,
+              // '/donations/one-time',
+              childrenRoutes: [
                 _buildMenuItem(context, 'Contributions List',
                     FontAwesomeIcons.sackDollar, '/donations/one-time'),
                 _buildMenuItem(context, 'Funds',
@@ -104,11 +98,11 @@ class SideMenu extends HookWidget {
             // Other Expandable Groups
             _buildExpandableGroup(
               context,
-              'Pictures',
-              Icons.photo_library_outlined,
-              isExpanded,
-              '/',
-              [
+              title: 'Pictures',
+              icon: Icons.photo_library_outlined,
+              // isExpanded,
+              // '/',
+              childrenRoutes: [
                 _buildMenuItem(context, 'Albums', Icons.photo_album_outlined,
                     '/pictures/albums'),
                 _buildMenuItem(context, 'Uploads', Icons.file_upload_outlined,
@@ -117,11 +111,11 @@ class SideMenu extends HookWidget {
             ),
             _buildExpandableGroup(
               context,
-              'Reports',
-              Icons.insert_chart_outlined,
-              isExpanded,
-              '/reports',
-              [
+              title: 'Reports',
+              icon: Icons.insert_chart_outlined,
+              // isExpanded,
+              // '/reports',
+              childrenRoutes: [
                 _buildMenuItem(context, 'Attendance Report',
                     Icons.bar_chart_outlined, '/reports/attendance'),
                 _buildMenuItem(context, 'Donation Report',
@@ -131,11 +125,11 @@ class SideMenu extends HookWidget {
 
             _buildExpandableGroup(
               context,
-              'Attendance',
-              Icons.schedule,
-              isExpanded,
-              '/attendance',
-              [
+              title: 'Attendance',
+              icon: Icons.schedule,
+              // isExpanded,
+              // '/attendance',
+              childrenRoutes: [
                 _buildMenuItem(context, 'Check-in', Icons.touch_app,
                     '/attendance/checkin'),
                 _buildMenuItem(context, 'Reports', Icons.insert_chart,
@@ -151,11 +145,16 @@ class SideMenu extends HookWidget {
   }
 
   Widget _buildMenuItem(
-      BuildContext context, String title, IconData icon, String route) {
+      BuildContext context, String title, IconData icon, String route, {bool isChild = false}) {
     final isActive = GoRouterState.of(context).matchedLocation == route;
 
     return InkWell(
       onTap: () {
+        final menuState = Provider.of<MenuStateProvider>(context, listen: false);
+        if (!isChild) {
+          menuState.isChild = false;
+        } 
+        
         context.go(route);
       },
       child: Padding(
@@ -196,34 +195,30 @@ class SideMenu extends HookWidget {
     );
   }
 
-  Widget _buildExpandableGroup(
-      BuildContext context,
-      String title,
-      IconData icon,
-      ValueNotifier<Map<String, bool>> isExpanded,
-      String route,
-      List<Widget> children) {
-    final isActive = GoRouterState.of(context).matchedLocation == route;
+ Widget _buildExpandableGroup(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required List<Widget> childrenRoutes,
+  }) {
+    final menuState = context.watch<MenuStateProvider>();
+    final isOpen = menuState.expandedGroup == title;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
           onTap: () {
-            isExpanded.value = {
-              ...isExpanded.value,
-              title: !isExpanded.value[title]!,
-            };
-           
-
+            context.read<MenuStateProvider>().toggleGroup(title);
           },
           child: Padding(
-            padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Container(
               height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16),              
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: isExpanded.value[title] == true && isActive
+                color: isOpen
                     ? Colors.orange.withOpacity(0.1)
                     : Colors.transparent,
               ),
@@ -231,28 +226,26 @@ class SideMenu extends HookWidget {
                 children: [
                   Icon(
                     icon,
-                    color: isExpanded.value[title] == true && isActive
-                        ? Colors.orange.withOpacity(0.1)
-                        : Colors.grey.shade400,
+                    color:
+                        isOpen ? Colors.orange.shade700 : Colors.grey.shade400,
                     size: 20,
                   ),
                   if (!showOnlyIcon) ...[
                     EvoBox.w10,
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: isExpanded.value[title] == true && isActive
-                            ? Colors.orange.withOpacity(0.1)
-                            : Colors.grey.shade400,
-                        fontWeight: FontWeight.w600,
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          color: isOpen
+                              ? Colors.orange.shade700
+                              : Colors.grey.shade400,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    const Spacer(),
                     Icon(
-                      isExpanded.value[title] == true
-                          ? Icons.expand_less
-                          : Icons.expand_more,
-                      color: isExpanded.value[title] == true
+                      isOpen ? Icons.expand_less : Icons.expand_more,
+                      color: isOpen
                           ? Colors.orange.shade700
                           : Colors.grey.shade400,
                       size: 20,
@@ -263,15 +256,16 @@ class SideMenu extends HookWidget {
             ),
           ),
         ),
-        if (isExpanded.value[title] == true)
+        if (isOpen)
           Padding(
             padding: const EdgeInsets.only(left: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: children,
+              children: childrenRoutes,
             ),
           )
       ],
     );
   }
+
 }

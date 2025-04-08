@@ -1,7 +1,10 @@
 import 'package:evochurch/src/constants/dropdown_list_data.dart';
 import 'package:evochurch/src/constants/text_editing_controllers.dart';
 import 'package:evochurch/src/model/collection_model.dart';
+import 'package:evochurch/src/utils/extension.dart';
 import 'package:evochurch/src/view_model/collection_view_model.dart';
+import 'package:evochurch/src/view_model/index_view_model.dart';
+import 'package:evochurch/src/widgets/widget_index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -30,15 +33,15 @@ class AddFund extends HookWidget {
   }
 }
 
-
-
 final _formKey = GlobalKey<FormState>();
 final Map<String, TextEditingController> _collectionControllers = {};
 final Map<String, TextEditingController> _fundsControllers = {};
 
-callDonationModal(BuildContext context, Member member, String donationType) {
+callDonationModal(BuildContext context, Member? member, String donationType) {
   final viewModel = Provider.of<FinanceViewModel>(context, listen: false);
-  final collectionViewModel = Provider.of<CollectionViewModel>(context, listen: false);
+  final collectionViewModel =
+      Provider.of<CollectionViewModel>(context, listen: false);
+  final memberViewModel = Provider.of<MembersViewModel>(context, listen: false);
   final List<Map<String, String>> collectionList =
       collectionViewModel.collectionTypes
           .map((item) => {
@@ -63,6 +66,9 @@ callDonationModal(BuildContext context, Member member, String donationType) {
   // Assign Collection Controllers
   for (var field in collectionControllers) {
     _collectionControllers[field] = TextEditingController();
+    if (donationType == 'Diezmos' && field == 'collectionType') {
+      _collectionControllers['collectionType']!.text = '1';
+    }
   }
 
   // Assign funds controllers
@@ -84,17 +90,24 @@ callDonationModal(BuildContext context, Member member, String donationType) {
     barrierDismissible: true,
     context: context,
     modelType: ModalType.extraLarge,
-    modalType: ModalType.large,
-    title: donationType == 'Diezmo' ? 'Add Tithes' : "Add Donation",
+    modalType:
+        donationType == 'Diezmos' ? ModalType.large : ModalType.extraLarge,
+    title: donationType == 'Diezmos' ? 'Add Tithes' : "Add Contribution",
     leadingIcon: Icon(
-      donationType == 'Diezmo'
-          ? Icons.paid_outlined
-          : Icons.attach_money_outlined,
+      donationType == 'Diezmos' ? EvoIcons.tithes.icon : EvoIcons.offering.icon,
       size: 28,
+      color: context.isDarkMode
+          ? EvoTheme.dark.colorScheme.onSurface
+          : EvoTheme.light.colorScheme.onSurface,
     ),
-    content: Card(
-      elevation: 2,
-      // color: Colors.white,
+    content: EvoCard(
+      // padding: const EdgeInsets.all(8),
+      colorDark: context.isDarkMode
+          ? EvoTheme.dark.colorScheme.surface
+          : EvoTheme.light.colorScheme.surface,
+      colorLight: context.isDarkMode
+          ? EvoTheme.dark.colorScheme.surface
+          : EvoTheme.light.colorScheme.surface,
       child: Container(
         padding: const EdgeInsets.all(0),
         child: Form(
@@ -105,27 +118,30 @@ callDonationModal(BuildContext context, Member member, String donationType) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InformationCard(
-                  title: '${member.firstName} ${member.lastName}',
+                  title: '${member!.firstName} ${member.lastName}',
                   children: [
-                    if (donationType != 'Diezmo')
-                      Row(
-                        children: [
-                          Expanded(
-                            child: buildDropdownField('Payment Method',
-                                'paymentMethod', _collectionControllers),
-                          ),
-                          EvoBox.w10,
-                          Expanded(
-                              child: buildDropdownFieldNew(
-                            label: 'Donation Type',
-                            field: 'collectionType',
-                            controllers: _collectionControllers,
-                            items: collectionList,
-                            valueKey: 'collection_type_id',
-                            displayKey: 'collection_type_name',
-                            isRequired: true,
-                          )),
-                          EvoBox.w10,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: buildDropdownField('Transaction Method',
+                              'paymentMethod', _collectionControllers),
+                        ),
+                        EvoBox.w10,
+                        Expanded(
+                            child: buildDropdownFieldNew(
+                          label: 'Contribution Type',
+                          field: 'collectionType',
+                          controllers: _collectionControllers,
+                          items: donationType == 'Diezmos'
+                              ? collectionList 
+                              : collectionList.where((item) => item['collection_type_id'] != '1').toList(), // Filter only for one type
+                          valueKey: 'collection_type_id',
+                          displayKey: 'collection_type_name',
+                          isRequired: true,
+                          isReadOnly: donationType == 'Diezmos' ? true : false,
+                        )),
+                        EvoBox.w10,
+                        if (donationType != 'Diezmos')
                           Expanded(
                               child: buildDropdownFieldNew(
                             label: 'Fund',
@@ -136,8 +152,8 @@ callDonationModal(BuildContext context, Member member, String donationType) {
                             displayKey: 'fund_name',
                             isRequired: true,
                           )),
-                        ],
-                      ),
+                      ],
+                    ),
                     EvoBox.h16,
                     // Diezmos fields
                     Row(children: [
@@ -151,20 +167,17 @@ callDonationModal(BuildContext context, Member member, String donationType) {
                       )),
                       EvoBox.w10,
                       Expanded(
-                          child: buildDateField('End Date', 'collectionDate',
-                              context, _collectionControllers,
+                          child: buildDateField('Contribution Date',
+                              'collectionDate', context, _collectionControllers,
                               isRequired: true)),
                     ]),
                     EvoBox.h16,
                     Row(
                       children: [
                         Expanded(
-                            child: buildEditableField(
-                          'Description',
-                          'collectionComments',
-                          _collectionControllers,
-                          isRequired: true,
-                        )),
+                            child: buildEditableField('Description',
+                                'collectionComments', _collectionControllers,
+                                isRequired: true, maxLine: 3)),
                       ],
                     ),
                   ],
@@ -191,6 +204,8 @@ callDonationModal(BuildContext context, Member member, String donationType) {
                 Provider.of<CollectionViewModel>(context, listen: false);
             final fundViewModel =
                 Provider.of<FinanceViewModel>(context, listen: false);
+            final authServices =
+                Provider.of<AuthServices>(context, listen: false);
 
             final mainFund =
                 fundViewModel.fundsList.firstWhere((x) => x.isPrimary == true);
@@ -200,27 +215,32 @@ callDonationModal(BuildContext context, Member member, String donationType) {
             DateTime startDate = DateFormat('dd/MM/yyyy')
                 .parse(_collectionControllers['collectionDate']!.text);
 
+            int churchId = int.parse(authServices.userMetaData?["church_id"]);
+
             CollectionModel newCollection = CollectionModel(
-                fundId: donationType == 'Diezmo'
+                churchId: churchId,
+                fundId: donationType == 'Diezmos'
                     ? mainFund.fundId
                     : _collectionControllers['fundId']!.text,
                 profileId: member.memberId,
-                collectionType: donationType == 'Diezmo'
+                collectionType: donationType == 'Diezmos'
                     ? mainCollectionType.id
                     : int.parse(_collectionControllers['collectionType']!.text),
                 collectionAmount: double.parse(
                     _collectionControllers['collectionAmount']!.text),
                 collectionDate: startDate,
                 isAnonymous: false,
-                paymentMethod: donationType == 'Diezmo'
-                    ? 'Cash'
-                    : _collectionControllers['paymentMethod']!.text,
+                paymentMethod: _collectionControllers['paymentMethod']!.text,
                 comments: _collectionControllers['collectionComments']!.text);
 
-            final responseData = await viewModel.createCollection(newCollection.toJson());
+            final responseData =
+                await viewModel.createCollection(newCollection.toJson());
 
             if (responseData['status'] == 'Success') {
-              String message = 'New Collection is added with ID: ${responseData['collection'][0]['collection_id']}';
+              String message =
+                  'New Collection is added with ID: ${responseData['message']}';
+              memberViewModel.getFinancialByMemberId(member.memberId!);
+              memberViewModel.notifyDataChanged();
 
               if (!context.mounted) return;
               ScaffoldMessenger.of(context)
@@ -236,7 +256,9 @@ callDonationModal(BuildContext context, Member member, String donationType) {
                   .showSnackBar(SnackBar(content: Text(message)));
             }
           } catch (e) {
-            debugPrint(e.toString());
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(e.toString())));
           }
         },
         text: "Save",

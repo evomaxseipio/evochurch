@@ -48,6 +48,8 @@ final fundControllers = [
   'targetAmount',
   'startDate',
   'endDate',
+  'isPrimary',
+  'isActive',
 ];
 
 final collectionControllers = [

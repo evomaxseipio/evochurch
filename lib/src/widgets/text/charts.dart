@@ -1,176 +1,78 @@
-import 'package:evochurch/src/constants/constant_index.dart';
-import 'package:evochurch/src/model/church_finance_model.dart';
-import 'package:evochurch/src/model/member_model.dart';
+import 'package:evochurch/src/constants/app_theme.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
-import 'package:evochurch/src/view_model/index_view_model.dart';
-import 'package:evochurch/src/widgets/text/church_contribution_datatable.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:evochurch/src/widgets/text/contribution_datatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-class ContributionListView extends HookWidget {
-  const ContributionListView({super.key});
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends HookWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final contributionViewModel =
-        Provider.of<FinanceViewModel>(context, listen: true);
-    final financeData = useState<Map<String, dynamic>>({});
-    final collectionHeader = useState<ChurchCollectionHeaderDetails?>(null);
-    final collectionDetails = useState<List<ChurchCollectionList>>([]);
-    final monthlyContributions = useState<List<ChurchCollectionChartData>>([]);
-    final statusCode = useState<int>(0);
-    final messageStatus = useState<String>('');
-    final loading = useState<bool>(false);
+    final isDarkMode = useState(true);
 
-    // Animation controllers for smooth transitions
-    final fadeAnimationController = useAnimationController(
-      duration: const Duration(milliseconds: 800), // Controls fade speed
-      initialValue: 1.0,
-    );
-
-    final fadeAnimation = useAnimation(CurvedAnimation(
-      parent: fadeAnimationController,
-      curve: Curves.easeInOut, // Smooth curve for transitions
-    ));
-
-    Future<void> getFinanceData() async {
-      try {
-        loading.value = true;
-        // Slow fade out
-        await fadeAnimationController.animateTo(
-          0.3, // Fade to 30% opacity instead of fully invisible
-          duration: const Duration(milliseconds: 400), // Slower fade out
-          curve: Curves.easeOut,
-        );
-
-        financeData.value = await contributionViewModel.getFinancialByChurch();
-
-        if (financeData.value['status_code'] == 204) {
-          statusCode.value = 204;
-          messageStatus.value = financeData.value['message'];
-        } else {
-          final churchFinanceData =
-              ChurchFinanceData.fromJson(contributionViewModel.churchFinances);
-          statusCode.value = churchFinanceData.statusCode;
-          messageStatus.value = churchFinanceData.message;
-          collectionHeader.value =
-              churchFinanceData.churchCollectionHeaderDetails;
-          collectionDetails.value = churchFinanceData.churchCollectionList;
-          monthlyContributions.value =
-              churchFinanceData.churchCollectionChartData;
-        }
-
-        // Brief pause to ensure data is processed
-        await Future.delayed(const Duration(milliseconds: 100));
-        loading.value = false;
-      } catch (e) {
-        loading.value = false;
-        debugPrint(e.toString());
-
-        // Restore visibility if error occurs
-        fadeAnimationController.animateTo(1.0,
-            duration: const Duration(milliseconds: 300));
-      }
-    }
-
-    useEffect(() {
-      // Subscribe to data change notifications
-      final subscription =
-          contributionViewModel.onChurchFinancesChanged.listen((_) {
-        debugPrint('Data changed, refreshing finance data...');
-        getFinanceData();
-      });
-
-      // Fetch initial data
-      getFinanceData();
-
-      // Cleanup subscription when widget disposes
-      return () => subscription.cancel();
-    }, [contributionViewModel]);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contribucciones de la Iglesia'),
-        
+    return MaterialApp(
+      title: 'Church Dashboard',
+      theme: ThemeData.light(), // Light theme
+      darkTheme: ThemeData.dark(), // Dark theme
+      themeMode: isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Church Dashboard'),
+          actions: [
+            IconButton(
+              icon: Icon(isDarkMode.value ? Icons.light_mode : Icons.dark_mode),
+              onPressed: () => isDarkMode.value = !isDarkMode.value,
+            ),
+          ],
+        ),
+        body: const ChurchDashboard(),
       ),
-      body: loading.value
-          ? _buildLoadingUI(context)
-          : statusCode.value == 204
-              ? Center(
-                  child: Text(
-                    messageStatus.value,
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                )
-              : AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
-                  transitionBuilder:
-                      (Widget child, Animation<double> animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.0, 0.05),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: SingleChildScrollView(
-                    child: Column(
-                      key: ValueKey<String>(
-                          'financeData-${DateTime.now().millisecondsSinceEpoch}'),
-                      children: [
-                        _buildCards(
-                            context,
-                            collectionHeader.value!.tithesAmount.toString(),
-                            collectionHeader.value!.offeringAmount.toString(),
-                            collectionHeader.value!.donationAmount.toString(),
-                            collectionHeader.value!.totalContributions
-                                .toString()),
-                        _buildChartWithLegend(
-                            context, monthlyContributions.value),
-                        EvoLayoutResponsive(
-                          mobile: _buildTransactionList(
-                              context, collectionDetails.value),
-                          tablet: _buildTransactionList(
-                              context, collectionDetails.value),
-                          smallDesktop: ChurchContributionDatatable(
-                              collectionDetails.value),
-                          largeDesktop: ChurchContributionDatatable(
-                              collectionDetails.value),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
     );
   }
+}
 
-  // Custom loading UI with subtle animation
-  Widget _buildLoadingUI(BuildContext context) {
-    return Container(
-      height: 300,
-      alignment: Alignment.center,
+class ChurchDashboard extends HookWidget {
+  const ChurchDashboard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final contributions =
+        useState<List<ContributionData>>(_generateContributions());
+    final transactions =
+        useState<List<TransactionData>>(_generateTransactions());
+
+    final totalDiezmos =
+        contributions.value.fold(0, (sum, item) => sum + item.diezmos);
+    final totalOffering =
+        contributions.value.fold(0, (sum, item) => sum + item.offering);
+    final totalDonation =
+        contributions.value.fold(0, (sum, item) => sum + item.donation);
+
+    return SingleChildScrollView(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Text(
-            'Loading financial data...',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
+          _buildCards(context, totalDiezmos, totalOffering, totalDonation),
+          _buildChartWithLegend(context, contributions.value),
+          // EvoLayoutResponsive(
+          //   mobile: _buildTransactionList(context, transactions.value),
+          //   tablet: _buildTransactionList(context, transactions.value),
+          //   smallDesktop: const TaskQueue(),
+          //   largeDesktop: const TaskQueue(),
+          // ),
         ],
       ),
     );
   }
 
-  Widget _buildCards(BuildContext context, String totalDiezmos,
-      String totalOffering, String totalDonation, String totalContributions) {
+  Widget _buildCards(BuildContext context, int totalDiezmos, int totalOffering,
+      int totalDonation) {
     final isSmallScreen = MediaQuery.of(context).size.width < 800;
 
     return Padding(
@@ -180,14 +82,14 @@ class ContributionListView extends HookWidget {
               children: [
                 _buildCard(
                   context,
-                  title: 'Tithes',
+                  title: 'Diezmos',
                   amount: totalDiezmos,
                   gradient: const LinearGradient(
                     colors: [Colors.blue, Colors.indigo],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  icon: Icons.volunteer_activism_outlined,
+                  icon: Icons.church,
                 ),
                 const SizedBox(height: 16),
                 _buildCard(
@@ -217,7 +119,7 @@ class ContributionListView extends HookWidget {
                 _buildCard(
                   context,
                   title: 'Total Contributions',
-                  amount: totalContributions,
+                  amount: totalDonation,
                   gradient: const LinearGradient(
                     colors: [Colors.purple, Colors.deepPurple],
                     begin: Alignment.topLeft,
@@ -232,14 +134,14 @@ class ContributionListView extends HookWidget {
                 Expanded(
                   child: _buildCard(
                     context,
-                    title: 'Tithes',
+                    title: 'Diezmos',
                     amount: totalDiezmos,
                     gradient: const LinearGradient(
                       colors: [Colors.blue, Colors.indigo],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    icon: EvoIcons.tithes.icon,
+                    icon: Icons.church,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -253,7 +155,7 @@ class ContributionListView extends HookWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    icon: EvoIcons.offering.icon,
+                    icon: Icons.handshake,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -267,7 +169,7 @@ class ContributionListView extends HookWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    icon: EvoIcons.donation.icon,
+                    icon: Icons.favorite,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -275,7 +177,7 @@ class ContributionListView extends HookWidget {
                   child: _buildCard(
                     context,
                     title: 'Total Contributions',
-                    amount: totalContributions,
+                    amount: totalDonation,
                     gradient: const LinearGradient(
                       colors: [Colors.purple, Colors.deepPurple],
                       begin: Alignment.topLeft,
@@ -292,7 +194,7 @@ class ContributionListView extends HookWidget {
   Widget _buildCard(
     BuildContext context, {
     required String title,
-    required String amount,
+    required int amount,
     required Gradient gradient,
     required IconData icon,
   }) {
@@ -347,7 +249,7 @@ class ContributionListView extends HookWidget {
   }
 
   Widget _buildChartWithLegend(
-      BuildContext context, List<ChurchCollectionChartData> collectionData) {
+      BuildContext context, List<ContributionData> contributions) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Card(
@@ -367,7 +269,7 @@ class ContributionListView extends HookWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildLegendItem(context, 'Tithes', Colors.blue),
+                  _buildLegendItem(context, 'Diezmos', Colors.blue),
                   const SizedBox(width: 16),
                   _buildLegendItem(context, 'Offering', Colors.green),
                   const SizedBox(width: 16),
@@ -377,7 +279,7 @@ class ContributionListView extends HookWidget {
               const SizedBox(height: 16),
               SizedBox(
                 height: 300,
-                child: _buildBarChart(collectionData),
+                child: _buildBarChart(contributions),
               ),
             ],
           ),
@@ -400,7 +302,7 @@ class ContributionListView extends HookWidget {
     );
   }
 
-  Widget _buildBarChart(List<ChurchCollectionChartData> collectionData) {
+  Widget _buildBarChart(List<ContributionData> contributions) {
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
@@ -434,11 +336,11 @@ class ContributionListView extends HookWidget {
               showTitles: true,
               getTitlesWidget: (value, meta) {
                 final i = value.toInt();
-                if (i >= 0 && i < collectionData.length) {
+                if (i >= 0 && i < contributions.length) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
-                      collectionData[i].month,
+                      contributions[i].month,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -456,14 +358,14 @@ class ContributionListView extends HookWidget {
               showTitles: true,
               getTitlesWidget: (value, meta) {
                 return Padding(
-                  padding: const EdgeInsets.only(right: 2.0),
+                  padding: const EdgeInsets.only(right: 8.0),
                   child: Text(
                     '\$${value.toInt()}',
                     style: const TextStyle(fontSize: 10),
                   ),
                 );
               },
-              reservedSize: 45,
+              reservedSize: 40,
             ),
           ),
           rightTitles:
@@ -471,19 +373,18 @@ class ContributionListView extends HookWidget {
           topTitles:
               const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
-        gridData: const FlGridData(
+        gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
-          drawHorizontalLine: true,
           horizontalInterval: 500,
         ),
         borderData: FlBorderData(show: false),
-        barGroups: collectionData.asMap().entries.map((entry) {
+        barGroups: contributions.asMap().entries.map((entry) {
           return BarChartGroupData(
             x: entry.key,
             barRods: [
               BarChartRodData(
-                toY: entry.value.tithes.toDouble(),
+                toY: entry.value.diezmos.toDouble(),
                 color: Colors.blue,
                 width: 12,
                 borderRadius: const BorderRadius.only(
@@ -517,7 +418,7 @@ class ContributionListView extends HookWidget {
   }
 
   Widget _buildTransactionList(
-      BuildContext context, List<ChurchCollectionList> transactions) {
+      BuildContext context, List<TransactionData> transactions) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Card(
@@ -544,17 +445,17 @@ class ContributionListView extends HookWidget {
                   IconData iconData;
                   Color iconColor;
 
-                  switch (transaction.collectionType) {
-                    case 1: //'Tithes'
-                      iconData = EvoIcons.tithes.icon;
+                  switch (transaction.type) {
+                    case 'Diezmos':
+                      iconData = Icons.church;
                       iconColor = Colors.blue;
                       break;
-                    case 2: //'Offering'
-                      iconData = EvoIcons.offering.icon;
+                    case 'Offering':
+                      iconData = Icons.handshake;
                       iconColor = Colors.green;
                       break;
-                    case 3: //'Donation'
-                      iconData = EvoIcons.donation.icon;
+                    case 'Donation':
+                      iconData = Icons.favorite;
                       iconColor = Colors.orange;
                       break;
                     default:
@@ -568,23 +469,23 @@ class ContributionListView extends HookWidget {
                       child: Icon(iconData, color: iconColor),
                     ),
                     title: Text(
-                      transaction.collectionTypeName,
+                      transaction.type,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text(transaction.collectionDate.toString()),
+                    subtitle: Text('From: ${transaction.donor}'),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '\$${transaction.collectionAmount.toStringAsFixed(2)}',
+                          '\$${transaction.amount.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
                         Text(
-                          formatDate(transaction.collectionDate.toString()),
+                          transaction.date,
                           style: TextStyle(
                             fontSize: 12,
                             color: Theme.of(context).textTheme.bodySmall?.color,
@@ -601,4 +502,118 @@ class ContributionListView extends HookWidget {
       ),
     );
   }
+
+  // Data models
+  static List<ContributionData> _generateContributions() {
+    return [
+      ContributionData(
+          month: 'Jan', diezmos: 1000, offering: 500, donation: 200),
+      ContributionData(
+          month: 'Feb', diezmos: 1200, offering: 600, donation: 250),
+      ContributionData(
+          month: 'Mar', diezmos: 1100, offering: 550, donation: 300),
+      ContributionData(
+          month: 'Apr', diezmos: 1300, offering: 700, donation: 350),
+      ContributionData(
+          month: 'May', diezmos: 1400, offering: 800, donation: 400),
+      ContributionData(
+          month: 'Jun', diezmos: 1500, offering: 900, donation: 450),
+      ContributionData(
+          month: 'Jul', diezmos: 1600, offering: 1000, donation: 500),
+      ContributionData(
+          month: 'Aug', diezmos: 1700, offering: 1100, donation: 550),
+      ContributionData(
+          month: 'Sep', diezmos: 1800, offering: 1200, donation: 600),
+      ContributionData(
+          month: 'Oct', diezmos: 1900, offering: 1300, donation: 650),
+      ContributionData(
+          month: 'Nov', diezmos: 2000, offering: 1400, donation: 700),
+      ContributionData(
+          month: 'Dec', diezmos: 2100, offering: 1500, donation: 750),
+    ];
+  }
+
+  static List<TransactionData> _generateTransactions() {
+    return [
+      TransactionData(
+          type: 'Diezmos',
+          amount: 100,
+          date: '2023-10-01',
+          donor: 'John Smith'),
+      TransactionData(
+          type: 'Offering',
+          amount: 50,
+          date: '2023-10-02',
+          donor: 'Maria Garcia'),
+      TransactionData(
+          type: 'Donation',
+          amount: 200,
+          date: '2023-10-03',
+          donor: 'David Johnson'),
+      TransactionData(
+          type: 'Diezmos',
+          amount: 150,
+          date: '2023-10-05',
+          donor: 'Sarah Williams'),
+      TransactionData(
+          type: 'Offering',
+          amount: 75,
+          date: '2023-10-07',
+          donor: 'Michael Brown'),
+      TransactionData(
+          type: 'Donation',
+          amount: 500,
+          date: '2023-10-08',
+          donor: 'Linda Martinez'),
+      TransactionData(
+          type: 'Diezmos',
+          amount: 120,
+          date: '2023-10-10',
+          donor: 'Robert Taylor'),
+      TransactionData(
+          type: 'Offering',
+          amount: 60,
+          date: '2023-10-12',
+          donor: 'Jennifer Lee'),
+      TransactionData(
+          type: 'Donation',
+          amount: 300,
+          date: '2023-10-15',
+          donor: 'James Anderson'),
+      TransactionData(
+          type: 'Diezmos',
+          amount: 110,
+          date: '2023-10-18',
+          donor: 'Patricia Wilson'),
+    ];
+  }
+}
+
+// Data models
+class ContributionData {
+  final String month;
+  final int diezmos;
+  final int offering;
+  final int donation;
+
+  ContributionData({
+    required this.month,
+    required this.diezmos,
+    required this.offering,
+    required this.donation,
+  });
+}
+
+class TransactionData {
+  final String type;
+  final double amount;
+  final String date;
+  final String donor;
+
+  TransactionData({
+    required this.type,
+    required this.amount,
+    required this.date,
+    required this.donor,
+  });
 }

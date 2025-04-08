@@ -1,8 +1,12 @@
+import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/constants/dropdown_list_data.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
+import 'package:evochurch/src/widgets/button/button.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 import '../text/evo_custom_text_field.dart';
 
@@ -94,15 +98,14 @@ String splitCamelCase(String input) {
       RegExp(r'([a-z])([A-Z])'), (Match m) => '${m[1]} ${m[2]}');
 }
 
-Widget  buildEditableField(
+Widget buildEditableField(
     String label, String field, Map<String, TextEditingController> controllers,
-    {bool isRequired = true, 
-    bool isNumeric = false, 
+    {bool isRequired = true,
+    bool isNumeric = false,
     bool isReadOnly = false,
     bool isPassword = false,
     int? maxLength,
-    int? maxLine = 1
-    }) {
+    int? maxLine = 1}) {
   // Add null check and debug information
   final controller = controllers[field];
   if (controller == null) {
@@ -121,14 +124,20 @@ Widget  buildEditableField(
       ),
       EvoCustomTextField(
         // labelText: label,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        keyboardType: isNumeric
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : null,
         controller: controllers[field],
         obscureText: isPassword,
+        maxLines: maxLine,
         maxLength: maxLength,
+        isNumberOnly: isNumeric,
+        // allowDecimals: isNumeric,
+        // decimalPlaces: isNumeric ? 0 : 0,
         readOnly: isReadOnly,
         validator: isRequired
             ? (value) {
-                if (value?.isEmpty == true) {
+                if (value?.isEmpty == true || value!.trim().isEmpty) {
                   return 'Please enter $label';
                 }
 
@@ -149,12 +158,12 @@ Widget buildDateField(String label, String field, BuildContext context,
     Map<String, TextEditingController> controllers,
     {bool isRequired = true}) {
   // Verify is field is null and add the today
-  final fecha = controllers[field];
-  debugPrint('Fecha: $fecha');
   if (controllers[field]!.text.isEmpty) {
-    controllers[field] = TextEditingController(text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+    controllers[field] = TextEditingController(
+        text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
   } else {
-    controllers[field] = TextEditingController(text: formatDate(controllers[field]!.text));
+    controllers[field] =
+        TextEditingController(text: formatDate(controllers[field]!.text));
   }
 
   return Column(
@@ -196,7 +205,6 @@ Widget buildDateField(String label, String field, BuildContext context,
               controllers[field]?.text =
                   DateFormat('dd/MM/yyyy').format(pickedDate);
             }
-            debugPrint(controllers[field]?.text);
           },
           readOnly: true,
         ),
@@ -319,7 +327,6 @@ Widget buildDropdownFieldNew<T>({
             hint: Text('Select $label'),
             autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: InputDecoration(
-              // enabled: isReadOnly,
               suffixIconConstraints: const BoxConstraints(minWidth: 30),
               isDense: true,
               contentPadding:
@@ -342,20 +349,23 @@ Widget buildDropdownFieldNew<T>({
             items: items
                 .map((item) => DropdownMenuItem(
                       value: item[valueKey],
+
                       // enabled: isReadOnly,
                       child: Text(item[displayKey] ?? ''),
                     ))
                 .toList(),
-            onChanged: (value) {
-              try {
-                if (value != null) {
-                  controllers[field]!.text = value;
-                  setState(() => initialValue = value);
-                }
-              } catch (e) {
-                debugPrint(e.toString());
-              }
-            },
+            onChanged: isReadOnly
+                ? null
+                : (value) {
+                    try {
+                      if (value != null) {
+                        controllers[field]!.text = value;
+                        setState(() => initialValue = value);
+                      }
+                    } catch (e) {
+                      debugPrint(e.toString());
+                    }
+                  },
             validator: isRequired
                 ? (value) => value == null
                     ? 'Please select ${splitCamelCase(label.capitalize)}'
@@ -402,4 +412,71 @@ List<String> _getDropdownItems(String field, {MembersViewModel? viewModel}) {
   } else {
     return [];
   }
+}
+Widget buildSwitchTile(
+  String label,
+  String field,
+  BuildContext context,
+  Map<String, TextEditingController> controllers, {
+  bool isRequired = true,
+}) {
+  // Initialize the controller if it doesn't exist
+  if (!controllers.containsKey(field) || controllers[field] == null) {
+    controllers[field] = TextEditingController(text: 'false');
+  }
+  // Parse the current value, default to false if empty or invalid
+  bool isPrimary = false;
+
+  try {
+    isPrimary = controllers[field]!.text.isNotEmpty
+        ? controllers[field]!.text.toLowerCase() == 'true'
+        : false;
+  } catch (e) {
+    isPrimary = false;
+    controllers[field]!.text = 'false';
+  }
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        splitCamelCase(label.capitalize),
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontSize: 14,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 0),
+        child: ValueListenableBuilder<TextEditingValue>(
+          valueListenable: controllers[field]!,
+          builder: (context, value, child) {
+            final currentValue = value.text.toLowerCase() == 'true';
+            return ToggleSwitch(
+              minWidth: 90.0,
+              initialLabelIndex: !currentValue ? 1: 0,
+              cornerRadius: 20.0,
+              activeFgColor: Colors.white,
+              inactiveBgColor: Colors.grey,
+              inactiveFgColor: Colors.white,
+              totalSwitches: 2,
+              labels: const ['Si', 'No'],
+              icons: const [
+                FontAwesomeIcons.circleCheck,
+                FontAwesomeIcons.circleXmark,
+              ],
+              activeBgColors: const [
+                [Colors.purpleAccent, Colors.purple],
+                [Colors.red],
+              ],
+              onToggle: (selectedIndex) {
+                final newValue = selectedIndex == 0;
+                controllers[field]!.text = newValue.toString();
+              },
+            );
+          },
+        ),
+      ),
+    ],
+  );
 }

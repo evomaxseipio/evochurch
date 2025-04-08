@@ -1,5 +1,6 @@
 import 'package:evochurch/src/app.dart';
 import 'package:evochurch/src/view_model/index_view_model.dart';
+import 'package:evochurch/src/view_model/menu_state_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -60,7 +61,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CollectionViewModel()),
         ChangeNotifierProvider(create: (_) => ExpensesTypeViewModel()),
         ChangeNotifierProvider(create: (_) => ConfigurationsViewModel()), 
-         ChangeNotifierProvider(create: (_) => AppUserRoleViewModel()), // LanguageModel for handling language selection
+         ChangeNotifierProvider(create: (_) => AppUserRoleViewModel()), 
+        ChangeNotifierProvider(create: (_) => MenuStateProvider())// LanguageModel for handling language selection
       ],
       child: MyApp(appRouter: appRouter.router),
     ),

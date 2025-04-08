@@ -19,11 +19,7 @@ class ExpensesTypeViewModel extends ChangeNotifier {
   ExpensesTypeModel? get selectedExpensesType => _selectedExpensesType;
 
   // Initialize Expenses Type List
-  ExpensesTypeViewModel() {
-    _initialize();
-  }
-
-  void _initialize() {
+  ExpensesTypeViewModel() {   
     _loadExpensesTypes();
   }
 

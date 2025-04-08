@@ -1,5 +1,6 @@
 import 'package:evochurch/src/model/member_model.dart';
 import 'package:evochurch/src/view/members/member_maintance.dart';
+import 'package:evochurch/src/widgets/text/charts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -24,8 +25,8 @@ class ProfileView extends HookWidget {
         case 'Membership':
           return const MembershipPage();
         case 'Finances':
-          return const MemberFinances();
-        case 'Contacts':
+          return MemberFinances(member: member);
+       /* case 'Contacts':
           return Container(
             padding: const EdgeInsets.all(24),
             child: Center(
@@ -48,7 +49,7 @@ class ProfileView extends HookWidget {
               child: Text('Data Export Content',
                   style: Theme.of(context).textTheme.headlineMedium),
             ),
-          );
+          );*/
         case 'Delete Account':
           return Container(
             padding: const EdgeInsets.all(24),
@@ -113,7 +114,7 @@ class ProfileView extends HookWidget {
                                 onTap: () =>
                                     selectedMenuItem.value = 'Finances',
                               ),
-                              buildSidebarItem(
+                            /*  buildSidebarItem(
                                 'Contact Family',
                                 selectedMenuItem.value,
                                 Icons.family_restroom,
@@ -137,7 +138,7 @@ class ProfileView extends HookWidget {
                                 Icons.data_thresholding_outlined,
                                 onTap: () =>
                                     selectedMenuItem.value = 'Reports',
-                              ),
+                              ),*/
                               
                               EvoBox.h40,
                               // Delete account at the bottom

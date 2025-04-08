@@ -79,10 +79,10 @@ class DetailsCard extends StatelessWidget {
                 ),
               ),
               EvoBox.w8,
-              const SvgIcon(
-                icon: EvoIcons.menu,
-                color: Colors.white,
-              ),
+              // const SvgIcon(
+              //   icon: EvoIcons.menu,
+              //   color: Colors.white,
+              // ),
             ],
           ),
           Text(

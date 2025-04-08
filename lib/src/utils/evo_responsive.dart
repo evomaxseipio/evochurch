@@ -55,3 +55,58 @@ class EvoResponsive extends StatelessWidget {
     );
   }
 }
+
+
+class EvoLayoutResponsive extends StatelessWidget {
+  final Widget mobile;
+  final Widget tablet;
+  final Widget smallDesktop;
+  final Widget largeDesktop;
+
+  // Standard breakpoints
+  static const double mobileMaxWidth = 599;
+  static const double tabletMaxWidth = 1023;
+  static const double smallDesktopMaxWidth = 1439;
+
+  const EvoLayoutResponsive({
+    super.key,
+    required this.mobile,
+    required this.tablet,
+    required this.smallDesktop,
+    required this.largeDesktop,
+  });
+
+  // Helper methods to check screen size
+  static bool isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width <= mobileMaxWidth;
+
+  static bool isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width > mobileMaxWidth &&
+      MediaQuery.of(context).size.width <= tabletMaxWidth;
+
+  static bool isSmallDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width > tabletMaxWidth &&
+      MediaQuery.of(context).size.width <= smallDesktopMaxWidth;
+
+  static bool isLargeDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width > smallDesktopMaxWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double width = constraints.maxWidth;
+
+        if (width <= mobileMaxWidth) {
+          return mobile;
+        } else if (width <= tabletMaxWidth) {
+          return tablet;
+        } else if (width <= smallDesktopMaxWidth) {
+          return smallDesktop;
+        } else {
+          return largeDesktop;
+        }
+      },
+    );
+  }
+}

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/model/member_model.dart';
 import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:evochurch/src/utils/string_text_utils.dart';
@@ -42,10 +43,10 @@ class MemberList extends HookWidget {
           isLoading.value = true; // Set loading before fetching
 
           membersSubscription = viewModel.getMembers().listen(
-            (members) {
+            (members) async {
               if (!context.mounted) return;
               memberList.value = members['member_list'];
-              fundViewModel.refreshFunds();
+              await fundViewModel.getFundList();
               collectionViewModel.fetchActiveCollectionTypes();
               isLoading.value =
                   false; // Set loading to false after data arrives
@@ -85,7 +86,7 @@ class MemberList extends HookWidget {
         case 'tithes':
           // Handle donations
           debugPrint('Adding tithes for: ${member.lastName}');
-          callDonationModal(context, member, 'Diezmo');
+          callDonationModal(context, member, 'Diezmos');
           break;
 
         case 'donations':
@@ -179,20 +180,20 @@ class MemberList extends HookWidget {
                             visualDensity: VisualDensity.compact,
                           ),
                         ),
-                        const PopupMenuItem<String>(
+                        PopupMenuItem<String>(
                           value: 'tithes',
                           child: ListTile(
-                            leading: Icon(Icons.paid_outlined),
-                            title: Text('Add Tithes'),
+                            leading: Icon(EvoIcons.tithes.icon),
+                            title: const Text('Add Tithes'),
                             dense: true,
                             visualDensity: VisualDensity.compact,
                           ),
                         ),
-                        const PopupMenuItem<String>(
+                         PopupMenuItem<String>(
                           value: 'donations',
                           child: ListTile(
-                            leading: Icon(Icons.attach_money_outlined),
-                            title: Text('Add Donations'),
+                            leading: Icon(EvoIcons.offering.icon),
+                            title: const Text('Add Contributions'),
                             dense: true,
                             visualDensity: VisualDensity.compact,
                           ),

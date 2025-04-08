@@ -1,6 +1,7 @@
 import 'package:evochurch/src/model/collection_model_type.dart';
 
 class CollectionModel {
+  final int? churchId;
   final String? collectionId;
   final String? fundId; // Make fundId nullable
   final String? profileId;
@@ -13,6 +14,7 @@ class CollectionModel {
 
   CollectionModel({
     this.collectionId,
+    this.churchId,
     this.fundId,
     this.profileId,
     this.collectionType,
@@ -26,6 +28,7 @@ class CollectionModel {
   factory CollectionModel.fromJson(Map<String, dynamic> json) {
     return CollectionModel(
       collectionId: json['collection_id'],
+      churchId: json['churh_id'],
       fundId: json['fund_id'],
       profileId: json['profile_id'],
       collectionType: json['collection_type'], // Parse collectionType
@@ -40,6 +43,7 @@ class CollectionModel {
   Map<String, dynamic> toJson() {
     return {
       'collection_id': collectionId,
+      'church_id': churchId,
       'fund_id': fundId,
       'profile_id': profileId,
       'collection_type': collectionType,
@@ -54,6 +58,7 @@ class CollectionModel {
 
   CollectionModel copyWith({
     String? collectionId,
+    int? churchId,
     String? fundId,
     String? profileId,
     int? collectionType,
@@ -65,6 +70,7 @@ class CollectionModel {
   }) {
     return CollectionModel(
       collectionId: collectionId ?? this.collectionId,
+      churchId: churchId ?? this.churchId,
       fundId: fundId ?? this.fundId,
       profileId: profileId ?? this.profileId,
       collectionType: collectionType ?? this.collectionType,

@@ -87,6 +87,58 @@ class AuthServices extends ChangeNotifier {
     }
   }
 
+
+  // Get profile information from the authenticated user
+  Future<AuthResult> getUserProfile() async {
+    try {
+      _setLoading(true);
+      _clearError();
+      late AuthResult? authResult;
+
+      final response = await _supabase.rpc('sp_get_user_profile', params: {
+        'p_profile_id': _userId,
+      });
+
+      authResult = AuthResult.fromJson(response);
+      _setLoading(false);
+      _setError(authResult.message);
+      return authResult;
+    } on AuthException catch (error) {
+      debugPrint('Profile fetch failed: ${error.message}');
+      final errorMessage = _getReadableErrorMessage(error.message);
+      _setError(errorMessage);
+      return AuthResult(
+        success: false,
+        statusCode: 400,
+        message: errorMessage,
+      );
+    } on PostgrestException catch (error) {
+      debugPrint('Database error during profile fetch: ${error.message}');
+      final errorMessage = 'Failed to fetch user profile: ${error.message}';
+      _setError(errorMessage);
+      return AuthResult(
+        success: false,
+        statusCode: 400,
+        message: errorMessage,
+      );
+    } catch (error) {
+      debugPrint('Unexpected error during profile fetch: $error');
+      const errorMessage =
+          'An unexpected error occurred while fetching user profile';
+      _setError(errorMessage);
+      return AuthResult(
+        success: false,
+        statusCode: 400,
+        message: errorMessage,
+      );
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+
+
+
   Future<AuthResult> updateUserMetadata({
     // String? email,
     // String? password,

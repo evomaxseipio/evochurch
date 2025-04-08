@@ -26,8 +26,8 @@ class AdminScaffold extends StatelessWidget {
         EvoResponsive.isLargeWeb(context) || EvoResponsive.isMediumWeb(context);
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor:
-          context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
+      // backgroundColor:
+      //     context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
       drawer: isLargeOrMediumWeb ? null : _buildSliderMenu(),
       body: Row(
         children: [
@@ -50,8 +50,8 @@ class AdminScaffold extends StatelessWidget {
         final bool isLargeOrMediumWeb = EvoResponsive.isLargeWeb(context) ||
             EvoResponsive.isMediumWeb(context);
 
-        return Drawer(
-          backgroundColor: context.isDarkMode
+        return Container(
+          color: context.isDarkMode
               ? EvoColor.cardDark
               : EvoColor.lightBackgroundBlue,
           width: isLargeOrMediumWeb
@@ -61,7 +61,12 @@ class AdminScaffold extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!isLargeOrMediumWeb) EvoBox.h14 else EvoBox.h14,
-              _buildDrawerHeader(showOnlyIcon && isLargeOrMediumWeb),
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: 8.0,
+                ),
+                child: _buildDrawerHeader(showOnlyIcon && isLargeOrMediumWeb),
+              ),
               EvoBox.h12,
               Expanded(
                   child: SideMenu(
@@ -99,7 +104,7 @@ class AdminScaffold extends StatelessWidget {
       backgroundColor:
           context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
       elevation: 0,
-      toolbarHeight: 50,
+      toolbarHeight: 60,
       automaticallyImplyLeading: false,
       centerTitle: false,
       leading: _buildMenuButton(context),
@@ -115,6 +120,9 @@ class AdminScaffold extends StatelessWidget {
             !context.isDarkMode
                 ? Icons.light_mode_outlined
                 : Icons.dark_mode_outlined,
+            color: context.isDarkMode
+                ? EvoColor.blueLightChartColor
+                : EvoColor.light,
           ),
         ),
         EvoBox.w10,
@@ -134,7 +142,6 @@ class AdminScaffold extends StatelessWidget {
           onPressed: () => _handleMenuButtonPress(context),
           child: SvgPicture.asset(
             IconlyBroken.drawer,
-            color: Colors.blue,
             width: 20,
             height: 20,
           ),

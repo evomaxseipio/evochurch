@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
-
-
 enum StatusType { visita, pending, completed, cancelled, error }
-
 
 class StatusChip extends StatelessWidget {
   final String status;
@@ -20,8 +17,8 @@ class StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: _getStatusColor().withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
+        // color: _getStatusColor().withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: _getStatusColor(),
           width: 1,
@@ -38,15 +35,22 @@ class StatusChip extends StatelessWidget {
     );
   }
 
-
-
-
- Color _getStatusColor() {
+  Color _getStatusColor() {
     switch (status) {
       case 'Visita':
         return Colors.green;
-      case 'Pstor':
+      case 'Pastor':
         return Colors.orange;
+      case 'Miembro':
+        return Colors.blue;
+      case 'Primaria':
+        return Colors.blueAccent;
+      case 'Secundaria':
+        return Colors.greenAccent;
+      case 'Inactiva':
+        return Colors.redAccent;
+      case 'Activo':
+        return Colors.purpleAccent.shade100;
       // case StatusType.completed:
       //   return Colors.blue;
       // case StatusType.cancelled:
