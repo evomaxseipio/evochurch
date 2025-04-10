@@ -98,13 +98,14 @@ class _MyAppState extends State<MyApp> {
       title: 'Evo Church Admin',
 
       scrollBehavior: SBehavior(),
-      theme: EvoTheme.light, // Light theme
-      darkTheme: EvoTheme.dark, // Dark theme
+      theme: FlexThemeData.light(scheme: FlexScheme.deepPurple), // Light theme
+      darkTheme:
+          FlexThemeData.dark(scheme: FlexScheme.bahamaBlue), // Dark theme
       // The Mandy red, light theme.
       // theme: FlexThemeData.light(scheme: FlexScheme.blueM3),
       // // The Mandy red, dark theme.
       // darkTheme: FlexThemeData.dark(scheme: FlexScheme.blumineBlue),
-      // Use dark or light theme based on system setting.
+      // Use dark or light theme based on system setting.`
       themeMode: themeProvider.themeMode, // DynamicmandyRed),heme mode
     );
   }

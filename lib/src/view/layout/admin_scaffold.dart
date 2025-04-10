@@ -183,7 +183,7 @@ class AdminScaffold extends StatelessWidget {
             ),
           ),
           EvoBox.h2,
-          const Center(
+          Center(
             child: EvoCustomText(
               title: EvoStrings.footerText,
               textColor: EvoColor.lightGray,
