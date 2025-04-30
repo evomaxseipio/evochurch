@@ -1,6 +1,6 @@
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/model/church_finance_model.dart';
-import 'package:evochurch/src/model/member_model.dart';
+import 'package:evochurch/src/model/fund_model.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/index_view_model.dart';
 import 'package:evochurch/src/widgets/text/church_contribution_datatable.dart';
@@ -10,7 +10,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
 class ContributionListView extends HookWidget {
-  const ContributionListView({super.key});
+  final FundModel? fund;
+
+  const ContributionListView({required this.fund, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +47,14 @@ class ContributionListView extends HookWidget {
           curve: Curves.easeOut,
         );
 
-        financeData.value = await contributionViewModel.getFinancialByChurch();
+        // Validate if the fund is null
+        if (fund == null) {
+          financeData.value = await contributionViewModel.getFinancialByChurch();
+        } else {
+          financeData.value = await contributionViewModel
+              .getFinancialByChurchAndFund(fund!.fundId);
+        }
+
 
         if (financeData.value['status_code'] == 204) {
           statusCode.value = 204;
@@ -92,8 +101,12 @@ class ContributionListView extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Contribucciones de la Iglesia'),
-        
+        title: fund == null
+            ? const Text('Contribucciones de la Iglesia')
+            : Text(
+                'Contribuciones de ${fund!.fundName}',
+                style: const TextStyle(fontSize: 20),
+              ),
       ),
       body: loading.value
           ? _buildLoadingUI(context)

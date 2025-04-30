@@ -14,6 +14,8 @@ class MyAppRouteConstants {
   static const String fundsRouteName = '/finances/funds';
   static const String fundDetailsRouteName = 'fund_details';
   static const String fundProfileRouteName = 'fund_profile';
+  static const String fundContributionsRouteName = '/finances/funds_contributions';
+  static const String fundContributionsDetailsRouteName = 'fund_contributions_details';
   static const String addFundRouteName = 'add_fund';
   static const String editFundRouteName = 'edit_fund';
   static const String expensesRouteName = 'expenses';

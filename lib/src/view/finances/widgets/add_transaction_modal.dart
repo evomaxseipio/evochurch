@@ -101,7 +101,8 @@ void callAddTransactionModal(
     trailingIcon: const Icon(Icons.cancel_rounded),
     actions: [
       if (option != 'New' && transaction!.authorizedProfileId.isEmptyOrNull)
-        _buildAuthButton(context, formKey, controllers),
+        _buildAuthButton(
+            context, formKey, controllers, financeViewModel),
       // EvoBox.w10,
       // if (transaction!.authorizedProfileId.isEmptyOrNull)
       _buildSaveButton(context, formKey, controllers, financeViewModel, option),
@@ -282,23 +283,72 @@ Widget _buildAuthButton(
   BuildContext context,
   GlobalKey<FormState> formKey,
   Map<String, TextEditingController> controllers,
+  FinanceViewModel viewModel,
 ) {
   return EvoButton(
     icon: const Icon(Icons.fact_check_outlined),
-    onPressed: () => _handleAuthorization(context, formKey, controllers),
+    onPressed: () => _handleAuthorization(context, formKey, controllers, viewModel),
     text: "Authorize",
     buttonType: ButtonType.update,
   );
 }
 
-_handleAuthorization(BuildContext context, GlobalKey<FormState> formKey,
-    Map<String, TextEditingController> controllers) {
+_handleAuthorization(BuildContext context,
+  GlobalKey<FormState> formKey,
+  Map<String, TextEditingController> controllers,
+  FinanceViewModel viewModel) async{
   if (!formKey.currentState!.validate()) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Please fill in all required fields.')),
     );
 
     return;
+  }
+
+   try {
+    final authServices = AuthServices();
+    final userId = authServices.currentUser?.userMetadata!['profile_id'];
+
+    final dataController =
+        controllers.map((key, value) => MapEntry(key, value.text));
+
+    final response =  await viewModel.authorizeTransaction(dataController, userId!);
+
+    if (!context.mounted) return;
+
+    if (response['status'] == 'Error') {
+      CupertinoModalOptions.show(
+        context: context,
+        title: 'Error',
+        message: response['message'],
+        modalType: ModalTypeMessage.error,
+      );
+    } else {
+      Navigator.of(context, rootNavigator: true).pop();
+
+      /// Delay notifying listeners to avoid calling setState during build
+      Future.delayed(Duration.zero, () {
+        viewModel.getTransactionList(null);
+        viewModel.notifyDataChanged();
+      });
+
+      CupertinoModalOptions.show(
+        context: context,
+        title: 'Success',
+        message: response['message'],
+        modalType: ModalTypeMessage.success,
+      );
+    }
+  } catch (e) {
+    debugPrint(e.toString());
+    if (!context.mounted) return;
+
+    CupertinoModalOptions.show(
+      context: context,
+      title: 'Error',
+      message: 'An error occurred while saving the transaction.',
+      modalType: ModalTypeMessage.error,
+    );
   }
 }
 

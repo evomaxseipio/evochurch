@@ -65,6 +65,10 @@ class Membership {
   final String? membershipRole;
   final String? baptismChurchCity;
   final String? baptismChurchCountry;
+  final bool? hasCredential;
+  // final String? credentialType;
+  // final String? credetialYear;
+  final bool? isBaptizedInSpirit;
   final List<MembershipHistory>? membershipHistory; 
 
   Membership({
@@ -75,7 +79,11 @@ class Membership {
     this.membershipRole,
     this.baptismChurchCity,
     this.baptismChurchCountry,
-    this.membershipHistory ,
+    this.membershipHistory,
+    this.hasCredential,
+    // this.credentialType,
+    // this.credetialYear,
+    this.isBaptizedInSpirit
   });
 
   Membership copyWith({
@@ -86,6 +94,10 @@ class Membership {
     String? membershipRole,
     String? baptismChurchCity,
     String? baptismChurchCountry,
+    bool? hasCredential,
+    // String? credentialType,
+    // String? credetialYear,
+    bool? isBaptizedInSpirit,
     List<MembershipHistory>? membershipHistory,
   }) =>
       Membership(
@@ -96,6 +108,10 @@ class Membership {
         membershipRole: membershipRole ?? this.membershipRole,
         baptismChurchCity: baptismChurchCity ?? this.baptismChurchCity,
         baptismChurchCountry: baptismChurchCountry ?? this.baptismChurchCountry,
+        hasCredential: hasCredential ?? this.hasCredential,
+        // credentialType: credentialType ?? this.credentialType,
+        // credetialYear: credetialYear ?? this.credetialYear,
+        isBaptizedInSpirit: isBaptizedInSpirit ?? this.isBaptizedInSpirit,
         membershipHistory: membershipHistory ?? this.membershipHistory,
       );
 
@@ -109,6 +125,10 @@ class Membership {
         membershipRole: json["membershipRole"],
         baptismChurchCity: json["baptismChurchCity"],
         baptismChurchCountry: json["baptismChurchCountry"],
+        hasCredential: json["hasCredential"],
+        // credentialType: json["credentialType"],
+        // credetialYear: json["credetialYear"],
+        isBaptizedInSpirit: json["isBaptizedInSpirit"],
         membershipHistory: json["membershipHistory"] == null
             ? []
             : List<MembershipHistory>.from(
@@ -125,6 +145,10 @@ class Membership {
         "membershipRole": membershipRole,
         "baptismChurchCity": baptismChurchCity,
         "baptismChurchCountry": baptismChurchCountry,
+        "hasCredential": hasCredential,
+        // "credentialType": credentialType,
+        // "credetialYear": credetialYear,
+        "isBaptizedInSpirit": isBaptizedInSpirit,
         "membershipHistory": membershipHistory == null
             ? []
             : List<dynamic>.from(membershipHistory!.map((x) => x.toJson())),

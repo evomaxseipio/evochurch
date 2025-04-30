@@ -20,10 +20,13 @@ class MembershipPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final formKey = useState(GlobalKey<FormState>());
-    MembersViewModel viewModel = Provider.of<MembersViewModel>(context, listen: false);
+    MembersViewModel viewModel =
+        Provider.of<MembersViewModel>(context, listen: false);
 
-    final membershipTextControllers =useState<Map<String, TextEditingController>>({});
-    final _historyControllers = useState<Map<String, TextEditingController>>({});
+    final membershipTextControllers =
+        useState<Map<String, TextEditingController>>({});
+    final _historyControllers =
+        useState<Map<String, TextEditingController>>({});
     final membershipData = useState<Map<String, dynamic>>({});
 
     disposeControllers() {
@@ -34,8 +37,6 @@ class MembershipPage extends HookWidget {
         controller.dispose();
       }
     }
-
-    
 
     useEffect(() {
       for (var field in membershipControllers) {
@@ -48,28 +49,39 @@ class MembershipPage extends HookWidget {
 
       // Fetch membership data when the widget is built the first time
       getMembershipData() async {
-      try {
+        try {
+          // Get the membership roles
+          await viewModel.getMemberRoles();
 
-        // Get the membership roles
-        await viewModel.getMemberRoles();
+          // Get the membership data and history
+          membershipData.value = await viewModel.getMembershipByMemberId(viewModel.selectedMember!.memberId.toString());
+          if (membershipData.value['membership'].isNotEmpty) {
+            membershipTextControllers.value['baptismChurch']!.text =
+                membershipData.value['membership'][0]['baptismChurch'];
+            membershipTextControllers.value['baptismPastor']!.text =
+                membershipData.value['membership'][0]['baptismPastor'];
+            membershipTextControllers.value['membershipRole']!.text =
+                membershipData.value['membership'][0]['membershipRole'];
+            membershipTextControllers.value['baptismChurchCity']!.text =
+                membershipData.value['membership'][0]['baptismChurchCity'];
+            membershipTextControllers.value['baptismChurchCountry']!.text =
+                membershipData.value['membership'][0]['baptismChurchCountry'];
+            membershipTextControllers.value['baptismDate']!.text =
+                membershipData.value['membership'][0]['baptismDate'].toString();
+            membershipTextControllers.value['hasCredential']!.text =
+                membershipData.value['membership'][0]['hasCredential']
+                    .toString();
+            membershipTextControllers.value['isBaptizedInSpirit']!.text =
+                membershipData.value['membership'][0]['isBaptizedInSpirit']
+                    .toString();
+          }
 
-        // Get the membership data and history
-        membershipData.value = await viewModel.getMembershipByMemberId(viewModel.selectedMember!.memberId.toString());
-        if (membershipData.value['membership'].isNotEmpty) {
-          membershipTextControllers.value['baptismChurch']!.text = membershipData.value['membership'][0]['baptismChurch'];
-          membershipTextControllers.value['baptismPastor']!.text = membershipData.value['membership'][0]['baptismPastor'];
-          membershipTextControllers.value['membershipRole']!.text = membershipData.value['membership'][0]['membershipRole'];
-          membershipTextControllers.value['baptismChurchCity']!.text = membershipData.value['membership'][0]['baptismChurchCity'];
-          membershipTextControllers.value['baptismChurchCountry']!.text = membershipData.value['membership'][0]['baptismChurchCountry'];
-          membershipTextControllers.value['baptismDate']!.text = membershipData.value['membership'][0]['baptismDate'].toString();
+          // return membershipData.value;
+        } catch (e) {
+          throw Exception('Failed to load members $e');
         }
-
-        // return membershipData.value;
-      } catch (e) {
-        throw Exception('Failed to load members $e');
       }
-    }
-      
+
       getMembershipData();
 
       return () {
@@ -98,6 +110,10 @@ class MembershipPage extends HookWidget {
                 membershipTextControllers.value['baptismChurchCity']!.text,
             'baptismChurchCountry':
                 membershipTextControllers.value['baptismChurchCountry']!.text,
+            'hasCredential':
+                membershipTextControllers.value['hasCredential']!.text,
+            'isBaptizedInSpirit':
+                membershipTextControllers.value['isBaptizedInSpirit']!.text,
           });
 
           if (!context.mounted) return;
@@ -121,8 +137,7 @@ class MembershipPage extends HookWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        MemberTopMenu(
-            onUpdate: updateMembership, onPrint: viewModel.getMemberRoles),
+        MemberTopMenu(onUpdate: updateMembership, onPrint: viewModel.getMemberRoles),
         EvoBox.h16,
         Expanded(
             child: Card(
@@ -165,6 +180,19 @@ class MembershipPage extends HookWidget {
                       child: buildEditableField(
                           'Baptism Country',
                           'baptismChurchCountry',
+                          membershipTextControllers.value)),
+                ]),
+                EvoBox.h16,
+                Row(children: [
+                  Expanded(
+                      child: buildSwitchTile('Has Credential', 'hasCredential',
+                          context, membershipTextControllers.value)),
+                  EvoBox.w10,
+                  Expanded(
+                      child: buildSwitchTile(
+                          'Is Baptized In Spirit',
+                          'isBaptizedInSpirit',
+                          context,
                           membershipTextControllers.value)),
                 ]),
               ]),

@@ -8,6 +8,7 @@ import 'package:evochurch/src/view/finances/widgets/fund_header_details.dart';
 import 'package:evochurch/src/view/finances/widgets/status_container.dart';
 import 'package:evochurch/src/view/message.dart';
 import 'package:evochurch/src/view_model/finance_view_model.dart';
+import 'package:evochurch/src/widgets/chart/card_amount.dart';
 import 'package:evochurch/src/widgets/loading.dart';
 import 'package:evochurch/src/widgets/paginateDataTable/paginated_data_table.dart';
 import 'package:flutter/material.dart';
@@ -118,7 +119,7 @@ class TransactionListView extends HookWidget {
                 },
               ),
             ],
-          );        
+          );
           break;
       }
     }
@@ -144,7 +145,19 @@ class TransactionListView extends HookWidget {
                         children: [
                           CustomPaginatedTable<TransactionModel>(
                             // title: 'Transaction List',
-                            header: Padding(
+                            header: _buildChartCard(
+                                context,
+                                viewModel.headerDetails!.totalContributions
+                                    .toString(),
+                                viewModel.headerDetails!.approvedTransactions
+                                    .toString(),
+                                viewModel.headerDetails!.pendingTransactions
+                                    .toString(),
+                                viewModel.headerDetails!
+                                    .totalMinusPendingTransactions
+                                    .toString()),
+
+                            /*  Padding(
                               padding: const EdgeInsets.only(bottom: 16.0),
                               child: BalancePaymentCard(
                                 totalAmount: viewModel
@@ -163,7 +176,7 @@ class TransactionListView extends HookWidget {
                                 installments:
                                     viewModel.headerDetails!.totalTransactions,
                               ),
-                            ),
+                            ),*/
                             data: viewModel.transactionsList,
                             columns: transactionColumns,
                             getCells: (transac) => [
@@ -298,6 +311,126 @@ class TransactionListView extends HookWidget {
                         ],
                       ),
                     ),
+    );
+  }
+
+  Widget _buildChartCard(BuildContext context, String totalDiezmos,
+      String totalOffering, String totalDonation, String totalContributions) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 800;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: isSmallScreen
+          ? Column(
+              children: [
+                chartCardAmount(
+                  context,
+                  title: 'Balance General',
+                  amount: totalDiezmos,
+                  gradient: const LinearGradient(
+                    colors: [Colors.blue, Colors.indigo],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  icon: Icons.volunteer_activism_outlined,
+                ),
+                const SizedBox(height: 16),
+                chartCardAmount(
+                  context,
+                  title: 'Transacciones Ejecutadas',
+                  amount: totalOffering,
+                  gradient: const LinearGradient(
+                    colors: [Colors.green, Colors.teal],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  icon: Icons.handshake,
+                ),
+                const SizedBox(height: 16),
+                chartCardAmount(
+                  context,
+                  title: 'Transacciones en Transito',
+                  amount: totalDonation,
+                  gradient: const LinearGradient(
+                    colors: [Colors.orange, Colors.deepOrange],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  icon: Icons.favorite,
+                ),
+                const SizedBox(height: 16),
+                chartCardAmount(
+                  context,
+                  title: 'Balance - Transacciones Transito',
+                  amount: totalContributions,
+                  gradient: const LinearGradient(
+                    colors: [Colors.purple, Colors.deepPurple],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  icon: Icons.monetization_on_outlined,
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(
+                  child: chartCardAmount(
+                    context,
+                    title: 'Balance General',
+                    amount: totalDiezmos,
+                    gradient: const LinearGradient(
+                      colors: [Colors.blue, Colors.indigo],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    icon: Icons.account_balance_outlined,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: chartCardAmount(
+                    context,
+                    title: 'Transacciones Ejecutadas',
+                    amount: totalOffering,
+                    gradient: const LinearGradient(
+                      colors: [Colors.green, Colors.teal],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    icon: Icons.fact_check_outlined,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: chartCardAmount(
+                    context,
+                    title: 'Transacciones en Transito',
+                    amount: totalDonation,
+                    gradient: const LinearGradient(
+                      colors: [Colors.orange, Colors.deepOrange],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    icon: Icons.list_alt_outlined,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: chartCardAmount(
+                    context,
+                    title: 'Balance Disponible',
+                    amount: totalContributions,
+                    gradient: const LinearGradient(
+                      colors: [Colors.purple, Colors.deepPurple],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    icon: Icons.account_balance_wallet_outlined,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

@@ -51,21 +51,22 @@ class AdminScaffold extends StatelessWidget {
             EvoResponsive.isMediumWeb(context);
 
         return Container(
-          color: context.isDarkMode
-              ? EvoColor.cardDark
-              : EvoColor.lightBackgroundBlue,
+          color: !context.isDarkMode
+              ? Theme.of(context).colorScheme.primary
+              : EvoColor.cardDark,
           width: isLargeOrMediumWeb
-              ? (!showOnlyIcon ? 230 : 80)
-              : MediaQuery.of(context).size.width * 0.33,
+              ? (!showOnlyIcon ? 289 : 80)
+              : MediaQuery.of(context).size.width * 0.70,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!isLargeOrMediumWeb) EvoBox.h14 else EvoBox.h14,
               Padding(
                 padding: const EdgeInsets.only(
-                  top: 8.0,
+                  top: 0.0,
                 ),
-                child: _buildDrawerHeader(showOnlyIcon && isLargeOrMediumWeb),
+                child: _buildDrawerHeader(
+                    showOnlyIcon && isLargeOrMediumWeb, context),
               ),
               EvoBox.h12,
               Expanded(
@@ -79,30 +80,49 @@ class AdminScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(bool showOnlyIcon) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SvgPicture.asset(
-          IconlyBroken.adminKit,
-          height: 24,
-        ),
-        if (!showOnlyIcon) ...[
-          EvoBox.w12,
-          Text(
-            EvoStrings.projectName.toUpperCase(),
-            style: const TextStyle(color: EvoColor.white, fontSize: 18),
+  Widget _buildDrawerHeader(bool showOnlyIcon, BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.church,
+              color: theme.colorScheme.primary,
+              size: 24,
+            ),
           ),
+          const SizedBox(width: 12),
+          showOnlyIcon
+              ? const SizedBox.shrink()
+              : const Text(
+                  'EVOCHURCH ADMIN PANEL',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
         ],
-      ],
+      ),
     );
   }
 
   AppBar _buildInnerAppBar(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final theme = Theme.of(context);
     return AppBar(
-      backgroundColor:
-          context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
+      backgroundColor: !context.isDarkMode
+          ? Theme.of(context).colorScheme.primary
+          : EvoColor.cardDark,
+      foregroundColor: theme.colorScheme.onPrimary,
       elevation: 0,
       toolbarHeight: 60,
       automaticallyImplyLeading: false,
@@ -136,14 +156,20 @@ class AdminScaffold extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: _isOpen,
       builder: (context, isOpen, _) {
-        return MaterialButton(
-          height: double.infinity,
-          minWidth: 60,
-          onPressed: () => _handleMenuButtonPress(context),
-          child: SvgPicture.asset(
-            IconlyBroken.drawer,
-            width: 20,
-            height: 20,
+        return Padding(
+          padding: const EdgeInsets.only(left: 8, top: 10.0),
+          child: MaterialButton(
+            height: double.infinity,
+            minWidth: 60,
+            onPressed: () => _handleMenuButtonPress(context),
+            child: SvgPicture.asset(
+              IconlyBroken.drawer,
+              width: 20,
+              height: 20,
+              color: context.isDarkMode
+                  ? EvoColor.blueLightChartColor
+                  : EvoColor.light,
+            ),
           ),
         );
       },
@@ -166,10 +192,7 @@ class AdminScaffold extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return Container(
-      color: !context.isDarkMode
-          ? EvoColor.lightBackgroundBlue
-          : EvoColor.cardDark,
+    return SizedBox(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,

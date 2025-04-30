@@ -4,6 +4,7 @@ import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/model/fund_model.dart';
 import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:evochurch/src/utils/string_text_utils.dart';
+import 'package:evochurch/src/view/finances/contribution_list_view.dart';
 import 'package:evochurch/src/view/finances/widgets/add_donations_modal.dart';
 import 'package:evochurch/src/view/finances/widgets/add_transaction_modal.dart';
 import 'package:evochurch/src/view/message.dart';
@@ -64,8 +65,7 @@ class FundsListView extends HookWidget {
       };
     }, [fundsViewModel, fundsViewModel.fundStreamController]);
 
-
-        void setPrimaryFund(BuildContext context, FinanceViewModel fundsViewModel,
+    void setPrimaryFund(BuildContext context, FinanceViewModel fundsViewModel,
         String fundId) async {
       final response = await fundsViewModel.setPrimaryFund(fundId);
       if (response['status_code'] == 200) {
@@ -113,6 +113,7 @@ class FundsListView extends HookWidget {
         );
       }
     }
+
     // Function to handle fund actions
     void _handlefundAction(
         BuildContext context, String action, FundModel fund) {
@@ -131,10 +132,15 @@ class FundsListView extends HookWidget {
             'fundModel': fund,
           });
           break;
-        case 'add_contributions':
+        case 'view_contributions':
           // Handle contributions
           debugPrint('Adding contributions for: ${fund.fundId}');
-          callDonationModal(context, null, 'Contribuccion');
+          context.goNamed(
+            MyAppRouteConstants.fundContributionsRouteName,
+            extra: {
+              'fund': fund,
+            },
+          );
           break;
         case 'make_prymary':
           // Handle make primary
@@ -176,7 +182,6 @@ class FundsListView extends HookWidget {
           break;
       }
     }
-
 
     return Scaffold(
         appBar: AppBar(
@@ -251,10 +256,10 @@ class FundsListView extends HookWidget {
                               ),
                             ),
                             const PopupMenuItem<String>(
-                              value: 'add_contributions',
+                              value: 'view_contributions',
                               child: ListTile(
                                 leading: Icon(Icons.money),
-                                title: Text('Contribuccion'),
+                                title: Text('View Contributions'),
                                 dense: true,
                                 visualDensity: VisualDensity.compact,
                               ),

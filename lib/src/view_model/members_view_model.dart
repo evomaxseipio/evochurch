@@ -18,7 +18,6 @@ class MembersViewModel extends ChangeNotifier {
   Member? _selectedMember; // This is fine as nullable
   MembershipModel? _membershipProfile;
   Map<String, dynamic> _memberFinances = {};
- 
 
   bool _isLoading = false;
 
@@ -26,7 +25,6 @@ class MembersViewModel extends ChangeNotifier {
   List<Member> get members => _members;
   List<Map<String, String>> get memberList => _memberList;
   Map<String, dynamic> get memberFinances => _memberFinances;
- 
 
   // Updated selectedMember getter with null check
   Member? get selectedMember => _selectedMember;
@@ -40,13 +38,10 @@ class MembersViewModel extends ChangeNotifier {
   final _membersStreamController = StreamController<void>.broadcast();
   Stream<void> get onDataChanged => _membersStreamController.stream;
 
-
   MembersViewModel() {
     churchId = int.tryParse(_authServices.userMetaData!['church_id'] ?? '');
     getMembers();
   }
-
-
 
   // Setters
   set selectedMember(Member? value) {
@@ -75,12 +70,11 @@ class MembersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-
   // Dispose method to close the stream controller
   @override
   void dispose() {
     _membersStreamController.close();
-    
+
     super.dispose();
   }
 
@@ -296,6 +290,8 @@ class MembersViewModel extends ChangeNotifier {
         'p_membership_role': membership['membershipRole'],
         'p_baptism_church_city': membership['baptismChurchCity'],
         'p_baptism_church_country': membership['baptismChurchCountry'],
+        'p_has_credential': membership['hasCredential'],
+        'p_is_baptized_in_spirit': membership['isBaptizedInSpirit'],
       });
 
       return response;
@@ -339,15 +335,13 @@ class MembersViewModel extends ChangeNotifier {
     }
   }
 
-
- Future<Map<String, dynamic>> getFinancialByChurch() async {
+  Future<Map<String, dynamic>> getFinancialByChurch() async {
     try {
       // Call Supabase RPC
       final response = await _supabaseClient.rpc(
         'sp_get_collection_by_member',
         params: {
           'p_church_id': churchId,
-          
         },
       );
 
@@ -374,7 +368,6 @@ class MembersViewModel extends ChangeNotifier {
     }
   }
 }
-
 
 /// Custom exception for financial data-related errors.
 class FinancialDataException implements Exception {

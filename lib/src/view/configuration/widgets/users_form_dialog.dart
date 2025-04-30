@@ -1,6 +1,5 @@
 // user_form_dialog.dart
 import 'package:evochurch/src/model/admin_users_model.dart';
-import 'package:evochurch/src/model/users_model.dart';
 import 'package:evochurch/src/view_model/configurations_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';

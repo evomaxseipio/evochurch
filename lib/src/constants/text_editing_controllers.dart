@@ -31,7 +31,11 @@ final membershipControllers = [
   'baptismPastor',
   'membershipRole',
   'baptismChurchCity',
-  'baptismChurchCountry'
+  'baptismChurchCountry',
+  'hasCredential',
+  'credentialType',
+  'credetialYear',
+  'isBaptizedInSpirit',
 ];
 
 final historyControllers = [

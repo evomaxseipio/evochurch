@@ -363,6 +363,65 @@ class FinanceViewModel with ChangeNotifier {
     }
   }
 
+  // Get Contributions List
+  Future<Map<String, dynamic>> getFinancialByChurchAndFund(String fundId) async {
+    try {
+      _isLoadingFunds = true;
+      notifyListeners();
+      // Call Supabase RPC
+      final response = await _supabaseClient.rpc(
+        'sp_get_collection_by_fund',
+        params: {
+          'p_church_id': churchId,
+          'p_fund_id': fundId,
+        },
+      );
+
+      // Validate response
+      if (response == null || response.isEmpty) {
+        throw FinancialDataException(
+            'No financial data found for the given Church.');
+      }
+
+      _churchFinances = response;
+      notifyListeners();
+
+      return response;
+    } on PostgrestException catch (error) {
+      // PostgresErrorHandler.showErrorDialog(context, error);
+      _isLoadingFunds = false;
+      notifyListeners();
+      final errorResponse = PostgresErrorHandler.handleError(error);
+      return {
+        'success': false,
+        'status_code': 404,
+        'message': errorResponse.message,
+        'transaction_list': [],
+      };
+    } on TimeoutException {
+      _isLoadingFunds = false;
+      notifyListeners();
+      debugPrint('Contributions list request timed out');
+      return {
+        'success': false,
+        'status_code': 408,
+        'message': 'Request timed out',
+        'fund_list': [],
+      };
+    } on Exception catch (error) {
+      _isLoadingFunds = false;
+      notifyListeners();
+      debugPrint('Failed to load Contributions: $error');
+      return {
+        'success': false,
+        'status_code': 500,
+        'message': 'Failed to load Contributions: ${error.toString()}',
+        'fund_list': [],
+      };
+    }
+  }
+
+
 
 
 
@@ -645,6 +704,60 @@ class FinanceViewModel with ChangeNotifier {
       };
     }
   }
+
+
+  // Authorize transaction
+  Future<Map<String, dynamic>> authorizeTransaction(
+      Map<String, dynamic> transaction, String userId) async {
+    try {
+      final churchId = int.parse(_authServices.userMetaData!['church_id']);
+
+      // Authorize the transaction
+      // Update the transaction in the database
+      final data = await _supabaseClient
+          .from('transactions')
+          .update({
+            'expenses_type_id': transaction['expenses_type_id'],
+            'transaction_amount': transaction['transaction_amount'],
+            'transaction_description': transaction['transaction_description'],
+            'payment_method': transaction['payment_method'],
+            'authorized_by_profile_id': userId,
+            'authorization_status': 'APPROVED',
+            'fund_id': transaction['fund_id'],
+          })
+          .eq('transaction_id', transaction['transaction_id'])
+          .eq('church_id', churchId);
+
+
+      // // Refresh the transaction list
+      // await getTransactionList(null);
+
+      return {
+        'status': 'Success',
+        'message': 'Transaction authorized successfully',
+        // 'transaction_id': data[0]['transaction_id'],
+      };
+    } on PostgrestException catch (error, stackTrace) {
+      // PostgresErrorHandler.showErrorDialog(context, error);
+      final errorResponse = PostgresErrorHandler.handleError(error);
+      return {
+        'status': 'Error',
+        'message': errorResponse.message,
+        // 'transaction_id': null,
+      };
+      // PostgresErrorHandler.logError(error, stackTrace);
+    } catch (e) {
+      debugPrint('Error authorizing transaction: $e');
+      return {
+        'status': 'Error',
+        'message': 'Failed to authorize transaction: $e',
+        // 'transaction_id': null,
+      };
+    }
+  }
+
+
+
 
   // Delete Transaction
   Future<void> deleteTransaction(int transactionId) async {

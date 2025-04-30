@@ -17,7 +17,6 @@ import 'package:go_router/go_router.dart';
 
 class FundsDetailsView extends HookWidget {
   final FinanceViewModel financeViewModel;
-
   final FundModel fundModel;
   const FundsDetailsView(
       {super.key, required this.financeViewModel, required this.fundModel});

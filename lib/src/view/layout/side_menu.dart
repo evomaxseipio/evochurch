@@ -1,4 +1,5 @@
 import 'package:evochurch/src/routes/app_route_constants.dart';
+import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/menu_state_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -23,7 +24,9 @@ class SideMenu extends HookWidget {
     final menuState = context.watch<MenuStateProvider>();
 
     return Container(
-      color: Theme.of(context).appBarTheme.surfaceTintColor,
+      color: context.isDarkMode
+          ? Theme.of(context).appBarTheme.surfaceTintColor
+          : Theme.of(context).primaryColor.withOpacity(0.9),
       height: double.infinity,
       width: showOnlyIcon ? 200 : 1000,
       child: SingleChildScrollView(
@@ -39,20 +42,31 @@ class SideMenu extends HookWidget {
                 Icons.supervisor_account_rounded, '/members'),
             _buildExpandableGroup(
               context,
-              title:'Finances',
+              title: 'Finances',
               icon: Icons.monetization_on_rounded,
               // isExpanded,
               // '/finances',
               childrenRoutes: [
-                _buildMenuItem(context, 'Transaction List', FontAwesomeIcons.listCheck, MyAppRouteConstants.transactionRouteName, isChild: true),
-                _buildMenuItem(context, 'Funds', FontAwesomeIcons.handHoldingDollar, '/finances/funds', isChild: true),
-                _buildMenuItem(context, 'Contributions List', FontAwesomeIcons.sackDollar, '/finances/contributions', isChild: true),
+                _buildMenuItem(
+                    context,
+                    'Transaction List',
+                    FontAwesomeIcons.listCheck,
+                    MyAppRouteConstants.transactionRouteName,
+                    isChild: true),
+                _buildMenuItem(context, 'Funds',
+                    FontAwesomeIcons.handHoldingDollar, '/finances/funds',
+                    isChild: true),
+                _buildMenuItem(context, 'Contributions List',
+                    FontAwesomeIcons.sackDollar, '/finances/contributions',
+                    isChild: true),
               ],
             ),
             // _buildMenuItem(context, languageModel.evochurch.finances,
             //     Icons.monetization_on_rounded, '/finances'),
-            _buildMenuItem(context, languageModel.evochurch.services, Icons.church_rounded, '/services'),
-            _buildMenuItem(context, languageModel.evochurch.events, Icons.event_available_rounded, '/events'),
+            /*_buildMenuItem(context, languageModel.evochurch.services,
+                Icons.church_rounded, '/services'),
+            _buildMenuItem(context, languageModel.evochurch.events,
+                Icons.event_available_rounded, '/events'),*/
 
             EvoBox.h10,
             showOnlyIcon
@@ -68,18 +82,26 @@ class SideMenu extends HookWidget {
               // isExpanded,
               // '/',
               childrenRoutes: [
-                _buildMenuItem(context, languageModel.evochurch.expenses, Icons.money_off_outlined, '/expenses'),
+                _buildMenuItem(context, languageModel.evochurch.expenses,
+                    Icons.money_off_outlined, '/expenses'),
 
                 _buildMenuItem(context, 'Payment Methods',
                     Icons.payments_rounded, '/donations/one-time'),
                 // _buildMenuItem(context, languageModel.evochurch.finances,
                 //     Icons.monetization_on_rounded, '/finances'),
-                _buildMenuItem(context, languageModel.evochurch.services, Icons.church_rounded, '/services'),
-                _buildMenuItem(context, languageModel.evochurch.events, Icons.event_available_rounded, '/events'),
-                _buildMenuItem(context, languageModel.evochurch.users, Icons.supervisor_account_rounded, MyAppRouteConstants.usersConfigRouteName, ),
+                // _buildMenuItem(context, languageModel.evochurch.services,
+                //     Icons.church_rounded, '/services'),
+                // _buildMenuItem(context, languageModel.evochurch.events,
+                //     Icons.event_available_rounded, '/events'),
+                _buildMenuItem(
+                  context,
+                  languageModel.evochurch.users,
+                  Icons.supervisor_account_rounded,
+                  MyAppRouteConstants.usersConfigRouteName,
+                ),
               ],
             ),
-            _buildExpandableGroup(
+            /* _buildExpandableGroup(
               context,
               title: 'Constributions',
               icon: Icons.monetization_on_outlined,
@@ -135,7 +157,7 @@ class SideMenu extends HookWidget {
                 _buildMenuItem(context, 'Reports', Icons.insert_chart,
                     '/attendance/reports'),
               ],
-            ),
+            ),*/
 
             const SizedBox(height: 20),
           ],
@@ -145,16 +167,18 @@ class SideMenu extends HookWidget {
   }
 
   Widget _buildMenuItem(
-      BuildContext context, String title, IconData icon, String route, {bool isChild = false}) {
+      BuildContext context, String title, IconData icon, String route,
+      {bool isChild = false}) {
     final isActive = GoRouterState.of(context).matchedLocation == route;
 
     return InkWell(
       onTap: () {
-        final menuState = Provider.of<MenuStateProvider>(context, listen: false);
+        final menuState =
+            Provider.of<MenuStateProvider>(context, listen: false);
         if (!isChild) {
           menuState.isChild = false;
-        } 
-        
+        }
+
         context.go(route);
       },
       child: Padding(
@@ -166,15 +190,18 @@ class SideMenu extends HookWidget {
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color:
-                isActive ? Colors.orange.withOpacity(0.1) : Colors.transparent,
+            color: isActive
+                ? Colors.blue.shade400.withOpacity(0.9)
+                : Colors.transparent,
           ),
           child: Row(
             children: [
               Icon(
                 icon,
-                color: isActive ? Colors.orange.shade700 : Colors.grey.shade400,
-                size: 20,
+                color: isActive
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Colors.grey.shade400,
+                size: isActive ? 22 : 20,
               ),
               if (!showOnlyIcon) ...[
                 const SizedBox(width: 10),
@@ -182,9 +209,10 @@ class SideMenu extends HookWidget {
                   title,
                   style: TextStyle(
                     color: isActive
-                        ? Colors.orange.shade700
+                        ? Theme.of(context).colorScheme.onPrimary
                         : Colors.grey.shade400,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w100,
+                    fontSize: isActive ? 16 : 14,
                   ),
                 ),
               ],
@@ -195,7 +223,7 @@ class SideMenu extends HookWidget {
     );
   }
 
- Widget _buildExpandableGroup(
+  Widget _buildExpandableGroup(
     BuildContext context, {
     required String title,
     required IconData icon,
@@ -215,20 +243,22 @@ class SideMenu extends HookWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Container(
               height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 16),              
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: isOpen
-                    ? Colors.orange.withOpacity(0.1)
-                    : Colors.transparent,
+                    ? Colors.transparent
+                    : Theme.of(context).appBarTheme.surfaceTintColor,
+                // : Colors.transparent,
               ),
               child: Row(
                 children: [
                   Icon(
                     icon,
-                    color:
-                        isOpen ? Colors.orange.shade700 : Colors.grey.shade400,
-                    size: 20,
+                    color: isOpen
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : Colors.grey.shade400,
+                    size: isOpen ? 22 : 20,
                   ),
                   if (!showOnlyIcon) ...[
                     EvoBox.w10,
@@ -237,16 +267,17 @@ class SideMenu extends HookWidget {
                         title,
                         style: TextStyle(
                           color: isOpen
-                              ? Colors.orange.shade700
+                              ? Theme.of(context).colorScheme.onPrimary
                               : Colors.grey.shade400,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w100,
+                          fontSize: isOpen ? 16 : 14,
                         ),
                       ),
                     ),
                     Icon(
                       isOpen ? Icons.expand_less : Icons.expand_more,
                       color: isOpen
-                          ? Colors.orange.shade700
+                          ? Theme.of(context).colorScheme.onPrimary
                           : Colors.grey.shade400,
                       size: 20,
                     ),
@@ -257,15 +288,26 @@ class SideMenu extends HookWidget {
           ),
         ),
         if (isOpen)
-          Padding(
-            padding: const EdgeInsets.only(left: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: childrenRoutes,
+          Container(
+            decoration: BoxDecoration(
+              // color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary,
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: const EdgeInsets.only(left: 30, right: 8, bottom: 8),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  top: 10, bottom: 10, left: 10, right: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: childrenRoutes,
+              ),
             ),
           )
       ],
     );
   }
-
 }

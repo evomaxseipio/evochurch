@@ -194,7 +194,7 @@ class DesktopLoginLayout extends HookWidget {
                         },
                         hintText: "Email Address",
                         prefixIcon: Icon(
-                          Icons.person,
+                          Icons.email_outlined,
                           color: theme.primaryColor,
                         ),
                         suffixIcon: null),
@@ -227,7 +227,7 @@ class DesktopLoginLayout extends HookWidget {
                             isPasswordVisible.value = !isPasswordVisible.value,
                       ),
                       prefixIcon: Icon(
-                        Icons.lock,
+                        Icons.lock_clock_outlined,
                         color: theme.primaryColor,
                       ),
                     ),

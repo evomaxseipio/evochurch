@@ -98,7 +98,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Evo Church Admin',
 
       scrollBehavior: SBehavior(),
-      theme: FlexThemeData.light(scheme: FlexScheme.deepPurple), // Light theme
+      theme: FlexThemeData.light(scheme: FlexScheme.sanJuanBlue), // Light theme
       darkTheme:
           FlexThemeData.dark(scheme: FlexScheme.bahamaBlue), // Dark theme
       // The Mandy red, light theme.

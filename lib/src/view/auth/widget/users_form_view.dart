@@ -83,7 +83,7 @@ void callUserFormModal(BuildContext context, {AdminUser? user}) {
                                 label: 'Church Member',
                                 field: 'profileId',
                                 isReadOnly:
-                                    memberId.value.isEmpty ? true : false);
+                                    memberId.value.isEmpty ? false : true);
                           },
                         );
                       },
