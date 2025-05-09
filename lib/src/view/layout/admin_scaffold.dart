@@ -40,6 +40,34 @@ class AdminScaffold extends StatelessWidget {
           ),
         ],
       ),
+      // show the bottom navigation bar only on mobile devices
+      bottomNavigationBar: isLargeOrMediumWeb
+          ? null
+          : BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.group_outlined),
+                  label: 'Members',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.attach_money_outlined),
+                  label: 'Finances',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  label: 'Settings',
+                ),
+              ],
+              currentIndex: 0,
+              onTap: (index) {
+                // Handle bottom navigation bar item tap
+              },
+            ),
     );
   }
 
@@ -206,12 +234,15 @@ class AdminScaffold extends StatelessWidget {
             ),
           ),
           EvoBox.h2,
-          Center(
-            child: EvoCustomText(
-              title: EvoStrings.footerText,
-              textColor: EvoColor.lightGray,
+          // show the footer only on web page
+          if (EvoResponsive.isLargeWeb(context) ||
+              EvoResponsive.isMediumWeb(context))
+            Center(
+              child: EvoCustomText(
+                title: EvoStrings.footerText,
+                // textColor: EvoColor.lightGray,
+              ),
             ),
-          ),
           SafeArea(child: EvoBox.h2),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:evochurch/src/model/addres_model.dart';
 import 'package:evochurch/src/model/contact_model.dart';
 import 'package:evochurch/src/model/member_model.dart';
+import 'package:evochurch/src/view/members/widgets/personal_infomation_card.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:evochurch/src/widgets/modal/modal.dart';
@@ -11,7 +12,7 @@ import 'package:intl/intl.dart';
 import '../../constants/constant_index.dart';
 import '../../widgets/button/button.dart';
 import '../../widgets/maintanceWidgets/maintance_widgets.dart';
-import 'widgets/personal_infomation_card.dart';
+import '../../widgets/responsive_widgets.dart';
 
 class AddMember extends HookWidget {
   const AddMember({super.key});
@@ -85,7 +86,7 @@ callAddEmployeeModal(BuildContext context) {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInformationCard(
+                buildInformationCard(
                   'Personal Information',
                   [
                     // Name fields row
@@ -127,7 +128,7 @@ callAddEmployeeModal(BuildContext context) {
                   ],
                 ),
                 EvoBox.h12,
-                _buildInformationCard(
+                buildInformationCard(
                   'Address Information',
                   [
                     // Address row 1
@@ -152,7 +153,7 @@ callAddEmployeeModal(BuildContext context) {
                   ],
                 ),
                 EvoBox.h12,
-                _buildInformationCard(
+                buildInformationCard(
                   'Contact Information',
                   [
                     // Contact row
@@ -269,58 +270,8 @@ callAddEmployeeModal(BuildContext context) {
   );
 }
 
-// Helper method to create information cards with consistent styling
-Widget _buildInformationCard(String title, List<Widget> children) {
-  return Card(
-    margin: EdgeInsets.zero,
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Divider(),
-          const SizedBox(height: 8),
-          ...children,
-        ],
-      ),
-    ),
-  );
-}
 
-// Responsive row builder that switches between Row and Column based on screen width
-Widget buildResponsiveRow(List<Widget> children) {
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      if (constraints.maxWidth < 600) {
-        // For small screen (mobile), use Column
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children
-              .expand((widget) => [widget, const SizedBox(height: 12)])
-              .toList()
-            ..removeLast(),
-        );
-      } else {
-        // For larger screens, use Row
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children
-              .expand((widget) =>
-                  [Expanded(child: widget), const SizedBox(width: 10)])
-              .toList()
-            ..removeLast(),
-        );
-      }
-    },
-  );
-}
+
 
 void clear() {
   _memberControllers.forEach((key, value) {

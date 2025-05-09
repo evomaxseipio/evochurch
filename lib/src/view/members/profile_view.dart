@@ -1,12 +1,9 @@
-import 'package:evochurch/src/model/member_model.dart';
-import 'package:evochurch/src/view/members/member_maintance.dart';
-import 'package:evochurch/src/widgets/text/charts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
-import '../../constants/constant_index.dart';
+import 'package:evochurch/src/model/member_model.dart';
+import 'package:evochurch/src/view/members/member_maintance.dart';
 import '../../utils/responsive.dart';
-import '../../widgets/maintanceWidgets/maintance_widgets.dart';
 import 'members_index.dart';
 
 class ProfileView extends HookWidget {
@@ -17,6 +14,15 @@ class ProfileView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final selectedMenuItem = useState('Profile');
+    final scaffoldKey = useMemoized(() => GlobalKey<ScaffoldState>());
+    final isMobile = Responsive.isMobile(context);
+
+    void selectMenuItem(String item) {
+      selectedMenuItem.value = item;
+      if (isMobile) {
+        scaffoldKey.currentState?.closeDrawer();
+      }
+    }
 
     Widget getContent() {
       switch (selectedMenuItem.value) {
@@ -26,30 +32,6 @@ class ProfileView extends HookWidget {
           return const MembershipPage();
         case 'Finances':
           return MemberFinances(member: member);
-       /* case 'Contacts':
-          return Container(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: Text('Contacts Family Members',
-                  style: Theme.of(context).textTheme.headlineMedium),
-            ),
-          );
-        case 'Notifications':
-          return Container(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: Text('Notifications Content',
-                  style: Theme.of(context).textTheme.headlineMedium),
-            ),
-          );
-        case 'Reports':
-          return Container(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: Text('Data Export Content',
-                  style: Theme.of(context).textTheme.headlineMedium),
-            ),
-          );*/
         case 'Delete Account':
           return Container(
             padding: const EdgeInsets.all(24),
@@ -61,109 +43,135 @@ class ProfileView extends HookWidget {
       }
     }
 
-    return Scaffold(
-      body: Card(
-        child: Row(
-          children: [
-            // Sidebar
-            Responsive.isMobile(context)
-                ? const SizedBox.shrink()
-                : Container(
-                    width: 230,
-                    color: Theme.of(context).appBarTheme.surfaceTintColor,
-                    height: double.infinity,
-                    // decoration: BoxDecoration(
-                    //   color: Colors.white,
-                    //   border: Border(
-                    //     right: BorderSide(color: Colors.grey.shade200),
-                    //   ),
-
-                    // ),
-                    child: Column(
-                      children: [
-                        // Fixed header
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Text(
-                            'Account Settings',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                        ),
-                        // Scrollable menu items
-                        Expanded(
-                          child: ListView(
-                            padding: EdgeInsets.zero,
-                            children: [
-                              buildSidebarItem(
-                                'Profile',
-                                selectedMenuItem.value,
-                                Icons.person,
-                                onTap: () => selectedMenuItem.value = 'Profile',
-                              ),
-                              buildSidebarItem(
-                                'Membership',
-                                selectedMenuItem.value,
-                                Icons.group,
-                                onTap: () =>
-                                    selectedMenuItem.value = 'Membership',
-                              ),
-                              buildSidebarItem(
-                                'Finances',
-                                selectedMenuItem.value,
-                                Icons.attach_money,
-                                onTap: () =>
-                                    selectedMenuItem.value = 'Finances',
-                              ),
-                            /*  buildSidebarItem(
-                                'Contact Family',
-                                selectedMenuItem.value,
-                                Icons.family_restroom,
-                                onTap: () => selectedMenuItem.value = 'Contacts',
-                              ),
-                              buildSidebarItem(
-                                'Notifications',
-                                selectedMenuItem.value,
-                                Icons.notifications,
-                                onTap: () =>
-                                    selectedMenuItem.value = 'Notifications',
-                              ),
-                              // buildSidebarItem(
-                              //   'Billing',
-                              //   selectedMenuItem.value,
-                              //   onTap: () => selectedMenuItem.value = 'Billing',
-                              // ),
-                              buildSidebarItem(
-                                'Reports',
-                                selectedMenuItem.value,
-                                Icons.data_thresholding_outlined,
-                                onTap: () =>
-                                    selectedMenuItem.value = 'Reports',
-                              ),*/
-                              
-                              EvoBox.h40,
-                              // Delete account at the bottom
-                              buildSidebarItem(
-                                'Delete Account',
-                                selectedMenuItem.value,
-                                Icons.delete,
-                                isDestructive: true,
-                                onTap: () =>
-                                    selectedMenuItem.value = 'Delete Account',
-                              ),
-                              
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-            // Main Content
-            Expanded(
-              child: getContent(),
+    Widget buildSidebar() {
+      return ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          if (isMobile)
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                'Account Settings',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
             ),
-          ],
+          buildSidebarItem(
+            'Profile',
+            selectedMenuItem.value,
+            Icons.person,
+            onTap: () => selectMenuItem('Profile'),
+          ),
+          buildSidebarItem(
+            'Membership',
+            selectedMenuItem.value,
+            Icons.group,
+            onTap: () => selectMenuItem('Membership'),
+          ),
+          buildSidebarItem(
+            'Finances',
+            selectedMenuItem.value,
+            Icons.attach_money,
+            onTap: () => selectMenuItem('Finances'),
+          ),
+          const SizedBox(height: 40),
+          buildSidebarItem(
+            'Delete Account',
+            selectedMenuItem.value,
+            Icons.delete,
+            isDestructive: true,
+            onTap: () => selectMenuItem('Delete Account'),
+          ),
+        ],
+      );
+    }
+
+    Widget buildMobileLayout() {
+      return Scaffold(
+        key: scaffoldKey,
+        appBar: AppBar(
+          title: Text(selectedMenuItem.value),
+          leading: IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => scaffoldKey.currentState?.openDrawer(),
+          ),
+        ),
+        drawer: Drawer(
+          child: buildSidebar(),
+        ),
+        body: getContent(),
+      );
+    }
+
+    Widget buildDesktopLayout() {
+      return Scaffold(
+        body: Card(
+          child: Row(
+            children: [
+              // Sidebar
+              Container(
+                width: 230,
+                color: Theme.of(context).appBarTheme.surfaceTintColor,
+                height: double.infinity,
+                child: Column(
+                  children: [
+                    // Fixed header
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Text(
+                        'Account Settings',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                    ),
+                    // Scrollable menu items
+                    Expanded(
+                      child: buildSidebar(),
+                    ),
+                  ],
+                ),
+              ),
+              // Main Content
+              Expanded(
+                child: getContent(),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return isMobile ? buildMobileLayout() : buildDesktopLayout();
+  }
+
+  Widget buildSidebarItem(
+    String title,
+    String selectedItem,
+    IconData icon, {
+    bool isDestructive = false,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = title == selectedItem;
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isDestructive
+            ? Colors.red
+            : isSelected
+                ? Colors.blue
+                : Colors.grey,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDestructive
+              ? Colors.red
+              : isSelected
+                  ? Colors.blue
+                  : Colors.grey,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
+      selected: isSelected,
+      onTap: onTap,
     );
   }
 }

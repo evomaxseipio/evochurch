@@ -75,6 +75,7 @@ class EvoButton extends StatelessWidget {
     return TranslateOnHover(
       builder: (isHover) {
         return MaterialButton(
+          
           enableFeedback: enableFeedback,
           autofocus: autofocus,
           onPressed: onPressed,

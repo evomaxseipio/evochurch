@@ -1,5 +1,6 @@
 import 'package:evochurch/src/model/model_index.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
+import 'package:evochurch/src/widgets/widget_index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:intl/intl.dart';
@@ -23,20 +24,20 @@ class MemberMaintance extends HookWidget {
     final formKey = GlobalKey<FormState>();
     final profile = useState<Member?>(null);
     final editMode = useState<String?>(null);
-    final memberTextControllers = useState<Map<String, TextEditingController>>({});
-    final addressTextControllers = useState<Map<String, TextEditingController>>({});
-    final contactTextControllers = useState<Map<String, TextEditingController>>({});
+    final memberTextControllers =
+        useState<Map<String, TextEditingController>>({});
+    final addressTextControllers =
+        useState<Map<String, TextEditingController>>({});
+    final contactTextControllers =
+        useState<Map<String, TextEditingController>>({});
 
     if (member != null) {
       // viewModel.selectedMember = member;
       profile.value = member;
     }
 
-   useEffect(() {
-
-    try {
-      
-
+    useEffect(() {
+      try {
         // Initialize member controllers
         for (var field in membersControllers) {
           memberTextControllers.value[field] = TextEditingController();
@@ -96,10 +97,9 @@ class MemberMaintance extends HookWidget {
             contactTextControllers.value[key]?.text = value;
           });
         }
- 
-    } catch (e) {
-      print(e); 
-    }
+      } catch (e) {
+        print(e);
+      }
 
       // Cleanup function
       return () {
@@ -155,7 +155,8 @@ class MemberMaintance extends HookWidget {
                 nickName: memberTextControllers.value['nickName']!.text,
                 dateOfBirth: DateTime.parse(birthDate.toString()),
                 gender: memberTextControllers.value['gender']!.text,
-                maritalStatus:memberTextControllers.value['maritalStatus']!.text,
+                maritalStatus:
+                    memberTextControllers.value['maritalStatus']!.text,
                 nationality: memberTextControllers.value['nationality']!.text,
                 idType: memberTextControllers.value['idType']!.text,
                 idNumber: memberTextControllers.value['idNumber']!.text,
@@ -165,10 +166,12 @@ class MemberMaintance extends HookWidget {
                 address: addressData,
                 contact: contactData);
 
-            final responseData = await membersViewModel.updateMember(memberData, addressData, contactData);
+            final responseData = await membersViewModel.updateMember(
+                memberData, addressData, contactData);
 
             if (responseData!['status'] == 'Success') {
-              message ='Profile updated with ID: ${responseData['profile_id']} succesfully!!!';
+              message =
+                  'Profile updated with ID: ${responseData['profile_id']} succesfully!!!';
               // Process the form data
               if (!context.mounted) return;
               ScaffoldMessenger.of(context)
@@ -200,10 +203,6 @@ class MemberMaintance extends HookWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ProfileCard(
-        //   profile: currentMember!,
-        //   onEdit: () => editMode.value = 'profile',
-        // ),
         MemberTopMenu(
           onUpdate: updateMember,
           onPrint: printMember,
@@ -217,117 +216,96 @@ class MemberMaintance extends HookWidget {
             autovalidateMode: AutovalidateMode.disabled,
             child: ListView(
               children: [
-                InformationCard(
-                  title: 'Personal Information',
-                  onEdit: () => editMode.value =
-                      (editMode.value == 'personal') ? null : 'personal',
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('First Name', 'firstName',
-                                memberTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField('Last Name', 'lastName',
-                                memberTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField('Nick Name', 'nickName',
-                                memberTextControllers.value)),
-                      ],
-                    ),
+                buildInformationCard(
+                  'Personal Information',
+                  // title: 'Personal Information',
+                  // onEdit: () => editMode.value =
+                  //     (editMode.value == 'personal') ? null : 'personal',
+                  // children:
+                  [
+                    // Name fields row
+                    buildResponsiveRow([
+                      buildEditableField('First Name', 'firstName',
+                          memberTextControllers.value),
+                      buildEditableField(
+                          'Last Name', 'lastName', memberTextControllers.value),
+                      buildEditableField(
+                          'Nick Name', 'nickName', memberTextControllers.value),
+                    ]),
                     EvoBox.h16,
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildDateField(
-                                'Date of Birth',
-                                'dateOfBirth',
-                                context,
-                                memberTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownField('Gender', 'gender',
-                                memberTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownField('Marital Status',
-                                'maritalStatus', memberTextControllers.value)),
-                      ],
-                    ),
+                    // Personal details row
+                    buildResponsiveRow([
+                      buildDateField('Date of Birth', 'dateOfBirth', context,
+                          memberTextControllers.value,
+                          isRequired: false),
+                      buildDropdownField(
+                        'Gender',
+                        'gender',
+                        memberTextControllers.value,
+                      ),
+                      buildDropdownField(
+                        'Marital Status',
+                        'maritalStatus',
+                        memberTextControllers.value,
+                      ),
+                    ]),
                     EvoBox.h16,
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('Nationality',
-                                'nationality', memberTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownField('Id Type', 'idType',
-                                memberTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField('Id number', 'idNumber',
-                                memberTextControllers.value)),
-                      ],
-                    ),
+                    // ID information row
+                    buildResponsiveRow([
+                      buildEditableField(
+                        'Nationality',
+                        'nationality',
+                        memberTextControllers.value,
+                      ),
+                      buildDropdownField(
+                          'Id Type', 'idType', memberTextControllers.value,
+                          isRequired: false),
+                      buildEditableField(
+                          'Id number', 'idNumber', memberTextControllers.value,
+                          isRequired: false),
+                    ]),
                     EvoBox.h16,
                     //
                   ],
                 ),
                 EvoBox.h14,
-                InformationCard(
-                  title: 'Address Information',
-                  onEdit: () => editMode.value =
-                      (editMode.value == 'address') ? null : 'address',
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('Street Address',
-                                'streetAddress', addressTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField('Province',
-                                'stateProvince', addressTextControllers.value)),
-                      ],
-                    ),
+                buildInformationCard(
+                  'Address Information',
+                  [
+                    // Address row 1
+                    buildResponsiveRow([
+                      buildEditableField('Street Address', 'streetAddress',
+                          addressTextControllers.value,
+                          isRequired: false),
+                      buildEditableField('Province', 'stateProvince',
+                          addressTextControllers.value,
+                          isRequired: false),
+                    ]),
+
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('city/State', 'cityState',
-                                addressTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownField('Country', 'country',
-                                addressTextControllers.value)),
-                      ],
-                    ),
+
+                    // Address row 2
+                    buildResponsiveRow([
+                      buildEditableField('City/State', 'cityState',
+                          addressTextControllers.value),
+                      buildDropdownField(
+                          'Country', 'country', addressTextControllers.value),
+                    ]),
                   ],
                 ),
                 EvoBox.h14,
-                InformationCard(
-                  title: 'Contact Information',
-                  onEdit: () => editMode.value =
-                      (editMode.value == 'contact') ? null : 'contact',
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('Phone Number', 'phone',
-                                contactTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField('Mobile Phone',
-                                'mobilePhone', contactTextControllers.value)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField('Email', 'email',
-                                contactTextControllers.value)),
-                      ],
-                    ),
+                buildInformationCard(
+                  'Contact Information',
+                  [
+                    // Contact row
+                    buildResponsiveRow([
+                      buildEditableField(
+                          'Phone Number', 'phone', contactTextControllers.value),
+                      buildEditableField(
+                          'Mobile Phone', 'mobilePhone', contactTextControllers.value),
+                      buildEditableField('Email', 'email', contactTextControllers.value,
+                          isRequired: false),
+                    ]),
                   ],
                 ),
                 EvoBox.h14,

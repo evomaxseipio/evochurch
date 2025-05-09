@@ -4,19 +4,21 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import 'dart:html' as html;
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:share_plus/share_plus.dart';
 
 class CollectionExportService {
-  /// Export a list of data to Excel (Web)
+  /// Export a list of data to Excel (Mobile)
   static Future<void> exportToExcel({
     required List<Map<String, dynamic>> data,
     required List<String> headers,
-    required Map<String, String>
-        columnFormats, // Formatting for specific columns
+    required Map<String, String> columnFormats,
     String? fileName,
+    BuildContext? context,
+    bool share = false,
   }) async {
     // Create an Excel document
     final excel = Excel.createExcel();
@@ -25,7 +27,7 @@ class CollectionExportService {
     // Add headers
     for (var col = 0; col < headers.length; col++) {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: col + 1, rowIndex: 1))
-        ..value = TextCellValue(headers[col]) // Use TextCellValue for strings
+        ..value = TextCellValue(headers[col])
         ..cellStyle = CellStyle(
           bold: true,
           horizontalAlign: HorizontalAlign.Center,
@@ -46,18 +48,19 @@ class CollectionExportService {
           if (format == 'date') {
             final date = DateTime.tryParse(value);
             if (date != null) {
-              sheet.cell(CellIndex.indexByColumnRow(
-                  columnIndex: col, rowIndex: row + 1))
-                .value = TextCellValue(DateFormat('MMM dd, yyyy')
-                    .format(date)); // Use TextCellValue
+              sheet
+                      .cell(CellIndex.indexByColumnRow(
+                          columnIndex: col, rowIndex: row + 1))
+                      .value =
+                  TextCellValue(DateFormat('MMM dd, yyyy').format(date));
               continue;
             }
           } else if (format == 'currency') {
             final amount = double.tryParse(value) ?? 0.0;
             sheet.cell(
                 CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 2))
-              ..value = TextCellValue(NumberFormat.currency(symbol: '\$')
-                  .format(amount)) // Use TextCellValue
+              ..value = TextCellValue(
+                  NumberFormat.currency(symbol: '\$').format(amount))
               ..cellStyle = CellStyle(horizontalAlign: HorizontalAlign.Right);
             continue;
           }
@@ -66,7 +69,7 @@ class CollectionExportService {
         // Default value
         sheet.cell(
             CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row + 1))
-          ..value = TextCellValue(value); // Use TextCellValue
+          ..value = TextCellValue(value);
       }
     }
 
@@ -81,31 +84,25 @@ class CollectionExportService {
       throw Exception('Failed to generate Excel file');
     }
 
-    // Convert the file bytes to a Uint8List
-    final uint8List = Uint8List.fromList(fileBytes);
+    // Save to device storage
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = path.join(directory.path, fileName ?? 'export.xlsx');
+    final file = File(filePath);
+    await file.writeAsBytes(fileBytes);
 
-    // Create a Blob from the Uint8List
-    final blob = html.Blob([uint8List],
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-    // Create a download link
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.AnchorElement(href: url)
-      ..setAttribute('download', fileName ?? 'export.xlsx')
-      ..click();
-
-    // Clean up
-    html.Url.revokeObjectUrl(url);
+    // Handle the exported file (open or share)
+    await handleExportedFile(context, filePath, share: share);
   }
 
-  /// Export a list of data to PDF (Web)
+  /// Export a list of data to PDF (Mobile)
   static Future<void> exportToPDF({
     required List<Map<String, dynamic>> data,
     required List<String> headers,
-    required Map<String, String>
-        columnFormats, // Formatting for specific columns
+    required Map<String, String> columnFormats,
     String? fileName,
     String? title,
+    BuildContext? context,
+    bool share = false,
   }) async {
     // Create a PDF document
     final pdf = pw.Document();
@@ -169,31 +166,28 @@ class CollectionExportService {
       ),
     );
 
-    // Save the PDF as bytes
-    final pdfBytes = await pdf.save();
+    // Save the PDF to device storage
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = path.join(directory.path, fileName ?? 'export.pdf');
+    final file = File(filePath);
+    await file.writeAsBytes(await pdf.save());
 
-    // Create a Blob from the PDF bytes
-    final blob = html.Blob([pdfBytes], 'application/pdf');
-
-    // Create a download link
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.AnchorElement(href: url)
-      ..setAttribute('download', fileName ?? 'export.pdf')
-      ..click();
-
-    // Clean up
-    html.Url.revokeObjectUrl(url);
+    // Handle the exported file (open or share)
+    await handleExportedFile(context, filePath, share: share);
   }
 
   /// Handle file after export (open/share)
-  static Future<void> handleExportedFile(BuildContext context, String filePath,
-      {bool share = false}) async {
+  static Future<void> handleExportedFile(
+    BuildContext? context,
+    String filePath, {
+    bool share = false,
+  }) async {
     if (share) {
       await Share.shareXFiles([XFile(filePath)], text: 'Exported File');
     } else {
-      final result = await OpenFile.open(filePath);
-      if (result.type != ResultType.done) {
-        if (context.mounted) {
+      if (context != null && context.mounted) {
+        final result = await OpenFile.open(filePath);
+        if (result.type != ResultType.done) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
                 content: Text('Could not open the file: ${result.message}')),

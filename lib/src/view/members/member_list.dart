@@ -21,7 +21,6 @@ import 'add_member.dart';
 
 // final viewModel = MembersViewModel();
 
-
 class MemberList extends HookWidget {
   const MemberList({super.key});
 
@@ -29,7 +28,8 @@ class MemberList extends HookWidget {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MembersViewModel>(context, listen: false);
     final fundViewModel = Provider.of<FinanceViewModel>(context, listen: false);
-    final collectionViewModel = Provider.of<CollectionViewModel>(context, listen: false);
+    final collectionViewModel =
+        Provider.of<CollectionViewModel>(context, listen: false);
 
     final memberList = useState<List<Member>>([]);
     final isLoading = useState<bool>(true);
@@ -65,7 +65,7 @@ class MemberList extends HookWidget {
           debugPrint('Failed to load members: $e');
           isLoading.value = false;
         }
-      }     
+      }
 
       fetchMembers();
       return () {
@@ -74,7 +74,7 @@ class MemberList extends HookWidget {
       };
     }, []);
 
-    void _handleMemberAction(
+    void handleMemberAction(
         BuildContext context, String action, Member member) {
       switch (action) {
         case 'edit':
@@ -138,141 +138,312 @@ class MemberList extends HookWidget {
           ? const Center(child: CircularProgressIndicator())
           : memberList.value.isEmpty
               ? const Center(child: Text('No Members Found'))
-              : Column(
-                children: [
-                  Expanded(
-                    child: CustomPaginatedTable<Member>(
-                      title: 'Members Directory',
-                      data: memberList.value,
-                      columns: columns,
-                      getCells: (member) => [
-                        DataCell(Text('${member.firstName} ${member.lastName}')),
-                        DataCell(StatusChip(status: member.membershipRole!)),
-                        DataCell(Text(member.nationality)),
-                        DataCell(Text(member.contact!.email!)),
-                        DataCell(Text(member.contact!.phone!)),
-                        DataCell(Text(formatDate(member.dateOfBirth.toString()))),
-                      ],
-                      filterFunction: (member, query) {
-                        final lowercaseQuery = query.toLowerCase();
-                        return member.firstName
-                                .toLowerCase()
-                                .contains(lowercaseQuery) ||
-                            member.contact!.email!
-                                .toLowerCase()
-                                .contains(lowercaseQuery) ||
-                            member.membershipRole!
-                                .toLowerCase()
-                                .contains(lowercaseQuery) ||
-                            member.contact!.phone!.contains(query);
-                      },
-                      onRowTap: (member) {
-                        // Handle member selection
-                        debugPrint('Selected member: ${member.firstName}');
-                      },
-                      actionMenuBuilder: (context, member) => [
-                        const PopupMenuItem<String>(
-                          value: 'edit',
-                          child: ListTile(
-                            leading: Icon(Icons.edit_outlined),
-                            title: Text('Edit Member'),
-                            dense: true,
-                            visualDensity: VisualDensity.compact,
+              : ResponsiveMemberList(
+                  memberList: memberList,
+                  columns: columns,
+                  handleMemberAction: handleMemberAction),
+    );
+  }
+}
+
+class ResponsiveMemberList extends HookWidget {
+  const ResponsiveMemberList({
+    super.key,
+    required this.memberList,
+    required this.columns,
+    required this.handleMemberAction,
+  });
+
+  final ValueNotifier<List<Member>> memberList;
+  final List<SortColumn> columns;
+  final Function handleMemberAction;
+
+  @override
+  Widget build(BuildContext context) {
+    // Create a search query state
+    final searchQuery = useState('');
+
+    // Create and manage the filtered list with useEffect
+    final filteredList = useState<List<Member>>([...memberList.value]);
+
+    // Effect to update filtered list when original list or search changes
+    useEffect(() {
+      void updateFilteredList() {
+        if (searchQuery.value.isEmpty) {
+          filteredList.value = [...memberList.value];
+          return;
+        }
+
+        final lowercaseQuery = searchQuery.value.toLowerCase();
+        filteredList.value = memberList.value.where((member) {
+          return member.firstName.toLowerCase().contains(lowercaseQuery) ||
+              member.lastName.toLowerCase().contains(lowercaseQuery) ||
+              member.contact!.email!.toLowerCase().contains(lowercaseQuery) ||
+              member.membershipRole!.toLowerCase().contains(lowercaseQuery) ||
+              member.contact!.phone!.contains(searchQuery.value);
+        }).toList();
+      }
+
+      // Initial filter
+      updateFilteredList();
+
+      // Listen for changes in the original list
+      listener() => updateFilteredList();
+      memberList.addListener(listener);
+
+      // Cleanup
+      return () => memberList.removeListener(listener);
+    }, [memberList, searchQuery.value]);
+
+    // Determine if we're on a mobile device based on screen width
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
+    return Column(
+      children: [
+        Expanded(
+          child: isMobile
+              ? _buildMobileView(context, filteredList.value, searchQuery)
+              : _buildWebView(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWebView(BuildContext context) {
+    return CustomPaginatedTable<Member>(
+      title: 'Members Directory',
+      data: memberList.value,
+      columns: columns,
+      getCells: (member) => [
+        DataCell(Text('${member.firstName} ${member.lastName}')),
+        DataCell(StatusChip(status: member.membershipRole!)),
+        DataCell(Text(member.nationality)),
+        DataCell(Text(member.contact!.email!)),
+        DataCell(Text(member.contact!.phone!)),
+        DataCell(Text(formatDate(member.dateOfBirth.toString()))),
+      ],
+      filterFunction: (member, query) {
+        final lowercaseQuery = query.toLowerCase();
+        return member.firstName.toLowerCase().contains(lowercaseQuery) ||
+            member.contact!.email!.toLowerCase().contains(lowercaseQuery) ||
+            member.membershipRole!.toLowerCase().contains(lowercaseQuery) ||
+            member.contact!.phone!.contains(query);
+      },
+      onRowTap: (member) {
+        debugPrint('Selected member: ${member.firstName}');
+      },
+      actionMenuBuilder: _buildActionMenu,
+      onActionSelected: (action, member) {
+        handleMemberAction(context, action, member);
+      },
+      tableButtons: _buildTableButtons(context),
+    );
+  }
+
+  Widget _buildMobileView(BuildContext context, List<Member> filteredMembers,
+      ValueNotifier<String> searchQuery) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Members Directory',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: _buildTableButtons(context)
+                    .map((button) => Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: IconButton.filled(
+                            onPressed: button.onPressed,
+                            icon: button.icon ?? const Icon(Icons.help_outline),
+                            // label: Text(button.text),
                           ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'tithes',
-                          child: ListTile(
-                            leading: Icon(EvoIcons.tithes.icon),
-                            title: const Text('Add Tithes'),
-                            dense: true,
-                            visualDensity: VisualDensity.compact,
+                        ))
+                    .toList(),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: TextField(
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search members...',
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            ),
+            onChanged: (query) => searchQuery.value = query,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: Card(
+            // margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            elevation: 2,
+            shadowColor: Theme.of(context).shadowColor,
+            child: filteredMembers.isEmpty
+                ? const Center(
+                    child:
+                        Text('No members found matching your search criteria'),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView.builder(
+                      itemCount: filteredMembers.length,
+                      itemBuilder: (context, index) {
+                        final member = filteredMembers[index];
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
-                        ),
-                         PopupMenuItem<String>(
-                          value: 'donations',
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          elevation: 2,
+                          shadowColor: Theme.of(context).shadowColor,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 4.0),
                           child: ListTile(
-                            leading: Icon(EvoIcons.offering.icon),
-                            title: const Text('Add Contributions'),
-                            dense: true,
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'message',
-                          child: ListTile(
-                            leading: Icon(Icons.message_outlined),
-                            title: Text('Send Message'),
-                            dense: true,
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ),
-                        const PopupMenuItem<String>(
-                            value: 'configusers',
-                            child: ListTile(
-                              leading: Icon(Icons.supervisor_account_outlined),
-                              title: Text('Create App User'),
-                              dense: true,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                        const PopupMenuDivider(),
-                        const PopupMenuItem<String>(
-                          value: 'delete',
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
-                            ),
                             title: Text(
-                              'Delete Member',
-                              style: TextStyle(color: Colors.red),
+                              '${member.firstName} ${member.lastName}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
-                            dense: true,
-                            visualDensity: VisualDensity.compact,
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(member.nationality),
+                                Text(member.contact!.phone!),
+                                StatusChip(status: member.membershipRole!),
+                              ],
+                            ),
+                            isThreeLine: true,
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (action) {
+                                handleMemberAction(context, action, member);
+                              },
+                              itemBuilder: (context) =>
+                                  _buildActionMenu(context, member),
+                            ),
+                            onTap: () {
+                              debugPrint(
+                                  'Selected member: ${member.firstName}');
+                            },
                           ),
-                        ),
-                      ],
-                      onActionSelected: (action, member) {
-                        _handleMemberAction(context, action, member);
+                        );
                       },
-                      tableButtons: [
-                        CustomTableButton(
-                          text: 'Add Member',
-                          icon: const Icon(Icons.person_add_alt_1_rounded),
-                          onPressed: () {
-                            debugPrint('Add Member');
-                            callAddEmployeeModal(context);
-                    
-                            // context.goNamed(
-                            // MyAppRouteConstants.memberProfileRouteName,
-                            // extra: null);
-                          },
-                        ),
-                        CustomTableButton(
-                          text: 'Print',
-                          icon: const Icon(Icons.print),
-                          onPressed: () async {
-                            debugPrint('Print PDF');
-                            final viewModel = MembersViewModel();
-                            // final user = await viewModel.updateUserMetaData();
-                            // debugPrint(user.toString());
-                          },
-                        ),
-                        CustomTableButton(
-                          text: 'Export',
-                          icon: const Icon(Icons.download),
-                          onPressed: () {
-                            debugPrint('debugPrint PDF');
-                          },
-                        ),
-                        // Add more buttons as needed
-                      ],
                     ),
                   ),
-                ],
-              ),
-      
+          ),
+        ),
+      ],
     );
+  }
+
+  List<PopupMenuItem<String>> _buildActionMenu(
+      BuildContext context, Member member) {
+    return [
+      const PopupMenuItem<String>(
+        value: 'edit',
+        child: ListTile(
+          leading: Icon(Icons.edit_outlined),
+          title: Text('Edit Member'),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      PopupMenuItem<String>(
+        value: 'tithes',
+        child: ListTile(
+          leading: Icon(EvoIcons.tithes.icon),
+          title: const Text('Add Tithes'),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      PopupMenuItem<String>(
+        value: 'donations',
+        child: ListTile(
+          leading: Icon(EvoIcons.offering.icon),
+          title: const Text('Add Contributions'),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      const PopupMenuItem<String>(
+        value: 'message',
+        child: ListTile(
+          leading: Icon(Icons.message_outlined),
+          title: Text('Send Message'),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      const PopupMenuItem<String>(
+        value: 'configusers',
+        child: ListTile(
+          leading: Icon(Icons.supervisor_account_outlined),
+          title: Text('Create App User'),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      // const PopupMenuDivider<String>(),
+      const PopupMenuItem<String>(
+        value: 'delete',
+        child: ListTile(
+          leading: Icon(
+            Icons.delete_outline,
+            color: Colors.red,
+          ),
+          title: Text(
+            'Delete Member',
+            style: TextStyle(color: Colors.red),
+          ),
+          dense: true,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+    ];
+  }
+
+  List<CustomTableButton> _buildTableButtons(BuildContext context) {
+    return [
+      CustomTableButton(
+        text: 'Add Member',
+        icon: const Icon(Icons.person_add_alt_1_rounded),
+        onPressed: () {
+          debugPrint('Add Member');
+          callAddEmployeeModal(context);
+        },
+      ),
+      CustomTableButton(
+        text: 'Print',
+        icon: const Icon(Icons.print),
+        onPressed: () async {
+          debugPrint('Print PDF');
+          final viewModel = MembersViewModel();
+        },
+      ),
+      CustomTableButton(
+        text: 'Export',
+        icon: const Icon(Icons.download),
+        onPressed: () {
+          debugPrint('Export PDF');
+        },
+      ),
+    ];
   }
 }

@@ -3,6 +3,7 @@ import 'package:evochurch/src/model/church_finance_model.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view/finances/widgets/add_donations_modal.dart';
 import 'package:evochurch/src/widgets/button/button.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -429,7 +430,7 @@ class ChurchContributionDatatable extends HookWidget {
       children: [
         // create button call new contribution modal
         EvoButton(
-          hoverColor:  EvoColor.primary.withOpacity(0.9),
+          hoverColor: EvoColor.primary.withOpacity(0.9),
           text: 'Add Tithes',
           onPressed: () {
             // callDonationModal(context, member, 'Diezmos');
@@ -451,33 +452,36 @@ class ChurchContributionDatatable extends HookWidget {
             text: 'Exportar',
             onPressed: () async {
               try {
-                final filePath = await CollectionExportService.exportToExcel(
-                  data: collectionTransaction
-                      .map((transaction) => {
-                            'collection_date': transaction.collectionDate,
-                            'collection_type_name':
-                                transaction.collectionTypeName,
-                            'collection_amount': transaction.collectionAmount,
-                            'payment_method': transaction.paymentMethod,
-                            'comments': transaction.comments,
-                            'is_anonymous': transaction.isAnonymous,
-                          })
-                      .toList(),
-                  headers: [
-                    'collection_date',
-                    'collection_type_name',
-                    'collection_amount',
-                    'payment_method',
-                    'comments',
-                    'is_anonymous',
-                  ],
-                  columnFormats: {
-                    'collection_date': 'date',
-                    'collection_amount': 'currency',
-                  },
-                  fileName: 'collection_list.xlsx',
-                );
-
+                // Call the export service to export data to Excel
+                // only if web
+                if (kIsWeb) {
+                  final filePath = await CollectionExportService.exportToExcel(
+                    data: collectionTransaction
+                        .map((transaction) => {
+                              'collection_date': transaction.collectionDate,
+                              'collection_type_name':
+                                  transaction.collectionTypeName,
+                              'collection_amount': transaction.collectionAmount,
+                              'payment_method': transaction.paymentMethod,
+                              'comments': transaction.comments,
+                              'is_anonymous': transaction.isAnonymous,
+                            })
+                        .toList(),
+                    headers: [
+                      'collection_date',
+                      'collection_type_name',
+                      'collection_amount',
+                      'payment_method',
+                      'comments',
+                      'is_anonymous',
+                    ],
+                    columnFormats: {
+                      'collection_date': 'date',
+                      'collection_amount': 'currency',
+                    },
+                    fileName: 'collection_list.xlsx',
+                  );
+                }
                 // Open or share the file
                 // CollectionExportService.handleExportedFile(context, filePath);
               } catch (e) {
