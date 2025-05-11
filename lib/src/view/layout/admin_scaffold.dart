@@ -190,14 +190,21 @@ class AdminScaffold extends StatelessWidget {
             height: double.infinity,
             minWidth: 60,
             onPressed: () => _handleMenuButtonPress(context),
-            child: SvgPicture.asset(
-              IconlyBroken.drawer,
-              width: 20,
-              height: 20,
+            child: Icon(
+              isOpen ? Icons.arrow_forward_ios_outlined : Icons.sort_outlined,
               color: context.isDarkMode
                   ? EvoColor.blueLightChartColor
                   : EvoColor.light,
             ),
+
+            // SvgPicture.asset(
+            //   IconlyBroken.drawer,
+            //   width: 20,
+            //   height: 20,
+            //   color: context.isDarkMode
+            //       ? EvoColor.blueLightChartColor
+            //       : EvoColor.light,
+            // ),
           ),
         );
       },

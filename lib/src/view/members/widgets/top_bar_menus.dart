@@ -23,40 +23,44 @@ class MemberTopMenu extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child:
             // Evaluate the screen mobile size and adjust the layout accordingly
-            Responsive.isMobile(context)
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: topBarMenuButtons(context, onUpdate, onPrint).map(
-                      (button) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Tooltip(
-                            message: button.text ?? '',
-                            child: IconButton.filled(
-                              onPressed: button.onPressed,
-                              icon:
-                                  button.icon ?? const Icon(Icons.help_outline),
-                            ),
-                          ),
-                        );
-                      },
-                    ).toList(),
-                  )
-                :
-                // For larger screens, use a Row layout with buttons
-                // insert Spacer() between buttons
-                Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    const Spacer(),
-                    ...topBarMenuButtons(context, onUpdate, onPrint)
-                        .expand((widget) => [
-                              Tooltip(message: widget.text!, child: widget),
-                              EvoBox.w10
-                            ])
-                        .toList()
-                      ..removeLast(),
-                  ]),
-        // children: [
+            (MediaQuery.of(context).size.width < 800)
+                ? buildMobileLayout(context)
+                : buildDesktopLayout(context),
       ),
+    );
+  }
+
+  // build desktop layout buttons
+  Widget buildDesktopLayout(BuildContext context) {
+    return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+      const Spacer(),
+      ...topBarMenuButtons(context, onUpdate, onPrint)
+          .expand((widget) =>
+              [Tooltip(message: widget.text!, child: widget), EvoBox.w10])
+          .toList()
+        ..removeLast(),
+    ]);
+  }
+
+  // build mobile layout buttons
+  Widget buildMobileLayout(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: topBarMenuButtons(context, onUpdate, onPrint).map(
+        (button) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Tooltip(
+              message: button.text ?? '',
+              child: IconButton.filled(
+                onPressed: button.onPressed,
+                icon: button.icon ?? const Icon(Icons.help_outline),
+              ),
+            ),
+          );
+        },
+      ).toList(),
     );
   }
 }

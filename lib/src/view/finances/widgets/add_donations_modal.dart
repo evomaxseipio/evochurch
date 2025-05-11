@@ -117,33 +117,30 @@ callDonationModal(BuildContext context, Member? member, String donationType) {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InformationCard(
-                  title: '${member!.firstName} ${member.lastName}',
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: buildDropdownField('Transaction Method',
-                              'paymentMethod', _collectionControllers),
-                        ),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownFieldNew(
+                buildInformationCard(
+                  '${member!.firstName} ${member.lastName}',
+                  [
+                    buildResponsiveRow(
+                      [
+                        buildDropdownFieldNew(
                           label: 'Contribution Type',
                           field: 'collectionType',
                           controllers: _collectionControllers,
                           items: donationType == 'Diezmos'
-                              ? collectionList 
-                              : collectionList.where((item) => item['collection_type_id'] != '1').toList(), // Filter only for one type
+                              ? collectionList
+                              : collectionList
+                                  .where((item) =>
+                                      item['collection_type_id'] != '1')
+                                  .toList(), // Filter only for one type
                           valueKey: 'collection_type_id',
                           displayKey: 'collection_type_name',
                           isRequired: true,
                           isReadOnly: donationType == 'Diezmos' ? true : false,
-                        )),
-                        EvoBox.w10,
+                        ),
+                        buildDropdownField('Transaction Method',
+                            'paymentMethod', _collectionControllers),
                         if (donationType != 'Diezmos')
-                          Expanded(
-                              child: buildDropdownFieldNew(
+                          buildDropdownFieldNew(
                             label: 'Fund',
                             field: 'fundId',
                             controllers: _collectionControllers,
@@ -151,33 +148,30 @@ callDonationModal(BuildContext context, Member? member, String donationType) {
                             valueKey: 'fund_id',
                             displayKey: 'fund_name',
                             isRequired: true,
-                          )),
+                          ),
                       ],
                     ),
                     EvoBox.h16,
                     // Diezmos fields
-                    Row(children: [
-                      Expanded(
-                          child: buildEditableField(
+                    buildResponsiveRow([
+                      buildEditableField(
                         'Amount',
                         'collectionAmount',
                         _collectionControllers,
                         isRequired: true,
                         isNumeric: true,
-                      )),
+                      ),
                       EvoBox.w10,
-                      Expanded(
-                          child: buildDateField('Contribution Date',
-                              'collectionDate', context, _collectionControllers,
-                              isRequired: true)),
+                      buildDateField('Contribution Date', 'collectionDate',
+                          context, _collectionControllers,
+                          isRequired: true),
                     ]),
                     EvoBox.h16,
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('Description',
-                                'collectionComments', _collectionControllers,
-                                isRequired: true, maxLine: 3)),
+                    buildResponsiveRow(
+                      [
+                        buildEditableField('Description', 'collectionComments',
+                            _collectionControllers,
+                            isRequired: true, maxLine: 3),
                       ],
                     ),
                   ],

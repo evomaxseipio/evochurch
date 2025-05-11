@@ -12,6 +12,7 @@ import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:evochurch/src/widgets/maintanceWidgets/status_chip_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -181,7 +182,10 @@ class ResponsiveMemberList extends HookWidget {
               member.contact!.email!.toLowerCase().contains(lowercaseQuery) ||
               member.membershipRole!.toLowerCase().contains(lowercaseQuery) ||
               member.contact!.phone!.contains(searchQuery.value);
-        }).toList();
+        }).toList()
+          ..sort((a, b) {
+            return a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase());
+          });
       }
 
       // Initial filter
@@ -196,13 +200,16 @@ class ResponsiveMemberList extends HookWidget {
     }, [memberList, searchQuery.value]);
 
     // Determine if we're on a mobile device based on screen width
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = MediaQuery.of(context).size.width < 800;
 
     return Column(
       children: [
         Expanded(
           child: isMobile
-              ? _buildMobileView(context, filteredList.value, searchQuery)
+              ? _buildMobileView(context, filteredList.value..sort(
+                  (a, b) => a.firstName.toLowerCase().compareTo(
+                      b.firstName.toLowerCase()),
+                ), searchQuery)
               : _buildWebView(context),
         ),
       ],

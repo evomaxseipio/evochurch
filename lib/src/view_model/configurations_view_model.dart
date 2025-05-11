@@ -23,6 +23,35 @@ late final Stream<List<AdminUser>> adminUsersStream1;
     loadUsers();
   }
 
+  Stream<Map<String, dynamic>> loadUser()  {
+    final churchId = authServices.userMetaData?['church_id'];
+
+    try {
+      final response = _supabaseClient.rpc(
+        'sp_get_admin_user_list',
+        params: {'p_church_id': churchId},
+      ).asStream().map((list) {
+      final users = AdminListResponse.fromJson(list);
+      
+
+        return {
+          'success': users.success,
+          'status_code': users.statusCode,
+          'message': users.message,
+          'users_list': users.adminList
+        };
+      }).handleError((error) {
+        debugPrint('Error in stream: $error'); // Debug log
+        throw Exception('Failed to load members: $error');
+      });
+      return response;
+    } catch (error) {
+      debugPrint('Error creating stream: $error');
+      return Stream.error(Exception('Failed to load members: $error'));
+    }
+  }
+
+
    Future<void> loadUsers() async {
     final churchId = await authServices.userMetaData?['church_id'];
 

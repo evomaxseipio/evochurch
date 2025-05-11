@@ -1,3 +1,4 @@
+import 'package:evochurch/src/widgets/loading.dart';
 import 'package:evochurch/src/widgets/widget_index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -142,74 +143,86 @@ class MembershipPage extends HookWidget {
         Expanded(
             child: Form(
           key: formKey.value,
-          child: ListView(children: [
-            buildInformationCard('Membership Information', [
-              buildResponsiveRow([
-                buildDateField('Baptism Date', 'baptismDate', context,
-                    membershipTextControllers.value),
-                buildEditableField('Baptism Church', 'baptismChurch',
-                    membershipTextControllers.value)
-              ]),
-              EvoBox.h16,
-              buildResponsiveRow([
-                buildEditableField('Baptism Pastor', 'baptismPastor',
-                    membershipTextControllers.value),
-                Consumer<MembersViewModel>(
-                    builder: (context, viewModel, child) {
-                  return buildDropdownField('Membership Role', 'membershipRole',
-                      membershipTextControllers.value,
-                      viewModel: viewModel);
-                }),
-              ]),
-              EvoBox.h16,
-              buildResponsiveRow([
-                buildEditableField('Baptism City', 'baptismChurchCity',
-                    membershipTextControllers.value),
-                buildEditableField('Baptism Country', 'baptismChurchCountry',
-                    membershipTextControllers.value),
-              ]),
-              EvoBox.h16,
-              buildResponsiveRow([
-                buildSwitchTile('Has Credential', 'hasCredential', context,
-                    membershipTextControllers.value),
-                buildSwitchTile('Is Baptized In Spirit', 'isBaptizedInSpirit',
-                    context, membershipTextControllers.value),
-              ]),
-            ]),
-            EvoBox.h16,
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'History Information',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+          child: // show a loading indicator if the data is loading
+              viewModel.isLoading
+                  ? simpleLoadingUI(context, 'Loading data...')
+                  : ListView(children: [
+                      buildInformationCard('Membership Information', [
+                        buildResponsiveRow([
+                          buildDateField('Baptism Date', 'baptismDate', context,
+                              membershipTextControllers.value),
+                          buildEditableField('Baptism Church', 'baptismChurch',
+                              membershipTextControllers.value)
+                        ]),
+                        EvoBox.h16,
+                        buildResponsiveRow([
+                          buildEditableField('Baptism Pastor', 'baptismPastor',
+                              membershipTextControllers.value),
+                          Consumer<MembersViewModel>(
+                              builder: (context, viewModel, child) {
+                            return buildDropdownField(
+                                'Membership Role',
+                                'membershipRole',
+                                membershipTextControllers.value,
+                                viewModel: viewModel);
+                          }),
+                        ]),
+                        EvoBox.h16,
+                        buildResponsiveRow([
+                          buildEditableField(
+                              'Baptism City',
+                              'baptismChurchCity',
+                              membershipTextControllers.value),
+                          buildEditableField(
+                              'Baptism Country',
+                              'baptismChurchCountry',
+                              membershipTextControllers.value),
+                        ]),
+                        EvoBox.h16,
+                        buildResponsiveRow([
+                          buildSwitchTile('Has Credential', 'hasCredential',
+                              context, membershipTextControllers.value),
+                          buildSwitchTile(
+                              'Is Baptized In Spirit',
+                              'isBaptizedInSpirit',
+                              context,
+                              membershipTextControllers.value),
+                        ]),
+                      ]),
+                      EvoBox.h16,
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    'History Information',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  EvoButton(
+                                    icon: const Icon(Icons.post_add_rounded),
+                                    onPressed: () {},
+                                    text: 'Add History',
+                                  )
+                                ],
+                              ),
+                              Divider(
+                                color: Colors.grey[300],
+                                thickness: 1,
+                              ),
+                              EvoBox.h16,
+                            ],
                           ),
                         ),
-                        const Spacer(),
-                        EvoButton(
-                          icon: const Icon(Icons.post_add_rounded),
-                          onPressed: () {},
-                          text: 'Add History',
-                        )
-                      ],
-                    ),
-                    Divider(
-                      color: Colors.grey[300],
-                      thickness: 1,
-                    ),
-                    EvoBox.h16,
-                  ],
-                ),
-              ),
-            ),
-          ]),
+                      ),
+                    ]),
         ))
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view/auth/widget/users_form_view.dart';
 import 'package:evochurch/src/view/configuration/widgets/users_form_dialog.dart';
+import 'package:evochurch/src/widgets/maintanceWidgets/status_chip_widget.dart';
 import 'package:evochurch/src/widgets/paginateDataTable/paginated_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -20,6 +21,9 @@ class UsersListView extends HookWidget {
     final userProvider = context.watch<ConfigurationsViewModel>();
     final adminUserList = useState<List<AdminUser>>(userProvider.users);
 
+    // Determine if we're on a mobile device based on screen width
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     // Fetch users on initial build
     useEffect(() {
       Future.microtask(() async {
@@ -30,7 +34,9 @@ class UsersListView extends HookWidget {
     }, [userProvider]); // Empty dependency array ensures this runs only once
 
     return Scaffold(
-      body: _buildBody(context, userProvider, adminUserList.value),
+      body: isMobile
+          ? _buildMobileView(context, userProvider, adminUserList.value)
+          : _buildBody(context, userProvider, adminUserList.value),
     );
   }
 
@@ -63,64 +69,129 @@ class UsersListView extends HookWidget {
         );
       },
     );
+  }
 
-    // if (userProvider.isLoading) {
-    //   return const Center(child: CircularProgressIndicator());
-    // }
-
-    // if (userProvider.error != null) {
-    //   return Center(child: Text(userProvider.error!));
-    // }
-
-    // return CustomPaginatedTable<AdminUser>(
-    //   title: 'Admin Users Directory',
-    //   data: userProvider.users,
-    //   columns: adminUserColumns,
-    //   getCells: (user) => [
-    //     ..._buildUserCells(user), // User data columns
-    //   ],
-    //   filterFunction: (user, query) => _filterUser(user, query),
-    //   onRowTap: (user) => _handleRowTap(user),
-    //   actionMenuBuilder: (context, member) => [
-    //     const PopupMenuItem<String>(
-    //       value: 'edit',
-    //       child: ListTile(
-    //         leading: Icon(Icons.edit_outlined),
-    //         title: Text('Edit User'),
-    //         dense: true,
-    //         visualDensity: VisualDensity.compact,
-    //       ),
-    //     ),
-    //      const PopupMenuItem<String>(
-    //       value: 'change_password',
-    //       child: ListTile(
-    //         leading: Icon(Icons.lock_reset_outlined),
-    //         title: Text('Change Password'),
-    //         dense: true,
-    //         visualDensity: VisualDensity.compact,
-    //       ),
-    //     ),
-
-    //     const PopupMenuDivider(),
-    //     const PopupMenuItem<String>(
-    //       value: 'delete',
-    //       child: ListTile(
-    //         leading: Icon(
-    //           Icons.delete_outline,
-    //           color: Colors.red,
-    //         ),
-    //         title: Text(
-    //           'Delete User',
-    //           style: TextStyle(color: Colors.red),
-    //         ),
-    //         dense: true,
-    //         visualDensity: VisualDensity.compact,
-    //       ),
-    //     ),
-    //   ],
-    //   onActionSelected: (action, user) => _handleAction(context, action, user),
-    //   tableButtons: _buildTableButtons(context),
-    // );
+  // build the mobile view
+  Widget _buildMobileView(
+    BuildContext context,
+    ConfigurationsViewModel userProvider,
+    List<AdminUser> adminUserList,
+  ) {
+    // Create a ValueNotifier to hold the search query
+    final searchQuery = useState<String>('');
+    // Filter the adminUserList based on the search query
+    final filteredAdminUserList = adminUserList
+        .where((user) => _filterUser(user, searchQuery.value))
+        .toList();
+    // Update the adminUserList state with the filtered list
+    adminUserList = filteredAdminUserList;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Users Directory',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: _buildTableButtons(context)
+                    .map((button) => Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: IconButton.filled(
+                            onPressed: button.onPressed,
+                            icon: button.icon ?? const Icon(Icons.help_outline),
+                            // label: Text(button.text),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0.0),
+          child: TextField(
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search members...',
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            ),
+            onChanged: (query) => searchQuery.value = query,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: Card(
+            // margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            elevation: 2,
+            shadowColor: Theme.of(context).shadowColor,
+            child: adminUserList.isEmpty
+                ? const Center(
+                    child:
+                        Text('No members found matching your search criteria'),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView.builder(
+                      itemCount: adminUserList.length,
+                      itemBuilder: (context, index) {
+                        final member = adminUserList[index];
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          elevation: 2,
+                          shadowColor: Theme.of(context).shadowColor,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 4.0),
+                          child: ListTile(
+                            title: Text(
+                              '${member.profileData} ${member.profileData.lastName}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(member.userEmail),
+                                StatusChip(status: member.profileData.role!),
+                              ],
+                            ),
+                            isThreeLine: true,
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (action) {
+                                _handleAction(context, action, member);
+                              },
+                              itemBuilder: (context) =>
+                                  _buildActionMenu(context, member),
+                            ),
+                            onTap: () {
+                              debugPrint(
+                                  'Selected member: ${member.profileData.firstName}');
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
   }
 
   List<PopupMenuEntry<String>> _buildActionMenu(
