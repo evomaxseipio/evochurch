@@ -22,8 +22,8 @@ void callUserFormModal(BuildContext context, {AdminUser? user}) {
     'email': TextEditingController(text: user?.userEmail ?? ''),
     'profileId': TextEditingController(text: user?.profileData.profileId.toString() ?? ''),
     'role': TextEditingController(text: user?.profileData.role ?? ''),
-    'password': TextEditingController(text: user?.userPassword ?? ''),
-    'confirmPassword': TextEditingController(text: user?.userPassword ?? ''),
+    'password': TextEditingController(),
+    'confirmPassword': TextEditingController(),
   };
 
   ValueNotifier<String> selectedRole =
