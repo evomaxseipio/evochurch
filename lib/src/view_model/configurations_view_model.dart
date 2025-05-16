@@ -20,7 +20,7 @@ class ConfigurationsViewModel extends ChangeNotifier {
 late final Stream<List<AdminUser>> adminUsersStream1;
 
   ConfigurationsViewModel() {
-    loadUsers();
+    loadUser();
   }
 
   Stream<Map<String, dynamic>> loadUser()  {
@@ -56,15 +56,39 @@ late final Stream<List<AdminUser>> adminUsersStream1;
     final churchId = await authServices.userMetaData?['church_id'];
 
     try {
-      final response = await _supabaseClient.rpc(
-        'sp_get_admin_user_list',
-        params: {'p_church_id': churchId},
-      );
-      final users = AdminListResponse.fromJson(response).adminList;
-      _adminUsersController.add(users);
-    } catch (e) {
-      _adminUsersController.addError(e);
+      final response = _supabaseClient.rpc('sp_get_admin_user_list').asStream().map((list) {
+        final users = AdminListResponse.fromJson(list).adminList;
+        _adminUsersController.add(users);
+        debugPrint('Users loaded: $users'); // Debug log
+        return {
+          'success': true,
+          'status_code': 200,
+          'message': 'Users loaded successfully',
+          'users_list': users
+        };
+      }).handleError((error) {
+        debugPrint('Error in stream: $error'); // Debug log
+        _adminUsersController.addError(error);
+        throw Exception('Failed to load members: $error');
+      });
+      
+    } catch (error) {
+      debugPrint('Error creating stream: $error');
+      _adminUsersController.addError(error);
     }
+
+        
+
+    // try {
+    //   final response = await _supabaseClient.rpc(
+    //     'sp_get_admin_user_list',
+    //     params: {'p_church_id': churchId},
+    //   );
+      
+    //   _adminUsersController.add(users);
+    // } catch (e) {
+    //   _adminUsersController.addError(e);
+    // }
   }
 
 

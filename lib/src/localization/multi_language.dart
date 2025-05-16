@@ -129,6 +129,12 @@ class _Evochurch {
   String get events => languageModel.translate('events');
   String get finances => languageModel.translate('finances');
   String get users => languageModel.translate('users');
+  String get groups => languageModel.translate('groups');
+  String get settings => languageModel.translate('settings');
+  String get profile => languageModel.translate('profile');
+  String get signIn => languageModel.translate('signIn');
+  String get signUp => languageModel.translate('signUp');
+  String get signOut => languageModel.translate('signOut');
 
 
   // Contributions

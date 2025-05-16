@@ -12,7 +12,6 @@ import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:evochurch/src/widgets/maintanceWidgets/status_chip_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
