@@ -4,7 +4,9 @@ import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/model/member_model.dart';
 import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:evochurch/src/utils/string_text_utils.dart';
+import 'package:evochurch/src/view/auth/widget/users_form_view.dart';
 import 'package:evochurch/src/view/finances/widgets/add_donations_modal.dart';
+import 'package:evochurch/src/view/message.dart';
 import 'package:evochurch/src/view_model/collection_view_model.dart';
 import 'package:evochurch/src/view_model/finance_view_model.dart';
 
@@ -104,6 +106,31 @@ class MemberList extends HookWidget {
           //   builder: (context) => SendMessageDialog(member: member),
           // );
           break;
+        case 'configusers':
+          // Handle user configuration
+          debugPrint('Configuring user for: ${member.membershipRole}');
+          // Validate if the member is a member
+          if (member.membershipRole != 'Visita') {
+            debugPrint('Member is a member');
+          } else {
+            debugPrint('Member is not a member');
+            if (!context.mounted) return;
+            CupertinoModalOptions.show(
+              modalType: ModalTypeMessage.error,
+              context: context,
+              title: 'Error Creating User',
+              message: '${member.firstName} is not a member',
+              actions: [
+                ModalAction(
+                  text: 'OK',
+                  onPressed: () => true,
+                ),
+              ],
+            );
+            return;
+          }
+          callUserFormModal(context, member: member);
+          break;
 
         case 'delete':
           // Show delete confirmation
@@ -183,7 +210,9 @@ class ResponsiveMemberList extends HookWidget {
               member.contact!.phone!.contains(searchQuery.value);
         }).toList()
           ..sort((a, b) {
-            return a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase());
+            return a.firstName
+                .toLowerCase()
+                .compareTo(b.firstName.toLowerCase());
           });
       }
 
@@ -205,10 +234,15 @@ class ResponsiveMemberList extends HookWidget {
       children: [
         Expanded(
           child: isMobile
-              ? _buildMobileView(context, filteredList.value..sort(
-                  (a, b) => a.firstName.toLowerCase().compareTo(
-                      b.firstName.toLowerCase()),
-                ), searchQuery)
+              ? _buildMobileView(
+                  context,
+                  filteredList.value
+                    ..sort(
+                      (a, b) => a.firstName
+                          .toLowerCase()
+                          .compareTo(b.firstName.toLowerCase()),
+                    ),
+                  searchQuery)
               : _buildWebView(context),
         ),
       ],

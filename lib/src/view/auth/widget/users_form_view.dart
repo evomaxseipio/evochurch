@@ -1,3 +1,4 @@
+import 'package:evochurch/src/model/member_model.dart';
 import 'package:evochurch/src/widgets/widget_index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +11,7 @@ import 'package:evochurch/src/widgets/button/button.dart';
 import 'package:evochurch/src/widgets/maintanceWidgets/maintance_widgets.dart';
 import 'package:evochurch/src/widgets/modal/modal.dart';
 
-void callUserFormModal(BuildContext context, {AdminUser? user}) {
+void callUserFormModal(BuildContext context, {AdminUser? user, Member? member}) {
   final memberViewModel = Provider.of<MembersViewModel>(context, listen: false);
   final usersProvider =
       Provider.of<ConfigurationsViewModel>(context, listen: false);
@@ -26,14 +27,25 @@ void callUserFormModal(BuildContext context, {AdminUser? user}) {
     'confirmPassword': TextEditingController(),
   };
 
-  ValueNotifier<String> selectedRole =
-      ValueNotifier(user?.profileData.role ?? '');
-  ValueNotifier<String> memberId =
-      ValueNotifier(user?.profileData.profileId.toString() ?? '');
+  ValueNotifier<String> selectedRole = ValueNotifier(user?.profileData.role ?? '');
+  ValueNotifier<String> memberId = ValueNotifier(user?.profileData.profileId.toString() ?? '');
 
-  void clearControllers() {
-    userControllers.forEach((key, controller) => controller.clear());
+  //Evaluate if member is null
+  if (member != null) {
+    memberId.value = member.memberId.toString();
+    userControllers['profileId']!.text = member.memberId.toString();
   }
+
+  // Clear controllers when the modal is closed
+  void clearControllers() {
+    userControllers.forEach((key, controller) {
+      controller.clear();
+    });
+    selectedRole.value = '';
+    memberId.value = '';
+  }
+
+
 
   EvoModal.showModal(
     context: context,

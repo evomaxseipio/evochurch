@@ -1,14 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-  enum ModalTypeMessage {
-    success,
-    error,
-    warning,
-    info,
-    confirmation,
-    deletion
-  }
+enum ModalTypeMessage { success, error, warning, info, confirmation, deletion }
+
 class CupertinoModalOptions {
   // Enum for modal types
 
@@ -16,23 +10,23 @@ class CupertinoModalOptions {
   static Future<bool?> show({
     // Required parameters
     required BuildContext context,
-    
+
     // Modal content parameters
     String? title,
     String? message,
-    
+
     // Modal type configuration
     ModalTypeMessage modalType = ModalTypeMessage.info,
-    
+
     // Action buttons configuration
     List<ModalAction>? actions,
-    
+
     // Visual and behavior options
     bool isDismissible = true,
     bool barrierDismissible = true,
     bool centerTitle = true,
     double? iconSize,
-    
+
     // Callback options
     VoidCallback? onClose,
   }) {
@@ -108,7 +102,17 @@ class CupertinoModalOptions {
                   ],
                 )
               : null,
-          content: message != null ? Text(message) : null,
+          content: message != null
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                )
+              : null,
           actions: (actions ?? defaultActions)
               .map(
                 (action) => CupertinoDialogAction(
@@ -119,7 +123,7 @@ class CupertinoModalOptions {
                     Navigator.of(context).pop(
                       action.onPressed?.call() ?? false,
                     );
-                    
+
                     // Call any additional onClose callback
                     onClose?.call();
                   },
@@ -220,7 +224,7 @@ class CupertinoModalDemo extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Confirmation Modal Button  
+            // Confirmation Modal Button
             CupertinoButton(
               color: CupertinoColors.systemPurple,
               child: const Text('Show Confirmation Modal'),
@@ -243,7 +247,7 @@ class CupertinoModalDemo extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Error Modal Button
             CupertinoButton(
               color: CupertinoColors.destructiveRed,
@@ -256,7 +260,7 @@ class CupertinoModalDemo extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            
+
             // Deletion Confirmation Button
             CupertinoButton(
               color: CupertinoColors.systemRed,

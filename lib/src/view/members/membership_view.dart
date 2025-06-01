@@ -74,6 +74,15 @@ class MembershipPage extends HookWidget {
             membershipTextControllers.value['isBaptizedInSpirit']!.text =
                 membershipData.value['membership'][0]['isBaptizedInSpirit']
                     .toString();
+          } else {
+            membershipTextControllers.value['baptismChurch']!.text = '';
+            membershipTextControllers.value['baptismPastor']!.text = '';
+            membershipTextControllers.value['membershipRole']!.text = '';
+            membershipTextControllers.value['baptismChurchCity']!.text = '';
+            membershipTextControllers.value['baptismChurchCountry']!.text = '';
+            membershipTextControllers.value['baptismDate']!.text = '';
+            membershipTextControllers.value['hasCredential']!.text = 'false';
+            membershipTextControllers.value['isBaptizedInSpirit']!.text = 'false';
           }
 
           // return membershipData.value;
@@ -100,20 +109,13 @@ class MembershipPage extends HookWidget {
             'baptismDate': convertDateFormat(membershipTextControllers
                 .value['baptismDate']!.text
                 .toString()),
-            'baptismChurch':
-                membershipTextControllers.value['baptismChurch']!.text,
-            'baptismPastor':
-                membershipTextControllers.value['baptismPastor']!.text,
-            'membershipRole':
-                membershipTextControllers.value['membershipRole']!.text,
-            'baptismChurchCity':
-                membershipTextControllers.value['baptismChurchCity']!.text,
-            'baptismChurchCountry':
-                membershipTextControllers.value['baptismChurchCountry']!.text,
-            'hasCredential':
-                membershipTextControllers.value['hasCredential']!.text,
-            'isBaptizedInSpirit':
-                membershipTextControllers.value['isBaptizedInSpirit']!.text,
+            'baptismChurch':membershipTextControllers.value['baptismChurch']!.text,
+            'baptismPastor': membershipTextControllers.value['baptismPastor']!.text,
+            'membershipRole': membershipTextControllers.value['membershipRole']!.text,
+            'baptismChurchCity': membershipTextControllers.value['baptismChurchCity']!.text,
+            'baptismChurchCountry': membershipTextControllers.value['baptismChurchCountry']!.text,
+            'hasCredential': membershipTextControllers.value['hasCredential']!.text,
+            'isBaptizedInSpirit': membershipTextControllers.value['isBaptizedInSpirit']!.text,
           });
 
           if (!context.mounted) return;

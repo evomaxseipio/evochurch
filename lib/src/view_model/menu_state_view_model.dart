@@ -4,12 +4,28 @@ import 'package:nb_utils/nb_utils.dart';
 class MenuStateProvider extends ChangeNotifier {
   String? _expandedGroup;
   bool _isChild = false;
+  int _selectedIndex = 0;
+  String? _routeName;
+ 
+ 
 
   String? get expandedGroup => _expandedGroup;
   bool get isChild => _isChild;
+  int get selectedIndex => _selectedIndex;
+  String? get routeName => _routeName;
 
   set isChild(bool value) {
     _isChild = value;
+    notifyListeners();
+  }
+
+  set selectedIndex(int value) {
+    _selectedIndex = value;
+    notifyListeners();
+  }
+
+  set routeName(String? value) {
+    _routeName = value;
     notifyListeners();
   }
   

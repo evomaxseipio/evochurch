@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -78,23 +79,18 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    context.setLocale(const Locale('en'));
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       restorationScopeId: 'app',
       routerConfig: widget.appRouter,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('es'), // English, Spanish
-        Locale('en'), // English, Spanish
-      ],
-      onGenerateTitle: (BuildContext context) =>
-          AppLocalizations.of(context)!.appTitle,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+
+      // onGenerateTitle: (BuildContext context) =>
+      //     AppLocalizations.of(context)!.appTitle,
       title: 'Evo Church Admin',
 
       scrollBehavior: SBehavior(),

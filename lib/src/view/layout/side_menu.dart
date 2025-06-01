@@ -1,3 +1,5 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:evochurch/main.dart';
 import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/menu_state_view_model.dart';
@@ -36,33 +38,31 @@ class SideMenu extends HookWidget {
             const SizedBox(height: 20),
 
             // Main Menu
-            _buildMenuItem(context, languageModel.evochurch.dashboard,
-                Icons.dashboard, '/'),
-            _buildMenuItem(context, languageModel.evochurch.members,
+            _buildMenuItem(context, 'dashboard'.tr(), Icons.dashboard, '/'),
+            _buildMenuItem(context, 'members'.tr(),
                 Icons.supervisor_account_rounded, '/members'),
             _buildExpandableGroup(
               context,
-              title: 'Finances',
+              title: 'finances'.tr(),
               icon: Icons.monetization_on_rounded,
               // isExpanded,
               // '/finances',
               childrenRoutes: [
                 _buildMenuItem(
                     context,
-                    'Transaction List',
+                    'transactions'.tr(),
                     FontAwesomeIcons.listCheck,
                     MyAppRouteConstants.transactionRouteName,
                     isChild: true),
-                _buildMenuItem(context, 'Funds',
+                _buildMenuItem(context, 'funds'.tr(),
                     FontAwesomeIcons.handHoldingDollar, '/finances/funds',
                     isChild: true),
-                _buildMenuItem(context, 'Contributions List',
+                _buildMenuItem(context, 'contributionsList'.tr(),
                     FontAwesomeIcons.sackDollar, '/finances/contributions',
                     isChild: true),
               ],
             ),
-            // _buildMenuItem(context, languageModel.evochurch.groups, Icons.group,
-            //     '/finances'),
+            _buildMenuItem(context, 'groups'.tr(), Icons.group, '/groups'),
             /*_buildMenuItem(context, languageModel.evochurch.services,
                 Icons.church_rounded, '/services'),
             _buildMenuItem(context, languageModel.evochurch.events,
@@ -77,15 +77,15 @@ class SideMenu extends HookWidget {
             // "Configurations" Section
             _buildExpandableGroup(
               context,
-              title: 'Configurations',
+              title: 'settings'.tr(),
               icon: Icons.settings,
               // isExpanded,
               // '/',
               childrenRoutes: [
-                _buildMenuItem(context, languageModel.evochurch.expenses,
+                _buildMenuItem(context, 'expenses'.tr(),
                     Icons.money_off_outlined, '/expenses'),
 
-                _buildMenuItem(context, 'Payment Methods',
+                _buildMenuItem(context, 'paymentMethods'.tr(),
                     Icons.payments_rounded, '/donations/one-time'),
                 // _buildMenuItem(context, languageModel.evochurch.finances,
                 //     Icons.monetization_on_rounded, '/finances'),
@@ -95,7 +95,7 @@ class SideMenu extends HookWidget {
                 //     Icons.event_available_rounded, '/events'),
                 _buildMenuItem(
                   context,
-                  languageModel.evochurch.users,
+                  'users'.tr(),
                   Icons.supervisor_account_rounded,
                   MyAppRouteConstants.usersConfigRouteName,
                 ),
@@ -170,6 +170,7 @@ class SideMenu extends HookWidget {
       BuildContext context, String title, IconData icon, String route,
       {bool isChild = false}) {
     final isActive = GoRouterState.of(context).matchedLocation == route;
+    final menuState = context.watch<MenuStateProvider>();
 
     return InkWell(
       onTap: () {
@@ -177,6 +178,27 @@ class SideMenu extends HookWidget {
             Provider.of<MenuStateProvider>(context, listen: false);
         if (!isChild) {
           menuState.isChild = false;
+        }
+
+        getBasePath(String path) => path.split('/').take(2).join('/');
+        menuState.routeName = getBasePath(route);
+
+        switch (menuState.routeName) {
+          case '/':
+            menuState.selectedIndex = 0;
+            break;
+          case '/members':
+            menuState.selectedIndex = 1;
+            break;
+          case '/finances':
+            menuState.selectedIndex = 2;
+            break;
+
+          case '/users':
+            menuState.selectedIndex = 5;
+            break;
+          default:
+            menuState.selectedIndex = 0;
         }
 
         context.go(route);

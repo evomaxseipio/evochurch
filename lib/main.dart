@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:evochurch/src/app.dart';
 import 'package:evochurch/src/view_model/index_view_model.dart';
 import 'package:evochurch/src/view_model/menu_state_view_model.dart';
@@ -16,6 +17,7 @@ void main() async {
   // Set up the SettingsController, which will glue user settings to multiple
   // Flutter Widgets.
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   setPathUrlStrategy();
   await languageModel.load();
 
@@ -54,17 +56,29 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthServices()), // AuthServices for handling authentication
+        ChangeNotifierProvider(
+            create: (_) =>
+                AuthServices()), // AuthServices for handling authentication
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => MembersViewModel()),
-        ChangeNotifierProvider(create: (_) => FinanceViewModel()), // ThemeProvider for handling theme mode
+        ChangeNotifierProvider(
+            create: (_) =>
+                FinanceViewModel()), // ThemeProvider for handling theme mode
         ChangeNotifierProvider(create: (_) => CollectionViewModel()),
         ChangeNotifierProvider(create: (_) => ExpensesTypeViewModel()),
-        ChangeNotifierProvider(create: (_) => ConfigurationsViewModel()), 
-         ChangeNotifierProvider(create: (_) => AppUserRoleViewModel()), 
-        ChangeNotifierProvider(create: (_) => MenuStateProvider())// LanguageModel for handling language selection
+        ChangeNotifierProvider(create: (_) => ConfigurationsViewModel()),
+        ChangeNotifierProvider(create: (_) => AppUserRoleViewModel()),
+        ChangeNotifierProvider(
+            create: (_) =>
+                MenuStateProvider()) // LanguageModel for handling language selection
       ],
-      child: MyApp(appRouter: appRouter.router),
+      child: EasyLocalization(
+        supportedLocales: languageModel.supportedLocales,
+        path: 'assets/languages',
+        fallbackLocale: const Locale('en'),
+        saveLocale: true,
+        child: MyApp(appRouter: appRouter.router),
+      ),
     ),
   );
 }

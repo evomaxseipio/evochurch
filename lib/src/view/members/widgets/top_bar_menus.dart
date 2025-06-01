@@ -80,7 +80,7 @@ List<EvoButton> topBarMenuButtons(
     // EvoBox.w10,
     EvoButton(
       text: 'Update Member',
-      icon: const Icon(Icons.edit),
+      icon: const Icon(Icons.save_as_outlined),
       onPressed: onUpdate,
     ),
     // EvoBox.w10,
