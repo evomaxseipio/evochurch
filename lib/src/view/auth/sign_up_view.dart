@@ -1,4 +1,3 @@
-
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
@@ -11,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 class SignUpView extends HookWidget {
   const SignUpView({super.key});
 
@@ -20,9 +20,9 @@ class SignUpView extends HookWidget {
       // backgroundColor: EvoColor.background,
       body: Row(
         children: [
-          const Expanded( child: _FormSection()),
+          const Expanded(child: _FormSection()),
           if (!Responsive.isMobile(context))
-            const Expanded( child: _ImageSection()),
+            const Expanded(child: _ImageSection()),
         ],
       ),
     );
@@ -49,24 +49,30 @@ class _FormSection extends HookWidget {
         isLoading.value = true;
         try {
           final success = await authService.signUp(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim(),
-            username: usernameController.text.trim(),
-            fullName: fullNameController.text.trim(),
-          );
-          if (success) {
+              email: emailController.text.trim(),
+              password: passwordController.text.trim(),
+              userAttributes: {
+                'username': usernameController.text.trim(),
+                'full_name': fullNameController.text.trim()
+              }
+
+              // username: usernameController.text.trim(),
+              // fullName: fullNameController.text.trim(),
+              );
+          if (success.success) {
             if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+               SnackBar(
                   content: Text(
-                      'Sign up successful. Please check your email for confirmation.')),
+                    success.message ?? 'Sign up successful',
+                  )),
             );
             context.go('/login');
           } else {
             if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                  content: Text(authService.errorMessage ?? 'Sign up failed')),
+                  content: Text(success.message ?? 'Sign up failed')),
             );
           }
         } catch (e) {

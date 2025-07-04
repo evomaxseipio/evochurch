@@ -2,16 +2,18 @@ import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/localization/multi_language.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
+import 'package:evochurch/src/view_model/menu_state_view_model.dart';
 import 'package:evochurch/src/view_model/theme_view_model.dart';
 import 'package:evochurch/src/widgets/text/custom_text.dart';
 import 'package:evochurch/src/widgets/widget_index.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'side_menu.dart';
 
-class AdminScaffold extends StatelessWidget {
+class AdminScaffold extends HookWidget {
   final Widget body;
   final String title;
 
@@ -22,23 +24,94 @@ class AdminScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final menuStateProvider = context.watch<MenuStateProvider>();
     final bool isLargeOrMediumWeb =
         EvoResponsive.isLargeWeb(context) || EvoResponsive.isMediumWeb(context);
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor:
-          context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
-      drawer: isLargeOrMediumWeb ? null : _buildSliderMenu(),
-      body: Row(
-        children: [
-          if (isLargeOrMediumWeb) _buildSliderMenu(),
-          Expanded(
-            child: Scaffold(
-              appBar: _buildInnerAppBar(context),
-              body: _buildBody(context),
+    final currentIndex = useState(menuStateProvider.selectedIndex);
+    return SafeArea(
+      child: Scaffold(
+        key: _scaffoldKey,
+        // backgroundColor:
+        //     context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
+        drawer: isLargeOrMediumWeb ? null : _buildSliderMenu(),
+        body: Row(
+          children: [
+            if (isLargeOrMediumWeb) _buildSliderMenu(),
+            Expanded(
+              child: Scaffold(
+                appBar: _buildInnerAppBar(context),
+                body: _buildBody(context),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+        // show the bottom navigation bar only on mobile devices
+        bottomNavigationBar: isLargeOrMediumWeb
+            ? null
+            : Consumer<MenuStateProvider>(
+                builder: (context, menuStateProvider, child) {
+                return BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home),
+                      label: 'Home',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.group_outlined),
+                      label: 'Members',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.attach_money_outlined),
+                      label: 'Finances',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.settings),
+                      label: 'Settings',
+                    ),
+                  ],
+                  currentIndex: menuStateProvider.selectedIndex,
+                  backgroundColor: !context.isDarkMode
+                      ? Theme.of(context).colorScheme.primary
+                      : EvoColor.cardDark,
+                  selectedItemColor: EvoColor.light,
+                  unselectedItemColor: !context.isDarkMode
+                      ? EvoColor.cardDark
+                      : EvoColor.darkGray,
+                  selectedLabelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  onTap: (index) {
+                    // Handle bottom navigation bar item tap
+                    currentIndex.value = index;
+                    menuStateProvider.selectedIndex = index;
+                    // Navigate to the corresponding screen based on the index
+                    switch (index) {
+                      case 0:
+                        context.go('/');
+                        menuStateProvider.routeName = '/';
+                        menuStateProvider.isChild = false;
+                        break;
+                      case 1:
+                        context.go('/members');
+                        menuStateProvider.routeName = '/members';
+                        menuStateProvider.isChild = false;
+                        break;
+                      case 2:
+                        context.go('/finances/contributions');
+                        menuStateProvider.routeName = '/finances/contributions';
+                        menuStateProvider.isChild = false;
+                        break;
+                      case 3:
+                        context.go('/configurations/users');
+                        menuStateProvider.routeName = '/configurations/users';
+                        menuStateProvider.isChild = false;
+                        break;
+                    }
+                  },
+                );
+              }),
       ),
     );
   }
@@ -50,18 +123,24 @@ class AdminScaffold extends StatelessWidget {
         final bool isLargeOrMediumWeb = EvoResponsive.isLargeWeb(context) ||
             EvoResponsive.isMediumWeb(context);
 
-        return Drawer(
-          backgroundColor: context.isDarkMode
-              ? EvoColor.cardDark
-              : EvoColor.lightBackgroundBlue,
+        return Container(
+          color: !context.isDarkMode
+              ? Theme.of(context).colorScheme.primary
+              : EvoColor.cardDark,
           width: isLargeOrMediumWeb
-              ? (!showOnlyIcon ? 230 : 80)
-              : MediaQuery.of(context).size.width * 0.33,
+              ? (!showOnlyIcon ? 289 : 80)
+              : MediaQuery.of(context).size.width * 0.70,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!isLargeOrMediumWeb) EvoBox.h14 else EvoBox.h14,
-              _buildDrawerHeader(showOnlyIcon && isLargeOrMediumWeb),
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: 0.0,
+                ),
+                child: _buildDrawerHeader(
+                    showOnlyIcon && isLargeOrMediumWeb, context),
+              ),
               EvoBox.h12,
               Expanded(
                   child: SideMenu(
@@ -74,32 +153,51 @@ class AdminScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(bool showOnlyIcon) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SvgPicture.asset(
-          IconlyBroken.adminKit,
-          height: 24,
-        ),
-        if (!showOnlyIcon) ...[
-          EvoBox.w12,
-          Text(
-            EvoStrings.projectName.toUpperCase(),
-            style: const TextStyle(color: EvoColor.white, fontSize: 18),
+  Widget _buildDrawerHeader(bool showOnlyIcon, BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.church,
+              color: theme.colorScheme.primary,
+              size: 24,
+            ),
           ),
+          const SizedBox(width: 12),
+          showOnlyIcon
+              ? const SizedBox.shrink()
+              : const Text(
+                  'EVOCHURCH ADMIN PANEL',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
         ],
-      ],
+      ),
     );
   }
 
   AppBar _buildInnerAppBar(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final theme = Theme.of(context);
     return AppBar(
-      backgroundColor:
-          context.isDarkMode ? EvoColor.cardDark : EvoColor.lightBackgroundBlue,
+      backgroundColor: !context.isDarkMode
+          ? Theme.of(context).colorScheme.primary
+          : EvoColor.cardDark,
+      foregroundColor: theme.colorScheme.onPrimary,
       elevation: 0,
-      toolbarHeight: 50,
+      toolbarHeight: 60,
       automaticallyImplyLeading: false,
       centerTitle: false,
       leading: _buildMenuButton(context),
@@ -115,6 +213,9 @@ class AdminScaffold extends StatelessWidget {
             !context.isDarkMode
                 ? Icons.light_mode_outlined
                 : Icons.dark_mode_outlined,
+            color: context.isDarkMode
+                ? EvoColor.blueLightChartColor
+                : EvoColor.light,
           ),
         ),
         EvoBox.w10,
@@ -128,15 +229,27 @@ class AdminScaffold extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: _isOpen,
       builder: (context, isOpen, _) {
-        return MaterialButton(
-          height: double.infinity,
-          minWidth: 60,
-          onPressed: () => _handleMenuButtonPress(context),
-          child: SvgPicture.asset(
-            IconlyBroken.drawer,
-            color: Colors.blue,
-            width: 20,
-            height: 20,
+        return Padding(
+          padding: const EdgeInsets.only(left: 8, top: 10.0),
+          child: MaterialButton(
+            height: double.infinity,
+            minWidth: 60,
+            onPressed: () => _handleMenuButtonPress(context),
+            child: Icon(
+              isOpen ? Icons.arrow_forward_ios_outlined : Icons.sort_outlined,
+              color: context.isDarkMode
+                  ? EvoColor.blueLightChartColor
+                  : EvoColor.light,
+            ),
+
+            // SvgPicture.asset(
+            //   IconlyBroken.drawer,
+            //   width: 20,
+            //   height: 20,
+            //   color: context.isDarkMode
+            //       ? EvoColor.blueLightChartColor
+            //       : EvoColor.light,
+            // ),
           ),
         );
       },
@@ -159,10 +272,7 @@ class AdminScaffold extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return Container(
-      color: !context.isDarkMode
-          ? EvoColor.lightBackgroundBlue
-          : EvoColor.cardDark,
+    return SizedBox(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,12 +286,15 @@ class AdminScaffold extends StatelessWidget {
             ),
           ),
           EvoBox.h2,
-          const Center(
-            child: EvoCustomText(
-              title: EvoStrings.footerText,
-              textColor: EvoColor.lightGray,
+          // show the footer only on web page
+          if (EvoResponsive.isLargeWeb(context) ||
+              EvoResponsive.isMediumWeb(context))
+            Center(
+              child: EvoCustomText(
+                title: EvoStrings.footerText,
+                // textColor: EvoColor.lightGray,
+              ),
             ),
-          ),
           SafeArea(child: EvoBox.h2),
         ],
       ),

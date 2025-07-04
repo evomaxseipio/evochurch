@@ -1,25 +1,25 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:evochurch/src/app.dart';
-import 'package:evochurch/src/view_model/auth_services.dart';
-import 'package:evochurch/src/view_model/collection_view_model.dart';
-import 'package:evochurch/src/view_model/expense_view_model.dart';
-import 'package:evochurch/src/view_model/members_view_model.dart';
+import 'package:evochurch/src/view_model/index_view_model.dart';
+import 'package:evochurch/src/view_model/menu_state_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_strategy/url_strategy.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'src/localization/multi_language.dart';
 import 'src/routes/app_route_config.dart';
-import 'src/view_model/finance_view_model.dart';
-import 'src/view_model/theme_view_model.dart';
 
 void main() async {
   // Set up the SettingsController, which will glue user settings to multiple
   // Flutter Widgets.
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
   setPathUrlStrategy();
   await languageModel.load();
 
@@ -56,16 +56,36 @@ void main() async {
   final appRouter = MyAppRouter(authServices);
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthServices()), // AuthServices for handling authentication
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => MembersViewModel()),
-        ChangeNotifierProvider(create: (_) => FinanceViewModel()), // ThemeProvider for handling theme mode
-        ChangeNotifierProvider(create: (_) => CollectionViewModel()),
-        ChangeNotifierProvider(create: (_) => ExpensesTypeViewModel()), // LanguageModel for handling language selection
-      ],
-      child: MyApp(appRouter: appRouter.router),
+    ProviderScope(
+      child: MultiProvider(
+        providers: [
+          provider.ChangeNotifierProvider(
+              create: (_) =>
+                  AuthServices()), // AuthServices for handling authentication
+          provider.ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          provider.ChangeNotifierProvider(create: (_) => MembersViewModel()),
+          provider.ChangeNotifierProvider(
+              create: (_) =>
+                  FinanceViewModel()), // ThemeProvider for handling theme mode
+          provider.ChangeNotifierProvider(create: (_) => CollectionViewModel()),
+          provider.ChangeNotifierProvider(
+              create: (_) => ExpensesTypeViewModel()),
+          provider.ChangeNotifierProvider(
+              create: (_) => ConfigurationsViewModel()),
+          provider.ChangeNotifierProvider(
+              create: (_) => AppUserRoleViewModel()),
+          provider.ChangeNotifierProvider(
+              create: (_) =>
+                  MenuStateProvider()) // LanguageModel for handling language selection
+        ],
+        child: EasyLocalization(
+          supportedLocales: languageModel.supportedLocales,
+          path: 'assets/languages',
+          fallbackLocale: const Locale('en'),
+          saveLocale: true,
+          child: MyApp(appRouter: appRouter.router),
+        ),
+      ),
     ),
   );
 }

@@ -15,7 +15,6 @@ class EvoStrings {
   static const String twelveProducts = '12 Products';
   static const String eighteenProducts = '18 Products';
 
-
   static const String login = 'Login';
   static const String emailId = 'Email Id';
   static const String view = 'View';
@@ -26,14 +25,14 @@ class EvoStrings {
 
   static const String admin = 'Admin';
 
-  static const String footerText = '© 2024 Evo Chruch Admin. Crafted with ❤️ by Evolution Tecnology';
+  static String footerText =
+      '© ${DateTime.now().year} Evo Chruch Admin. Crafted with ❤️ by Evolution Tecnology';
 
-  // Auth  
+  // Auth
   static const String prefsLogin = 'login';
   static const String prefsLogout = 'logout';
   static const String prefsToken = 'token';
   static const String prefsUser = 'user';
-
 
   // appbar
   static const String searchHint = 'Search...';

@@ -5,6 +5,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+
+import '../constants/constant_index.dart';
+
 double getTotalFromList(String key, List<Map<String, dynamic>> list) {
   double total = 0;
 
@@ -15,13 +18,21 @@ double getTotalFromList(String key, List<Map<String, dynamic>> list) {
 }
 
 String formatCurrency(String value) {
-  double number = double.parse(value);
-  final formatter = NumberFormat.currency(
-    locale: 'en_US',
-    symbol: 'RD\$ ',
-    decimalDigits: 2,
-  );
-  return formatter.format(number);
+  if (value.isEmpty) {
+    return '';
+  }
+  try {
+    double number = double.parse(value);
+    final formatter = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: 'RD\$ ',
+      decimalDigits: 2,
+    );
+    return formatter.format(number);
+  } catch (e) {
+    return value;
+  }
+  
 }
 
 String formatDouble(double value) {
@@ -29,14 +40,13 @@ String formatDouble(double value) {
   return formatter.format(value);
 }
 
-
 String formatDate(String dateToConvert) {
-  try {     
+  try {
     DateTime? date = DateTime.tryParse(dateToConvert);
     final formatter = DateFormat('dd/MM/yyyy');
     return formatter.format(date!);
   } catch (e) {
-    return dateToConvert; 
+    return dateToConvert;
   }
 }
 
@@ -50,10 +60,9 @@ String convertDateFormat(String dateString) {
 
     return formattedDate;
   } catch (e) {
-    throw Exception('Error parsing date: $e');  
+    throw Exception('Error parsing date: $e');
   }
 }
-
 
 String textUpper(String text) {
   final temptext = convertUnderscoreToSpace(text.split('/').last);
@@ -65,13 +74,13 @@ String convertUnderscoreToSpace(String text) {
       RegExp(r'\b\w'), (match) => match.group(0)!.toUpperCase());
 }
 
-formTitle(String text, double fontSize) {
+formTitle(String text, double fontSize,
+    [FontWeight fontWeight = FontWeight.w500, Color color = Colors.grey]) {
   return Text(
     text,
-    style: TextStyle(fontWeight: FontWeight.w500, fontSize: fontSize),
+    style: TextStyle(fontWeight: fontWeight, fontSize: fontSize, color: color),
   );
 }
-
 
 class CustomDateTextFormatter extends TextInputFormatter {
   @override
@@ -81,6 +90,20 @@ class CustomDateTextFormatter extends TextInputFormatter {
     return newValue.copyWith(
         text: text, selection: _updateCursorPosition(text, oldValue));
   }
+}
+
+Widget customColumnTitle(String key, String value,
+    {double? size,
+    FontWeight fontWeight = FontWeight.w500,
+    Color keyColor = EvoColor.black,
+    Color valueColor = EvoColor.black}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      formTitle(value, size ?? 12, fontWeight, valueColor),
+      formTitle(key, size ?? 14, FontWeight.bold, keyColor)
+    ],
+  );
 }
 
 String _format(String value, String seperator, TextEditingValue old) {
@@ -269,5 +292,3 @@ TextSelection _updateCursorPosition(String text, TextEditingValue oldValue) {
 int _backSlashCount(String value) {
   return '/'.allMatches(value).length;
 }
-
-

@@ -13,9 +13,10 @@ final List<String> countryList = [
 
 final List<String> paymentMethodList = [
   'Cash',
+  'Check',
   'Deposit',
-  'Cheque',
-  'Transferencia'
+  'Transfer',
+  'Donation'
 ];
 
 final List<String> categoryExpensetypeList = [

@@ -1,10 +1,15 @@
+import 'package:evochurch/src/model/fund_model.dart';
 import 'package:evochurch/src/model/member_model.dart';
 import 'package:evochurch/src/routes/app_route_constants.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 import 'package:evochurch/src/view/auth/login_view.dart';
 import 'package:evochurch/src/view/auth/sign_up_view.dart';
 import 'package:evochurch/src/view/configuration/expenses_list_view.dart';
+import 'package:evochurch/src/view/configuration/users_list_view.dart';
 import 'package:evochurch/src/view/error_view.dart';
+import 'package:evochurch/src/view/finances/contribution_list_view.dart';
+import 'package:evochurch/src/view/finances/funds_contributions.dart';
+import 'package:evochurch/src/view/finances/funds_details_view.dart';
 import 'package:evochurch/src/view/finances/funds_list_view.dart';
 import 'package:evochurch/src/view/finances/transaction_list_view.dart';
 import 'package:evochurch/src/view/home/dashboard_view.dart';
@@ -12,6 +17,7 @@ import 'package:evochurch/src/view/layout/admin_scaffold.dart';
 import 'package:evochurch/src/view/members/member_list.dart';
 import 'package:evochurch/src/view/members/profile_view.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
+import 'package:evochurch/src/view_model/index_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -86,12 +92,107 @@ class MyAppRouter {
               child: FundsListView(),
             ),
           ),
+          GoRoute(
+            name: MyAppRouteConstants.fundDetailsRouteName,
+            path: '/finances/funds/details',
+            redirect: (context, state) {
+              final parameters = state.extra as Map<String, dynamic>?;
+              if (parameters == null) {
+                return '/finances/funds';
+              }
+              final financeViewModel =
+                  parameters['financeViewModel'] as FinanceViewModel?;
+              final fundModel = parameters['fundModel'] as FundModel?;
+              if (financeViewModel == null || fundModel == null) {
+                return '/finances/funds';
+              }
+
+              return null;
+            },
+            pageBuilder: (context, state) {
+              final parameters = state.extra as Map<String, dynamic>?;
+              final financeViewModel =
+                  parameters!['financeViewModel'] as FinanceViewModel?;
+              final fundModel = parameters['fundModel'] as FundModel?;
+
+              return CustomTransitionPage(
+                key: state.pageKey,
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                child: FundsDetailsView(
+                  financeViewModel: financeViewModel!,
+                  fundModel: fundModel!,
+                ),
+              );
+            },
+          ),
+          // Contributions List
+          GoRoute(
+            name: MyAppRouteConstants.contributionsRouteName,
+            path: '/finances/contributions',
+            pageBuilder: (context, state) {
+              return const NoTransitionPage(
+                child: ContributionListView(
+                  fund: null,
+                ),
+              );
+            },
+          ),
+
+          // Fund Contributions
+          GoRoute(
+            name: MyAppRouteConstants.fundContributionsRouteName,
+            path: '/finances/funds_contributions',
+            redirect: (context, state) {
+              final parameters = state.extra as Map<String, dynamic>?;
+              if (parameters == null) {
+                return '/finances/funds';
+              }
+              final fundModel = parameters['fund'] as FundModel?;
+              if (fundModel == null) {
+                return '/finances/funds';
+              }
+
+              return null;
+            },
+            pageBuilder: (context, state) {
+              try {
+                final parameters = state.extra as Map<String, dynamic>?;
+                final fundModel = parameters!['fund'] as FundModel?;
+                return NoTransitionPage(
+                  child: FundsContributions(fund: fundModel!),
+                );
+              } catch (e) {
+                return const NoTransitionPage(
+                  child: FundsContributions(
+                    fund: null,
+                  ),
+                );
+              }
+            },
+          ),
+
           // Expenses
           GoRoute(
             name: MyAppRouteConstants.expensesRouteName,
             path: '/expenses',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: ExpensesListView(),
+            ),
+          ),
+          // Admin routes (settings, products, etc.) can be added here
+          // Settings
+          GoRoute(
+            name: MyAppRouteConstants.usersConfigRouteName,
+            path: '/configurations/users',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: UsersListView(),
             ),
           ),
 

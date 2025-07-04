@@ -2,6 +2,39 @@
 
 import '../widgets/paginateDataTable/paginated_data_table.dart';
 
+// Members Columns List
+final memberListColumns = [
+  SortColumn(
+    label: 'Name',
+    field: 'name',
+    getValue: (member) => member.firstName,
+  ),
+  SortColumn(
+    label: 'Role',
+    field: 'role',
+    getValue: (member) => member.membershipRole,
+  ),
+  SortColumn(
+    label: 'Nationality',
+    field: 'nationality',
+    getValue: (member) => member.nationality,
+  ),
+  SortColumn(
+    label: 'Email',
+    field: 'email',
+    getValue: (member) => member.contact.email,
+  ),
+  SortColumn(
+    label: 'Phone',
+    field: 'phone',
+    getValue: (member) => member.contact.phone,
+  ),
+  SortColumn(
+    label: 'Date of Birth',
+    field: 'dateOfBirth',
+    getValue: (member) => member.dateOfBirth,
+  ),
+];
 
 final transactionColumns = [
   SortColumn(
@@ -60,6 +93,16 @@ final contributionColumns = [
     getValue: (fund) => fund.description,
   ),
   SortColumn(
+    label: 'IS Primary',
+    field: 'isPrimary',
+    getValue: (fund) => fund.isPrimary,
+  ),
+  SortColumn(
+    label: 'Is Active',
+    field: 'isActive',
+    getValue: (fund) => fund.isActive,
+    ),
+  SortColumn(
     label: 'Target Amount',
     field: 'targetAmount',
     getValue: (fund) => fund.targetAmount,
@@ -104,4 +147,42 @@ final expenseTypeColumns = [
     field: 'isActive',
     getValue: (expense) => expense.isActive,
   ),
+];
+
+
+final adminUserColumns = [
+  // SortColumn(
+  //   label: 'Actions',
+  //   field: 'profileId',
+  //   getValue: (user) => user.profileData.profileId,
+  // ),
+  
+  SortColumn(
+    label: 'Email',
+    field: 'userEmail',
+    getValue: (user) => user.userEmail,
+  ),
+  SortColumn(
+    label: 'First Name',
+    field: 'firstName',
+    getValue: (user) => user.profileData.firstName,
+
+  ),
+  SortColumn(
+    label: 'Last Name',
+    field: 'lastName',
+    getValue: (user) => user.profileData.lastName,
+  ),
+  SortColumn(
+    label: 'Role',
+    field: 'role',
+    getValue: (user) => user.profileData.role,
+  ),
+   SortColumn(
+    label: 'Last Sign Attempt',
+    field: 'lastSignInAt',
+    getValue: (user) => user.lastSignInAt,
+  ),
+ 
+  
 ];

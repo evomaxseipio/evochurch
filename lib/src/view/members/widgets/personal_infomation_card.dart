@@ -51,3 +51,28 @@ class InformationCard extends StatelessWidget {
     );
   }
 }
+
+// Helper method to create information cards with consistent styling
+Widget buildInformationCard(String title, List<Widget> children) {
+  return Card(
+    margin: EdgeInsets.zero,
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Divider(),
+          const SizedBox(height: 8),
+          ...children,
+        ],
+      ),
+    ),
+  );
+}

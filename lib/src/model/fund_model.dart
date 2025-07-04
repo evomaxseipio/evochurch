@@ -45,7 +45,7 @@ class FundsModel {
 }
 
 class FundModel {
-  final String fundId;
+  late final String fundId;
   final int churchId;
   final String fundName;
   final String? description;
@@ -106,6 +106,7 @@ class FundModel {
       'end_date': endDate?.toIso8601String(),
       'total_contributions': totalContributions,
       'is_active': isActive,
+      'is_primary': isPrimary,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -122,6 +123,7 @@ class FundModel {
     DateTime? endDate,
     double? totalContributions,
     bool? isActive,
+    bool? isPrimary,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -135,6 +137,7 @@ class FundModel {
       endDate: endDate ?? this.endDate,
       totalContributions: totalContributions ?? this.totalContributions,
       isActive: isActive ?? this.isActive,
+      isPrimary: isPrimary ?? this.isPrimary,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

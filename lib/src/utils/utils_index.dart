@@ -6,4 +6,5 @@ export 'package:evochurch/src/utils/responsive.dart';
 export 'package:evochurch/src/utils/evo_responsive.dart';
 export 'package:evochurch/src/utils/string.dart';
 export 'package:evochurch/src/utils/string_text_utils.dart';
+export 'package:evochurch/src/utils/export_service.dart';
 

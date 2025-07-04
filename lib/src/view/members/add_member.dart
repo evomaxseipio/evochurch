@@ -1,23 +1,26 @@
 import 'package:evochurch/src/model/addres_model.dart';
 import 'package:evochurch/src/model/contact_model.dart';
 import 'package:evochurch/src/model/member_model.dart';
+import 'package:evochurch/src/view/members/widgets/personal_infomation_card.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
 import 'package:evochurch/src/view_model/members_view_model.dart';
 import 'package:evochurch/src/widgets/modal/modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:intl/intl.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../providers/members_notifier.dart';
 
 import '../../constants/constant_index.dart';
 import '../../widgets/button/button.dart';
 import '../../widgets/maintanceWidgets/maintance_widgets.dart';
-import 'widgets/personal_infomation_card.dart';
+import '../../widgets/responsive_widgets.dart';
 
-class AddMember extends HookWidget {
+class AddMember extends HookConsumerWidget {
   const AddMember({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       child: EvoButton(
           onPressed: () => callAddEmployeeModal(context), text: 'Add Member'),
@@ -68,7 +71,7 @@ callAddEmployeeModal(BuildContext context) {
     barrierDismissible: true,
     context: context,
     modelType: ModalType.extraLarge,
-    modalType: ModalType.large,
+    modalType: ModalType.extraLarge,
     title: "Agregar Persona",
     leadingIcon: const Icon(
       Icons.people_alt_outlined,
@@ -77,116 +80,93 @@ callAddEmployeeModal(BuildContext context) {
     ),
     content: Card(
       elevation: 2,
-      // color: Colors.white,
       child: Container(
-        padding: const EdgeInsets.all(0),
+        padding: const EdgeInsets.all(12),
         child: Form(
           key: _formKey,
-          // autovalidateMode: AutovalidateMode.disabled,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InformationCard(
-                  title: 'Personal Information',
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField(
-                                'First Name', 'firstName', _memberControllers)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField(
-                                'Last Name', 'lastName', _memberControllers)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField(
-                                'Nick Name', 'nickName', _memberControllers)),
-                      ],
-                    ),
-                    EvoBox.h16,
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildDateField('Date of Birth',
-                                'dateOfBirth', context, _memberControllers, isRequired: false)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownField(
-                                'Gender', 'gender', _memberControllers)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownField('Marital Status',
-                                'maritalStatus', _memberControllers)),
-                      ],
-                    ),
-                    EvoBox.h16,
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('Nationality',
-                                'nationality', _memberControllers)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownField(
-                                'Id Type', 'idType', _memberControllers, isRequired: false)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField(
-                                'Id number', 'idNumber', _memberControllers, isRequired: false)),
-                      ],
-                    ),
+                buildInformationCard(
+                  'Personal Information',
+                  [
+                    // Name fields row
+                    buildResponsiveRow([
+                      buildEditableField(
+                          'First Name', 'firstName', _memberControllers),
+                      buildEditableField(
+                          'Last Name', 'lastName', _memberControllers),
+                      buildEditableField(
+                          'Nick Name', 'nickName', _memberControllers),
+                    ]),
+
+                    const SizedBox(height: 16),
+
+                    // Personal details row
+                    buildResponsiveRow([
+                      buildDateField('Date of Birth', 'dateOfBirth', context,
+                          _memberControllers,
+                          isRequired: false),
+                      buildDropdownField(
+                          'Gender', 'gender', _memberControllers),
+                      buildDropdownField('Marital Status', 'maritalStatus',
+                          _memberControllers),
+                    ]),
+
+                    const SizedBox(height: 16),
+
+                    // ID information row
+                    buildResponsiveRow([
+                      buildEditableField(
+                          'Nationality', 'nationality', _memberControllers),
+                      buildDropdownField(
+                          'Id Type', 'idType', _memberControllers,
+                          isRequired: false),
+                      buildEditableField(
+                          'Id number', 'idNumber', _memberControllers,
+                          isRequired: false),
+                    ]),
                   ],
                 ),
                 EvoBox.h12,
-                InformationCard(
-                  title: 'Address Information',
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('Street Address',
-                                'streetAddress', _addressControllers, isRequired: false)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField('Province',
-                                'stateProvince', _addressControllers, isRequired: false)),
-                      ],
-                    ),
-                    EvoBox.h16,
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField('city/State', 'cityState',
-                                _addressControllers)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildDropdownField(
-                                'Country', 'country', _addressControllers)),
-                      ],
-                    ),
+                buildInformationCard(
+                  'Address Information',
+                  [
+                    // Address row 1
+                    buildResponsiveRow([
+                      buildEditableField('Street Address', 'streetAddress',
+                          _addressControllers,
+                          isRequired: false),
+                      buildEditableField(
+                          'Province', 'stateProvince', _addressControllers,
+                          isRequired: false),
+                    ]),
+
+                    const SizedBox(height: 16),
+
+                    // Address row 2
+                    buildResponsiveRow([
+                      buildEditableField(
+                          'City/State', 'cityState', _addressControllers),
+                      buildDropdownField(
+                          'Country', 'country', _addressControllers),
+                    ]),
                   ],
                 ),
                 EvoBox.h12,
-                InformationCard(
-                  title: 'Contact Information',
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: buildEditableField(
-                                'Phone Number', 'phone', _contactControllers)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField('Mobile Phone',
-                                'mobilePhone', _contactControllers)),
-                        EvoBox.w10,
-                        Expanded(
-                            child: buildEditableField(
-                                'Email', 'email', _contactControllers, isRequired: false)),
-                      ],
-                    ),
+                buildInformationCard(
+                  'Contact Information',
+                  [
+                    // Contact row
+                    buildResponsiveRow([
+                      buildEditableField(
+                          'Phone Number', 'phone', _contactControllers),
+                      buildEditableField(
+                          'Mobile Phone', 'mobilePhone', _contactControllers),
+                      buildEditableField('Email', 'email', _contactControllers,
+                          isRequired: false),
+                    ]),
                   ],
                 ),
               ],
@@ -204,17 +184,15 @@ callAddEmployeeModal(BuildContext context) {
               icon: const Icon(Icons.save),
               onPressed: () async {
                 String message = '';
-
                 DateTime birthDate = DateFormat('dd/MM/yyyy')
                     .parse(_memberControllers['dateOfBirth']!.text);
-
                 debugPrint(birthDate.toString());
                 if (false == false) {
                   try {
-                    MembersViewModel profileViewModel = MembersViewModel();
-                    AuthServices _authServices = AuthServices();
-                    final churchId = await _authServices.userMetaData?['church_id'];
-
+                    final membersNotifier = MembersNotifier();
+                    final authServices = AuthServices();
+                    final churchId =
+                        int.parse(authServices.userMetaData?['church_id']);
                     final newProfile = Member(
                       churchId: churchId,
                       firstName: _memberControllers['firstName']!.text,
@@ -230,8 +208,6 @@ callAddEmployeeModal(BuildContext context) {
                       isActive: true,
                       bio: _memberControllers['firstName']!.text,
                     );
-
-                    // Add address data
                     final addressData = AddressModel(
                         streetAddress:
                             _addressControllers['streetAddress']!.text,
@@ -239,25 +215,23 @@ callAddEmployeeModal(BuildContext context) {
                             _addressControllers['stateProvince']!.text,
                         cityState: _addressControllers['cityState']!.text,
                         country: _addressControllers['country']!.text);
-
-                    // Add contact data
                     final contactData = ContactModel(
                         phone: _contactControllers['phone']!.text,
                         mobilePhone: _contactControllers['mobilePhone']!.text,
                         email: _contactControllers['email']!.text);
-
-                    final responseData = await profileViewModel.addMember(
+                    final responseData = await membersNotifier.addMember(
                         newProfile, addressData, contactData);
-
                     if (responseData!['status'] == 'Success') {
-                      message = 'New profile added with ID: ${responseData['profile_id']}';
-                      // Process the form data
+                      message =
+                          'New profile added with ID: ${responseData['profile_id']}';
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(message)));
                       clear();
                       Navigator.of(context, rootNavigator: true).pop();
                     } else {
-                      message ='Failed to add new profile, error: ${responseData['message']}';
+                      message =
+                          'Failed to add new profile, error: ${responseData['message']}';
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(message)));
@@ -271,7 +245,6 @@ callAddEmployeeModal(BuildContext context) {
                 }
               },
               text: "Guardar",
-              //' Strings.cancelLoan,
               buttonType: ButtonType.success,
             );
           }),

@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
-
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
 
@@ -69,12 +68,14 @@ class EvoButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double scale = MediaQuery.maybeOf(context)?.textScaleFactor ?? 1;
-    final double gap = scale <= 1 ? 8 : lerpDouble(8, 4, math.min(scale - 1, 1))!;
+    final double gap =
+        scale <= 1 ? 8 : lerpDouble(8, 4, math.min(scale - 1, 1))!;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return TranslateOnHover(
       builder: (isHover) {
         return MaterialButton(
+          
           enableFeedback: enableFeedback,
           autofocus: autofocus,
           onPressed: onPressed,
@@ -87,8 +88,10 @@ class EvoButton extends StatelessWidget {
           focusElevation: 0.0,
           padding: padding,
           colorBrightness: Theme.of(context).brightness,
-          color: color ?? _getButtonColor(colorScheme, buttonType, isOutlineButton),
-          hoverColor: hoverColor ?? _getHoverButtonColor(colorScheme, buttonType, isOutlineButton),
+          color: color ??
+              _getButtonColor(colorScheme, buttonType, isOutlineButton),
+          hoverColor: hoverColor ??
+              _getHoverButtonColor(colorScheme, buttonType, isOutlineButton),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
             side: BorderSide(
@@ -143,12 +146,12 @@ Color? _getButtonColor(
     return EvoColor.success;
   } else if (buttonType == ButtonType.info) {
     return EvoColor.info;
-  }  else if (buttonType == ButtonType.update) {
+  } else if (buttonType == ButtonType.update) {
     return EvoColor.update;
   } else if (buttonType == ButtonType.normal) {
     return EvoColor.normal;
-  // } else if (buttonType == ButtonType.add) {
-  //   return EvoColor.add;
+    // } else if (buttonType == ButtonType.add) {
+    //   return EvoColor.add;
   } else {
     return colorScheme.primary;
   }
@@ -171,9 +174,12 @@ Color? _getHoverButtonColor(
     return EvoColor.infoDark;
   } else {
     if (colorScheme.brightness == Brightness.dark) {
-      return colorScheme.onPrimaryContainer;
+      return EvoColor.primary.withOpacity(0.9);
+
+      // return colorScheme.onPrimaryContainer;
     } else {
-      return colorScheme.onPrimaryContainer;
+      return EvoColor.primary.withOpacity(0.9);
+      // return colorScheme.onPrimaryContainer;
     }
   }
 }

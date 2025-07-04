@@ -1,18 +1,21 @@
 {
-  "appTitle": "Evo Church Admin",
+  "apptitle": "Evo Church Admin",
   "dashboard": "Panel de Control",
   "members": "Miembros",
   "services": "Servicios",
   "events": "Eventos",
   "finances": "Finanzas",
-
-  
+  "users": "Usuarios",
+  "groups": "Grupos",
+  "settings": "Configuraciones",
   "contributions": "Contribuciones",
   "contributionsList": "Lista Contribuciones",
   "funds": "Fondos",
   "paymentMethods": "Metodos de Pago",
   "expenses": "Gastos",
-
+  "transactions": "Transacciones",
+  "transactionsList": "Lista de Transacciones",
+  "membersList": "Lista de Miembros",
   "expenseName": "Nombre del Gasto",
   "expenseCategory": "Categoria del Gasto",
   "expenseDescription": "Descripcion del Gasto",
@@ -20,5 +23,4 @@
   "expenseCreate": "Crear Gasto",
   "expenseEdit": "Editar Gasto",
   "expenseDelete": "Eliminar Gasto"
-
 }

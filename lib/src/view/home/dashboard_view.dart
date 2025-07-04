@@ -23,7 +23,8 @@ class DashboardView extends HookWidget {
             EvoBox.h20,
             const RevenueView(),
             EvoBox.h12,
-            if (EvoResponsive.isMediumWeb(context) &&
+
+            /*  if (EvoResponsive.isMediumWeb(context) &&
                 MediaQuery.sizeOf(context).width > 760) ...{
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -48,9 +49,8 @@ class DashboardView extends HookWidget {
                   // _attributesAnalyticsChart(context),
                 ],
               )
-            },
+            },*/
 
-            EvoBox.h12,
             if (EvoResponsive.isLargeWeb(context) ||
                 EvoResponsive.isMediumWeb(context)) ...[
               Padding(

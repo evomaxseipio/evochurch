@@ -1,26 +1,30 @@
-import 'dart:convert';
+import 'dart:async';
 
 import 'package:evochurch/src/model/member_model.dart';
 import 'package:evochurch/src/model/membership_model.dart';
 import 'package:evochurch/src/model/model_index.dart';
 import 'package:evochurch/src/view_model/auth_services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MembersViewModel extends ChangeNotifier {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
   final AuthServices _authServices = AuthServices();
+  late final int? churchId;
 
   List<Member> _members = [];
+  List<Map<String, String>> _memberList = [];
   List<String> _memberRoles = [];
   Member? _selectedMember; // This is fine as nullable
   MembershipModel? _membershipProfile;
+  Map<String, dynamic> _memberFinances = {};
 
   bool _isLoading = false;
 
   // Getters
   List<Member> get members => _members;
+  List<Map<String, String>> get memberList => _memberList;
+  Map<String, dynamic> get memberFinances => _memberFinances;
 
   // Updated selectedMember getter with null check
   Member? get selectedMember => _selectedMember;
@@ -29,6 +33,15 @@ class MembersViewModel extends ChangeNotifier {
 
   // Updated isLoading getter
   bool get isLoading => _isLoading;
+
+  // broadcast stream
+  final _membersStreamController = StreamController<void>.broadcast();
+  Stream<void> get onDataChanged => _membersStreamController.stream;
+
+  MembersViewModel() {
+    churchId = int.tryParse(_authServices.userMetaData!['church_id'] ?? '');
+    getMembers();
+  }
 
   // Setters
   set selectedMember(Member? value) {
@@ -41,11 +54,6 @@ class MembersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // void clearSelectedMember() {
-  //   _selectedMember = null;
-  //   notifyListeners();
-  // }
-
   void setMembers(List<Member> value) {
     _members = value;
     notifyListeners();
@@ -56,22 +64,40 @@ class MembersViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Get the list of Members
-  Future<List<Member>> getMemberList() async {
+  // Member notify listeners
+  void notifyDataChanged() {
+    _membersStreamController.add(null);
+    notifyListeners();
+  }
+
+  // Dispose method to close the stream controller
+  @override
+  void dispose() {
+    _membersStreamController.close();
+
+    super.dispose();
+  }
+
+  /// Fetch all roles from Supabase
+  Future<void> fetchMemberList() async {
     try {
-      setLoading(true);
-
-      final String jsonString =
-          await rootBundle.loadString('assets/data/members_data.json');
-      final jsonData = jsonDecode(jsonString);
-      final membersList = MembersModel.fromJson(jsonData).member;
-
-      setMembers(membersList);
-      return membersList;
+      final response = await _supabaseClient
+          .from('profiles')
+          .select()
+          .eq('church_id', _authServices.userMetaData!['church_id'])
+          .eq('is_active', true)
+          .eq('is_member', true)
+          .order('first_name', ascending: true);
+      // _members = response.map((member) => Member.fromJson(member)).toList();
+      _memberList = response
+          .map((e) => {
+                'name': '${e['first_name']} ${e['last_name']}',
+                'value': e['id'].toString()
+              })
+          .toList();
+      notifyListeners();
     } catch (e) {
-      throw Exception('Failed to load members: ${e.toString()}');
-    } finally {
-      setLoading(false);
+      debugPrint(e.toString());
     }
   }
 
@@ -97,6 +123,34 @@ class MembersViewModel extends ChangeNotifier {
     } catch (error) {
       debugPrint('Error creating stream: $error');
       return Stream.error(Exception('Failed to load members: $error'));
+    }
+  }
+
+  // Stream to get all collection form member by id
+  Stream<Map<String, dynamic>> getCollectionByMemberId(String profileId) {
+    try {
+      final response = _supabaseClient
+          .rpc('spgetcollections', params: {
+            'p_church_id': int.parse(_authServices.userMetaData!['church_id']),
+            'p_profile_id': profileId,
+          })
+          .asStream()
+          .map((list) {
+            return {
+              'success': list['success'],
+              'status_code': list['status_code'],
+              'message': list['message'],
+              'collection_list': list['collection_list']
+            };
+          })
+          .handleError((error) {
+            debugPrint('Error in stream: $error'); // Debug log
+            throw Exception('Failed to load collections: $error');
+          });
+      return response;
+    } catch (error) {
+      debugPrint('Error creating stream: $error');
+      return Stream.error(Exception('Failed to load collections: $error'));
     }
   }
 
@@ -191,16 +245,6 @@ class MembersViewModel extends ChangeNotifier {
     return _memberRoles;
   }
 
-  Future<User> updateUserMetaData() async {
-    final UserResponse res = await _supabaseClient.auth.updateUser(
-      UserAttributes(
-        data: {'church_id': 1, 'role': 'pastor'},
-      ),
-    );
-    final User? updatedUser = res.user;
-    return updatedUser!;
-  }
-
   // Get Memberships data
   Future<Map<String, dynamic>> getMembershipByMemberId(String profileId) async {
     try {
@@ -246,10 +290,9 @@ class MembersViewModel extends ChangeNotifier {
         'p_membership_role': membership['membershipRole'],
         'p_baptism_church_city': membership['baptismChurchCity'],
         'p_baptism_church_country': membership['baptismChurchCountry'],
+        'p_has_credential': membership['hasCredential'],
+        'p_is_baptized_in_spirit': membership['isBaptizedInSpirit'],
       });
-
-      
-
 
       return response;
     } catch (e) {
@@ -257,4 +300,80 @@ class MembersViewModel extends ChangeNotifier {
       throw Exception('Failed to insert profile: $e');
     }
   }
+
+  Future<Map<String, dynamic>> getFinancialByMemberId(String profileId) async {
+    try {
+      // Call Supabase RPC
+      final response = await _supabaseClient.rpc(
+        'sp_get_collection_by_member',
+        params: {
+          'p_church_id': _authServices.userMetaData!['church_id'],
+          'p_profile_id': profileId,
+        },
+      );
+
+      // Validate response
+      if (response == null || response.isEmpty) {
+        throw FinancialDataException(
+            'No financial data found for the given profile ID.');
+      }
+
+      _memberFinances = response;
+      notifyListeners();
+
+      return response;
+    } on PostgrestException catch (e) {
+      // Handle Supabase-specific errors
+      throw FinancialDataException('Supabase error: ${e.message}');
+    } on Exception catch (e) {
+      // Handle generic errors
+      throw FinancialDataException(
+          'Failed to load financial data: ${e.toString()}');
+    } catch (e) {
+      throw FinancialDataException(
+          'Failed to load financial data: ${e.toString()}');
+    }
+  }
+
+  Future<Map<String, dynamic>> getFinancialByChurch() async {
+    try {
+      // Call Supabase RPC
+      final response = await _supabaseClient.rpc(
+        'sp_get_collection_by_member',
+        params: {
+          'p_church_id': churchId,
+        },
+      );
+
+      // Validate response
+      if (response == null || response.isEmpty) {
+        throw FinancialDataException(
+            'No financial data found for the given Church.');
+      }
+
+      _memberFinances = response;
+      notifyListeners();
+
+      return response;
+    } on PostgrestException catch (e) {
+      // Handle Supabase-specific errors
+      throw FinancialDataException('Supabase error: ${e.message}');
+    } on Exception catch (e) {
+      // Handle generic errors
+      throw FinancialDataException(
+          'Failed to load financial data: ${e.toString()}');
+    } catch (e) {
+      throw FinancialDataException(
+          'Failed to load financial data: ${e.toString()}');
+    }
+  }
+}
+
+/// Custom exception for financial data-related errors.
+class FinancialDataException implements Exception {
+  final String message;
+  FinancialDataException(this.message);
+
+  @override
+  String toString() => 'FinancialDataException: $message';
 }

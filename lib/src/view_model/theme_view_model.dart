@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.dark;
+  ThemeMode _themeMode = ThemeMode.dark; // Default theme mode
 
   ThemeMode get themeMode => _themeMode;
   bool get isDarkModeOn => _themeMode == ThemeMode.dark;
@@ -13,7 +13,8 @@ class ThemeProvider with ChangeNotifier {
   }
 
   void toggleTheme() {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode =
+        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
 }

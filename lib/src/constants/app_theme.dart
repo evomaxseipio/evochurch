@@ -1,19 +1,37 @@
 import 'package:evochurch/src/constants/constant_index.dart';
 import 'package:evochurch/src/utils/utils_index.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class EvoTheme {
-  // Updated Colors
+/// The [AppTheme] defines light and dark themes for the app.
+///
+/// Theme setup for FlexColorScheme package v8.
+/// Use same major flex_color_scheme package version. If you use a
+/// lower minor version, some properties may not be supported.
+/// In that case, remove them after copying this theme to your
+/// app or upgrade package to version 8.1.1.
+///
+/// Use in [MaterialApp] like this:
+///
+/// MaterialApp(
+///   theme: AppTheme.light,
+///   darkTheme: AppTheme.dark,
+/// );
+abstract final class EvoTheme {
+  /// The overlay color for dialogs. // Updated Colors
   static const Color _primaryColor = Color(0xFF007BFF); // Trustworthy blue
   static const Color _secondaryColor = Color(0xFFFF6B6B); // Soft, warm red
-  static const Color _lightBackgroundColor =Color(0xFFF8F9FA); // Light background
-  static const Color _darkBackgroundColor =Color(0xFF212529); // Dark background
+  static const Color _lightBackgroundColor =
+      Color(0xFFF8F9FA); // Light background
+  static const Color _darkBackgroundColor =
+      Color(0xFF212529); // Dark background
   static const Color _darkSurfaceColor = Color(0xFF343A40); // Dark surface
-  static const Color _lightSurfaceColor =Color.fromARGB(255, 234, 238, 243);  
+  static const Color _lightSurfaceColor = Color.fromARGB(255, 234, 238, 243);
   static const Color _lightTextColor = Color(0xFF495057); // Light mode text
   static const Color _darkTextColor = Color(0xFFDEE2E6); // Dark mode text
 
-   // New color for dialog overlay
+  // New color for dialog overlay
   static const Color _lightOverlayColor = Color(0x80000000); // 50% black
   static const Color _darkOverlayColor = Color(0x80000000); // 50% black
 
@@ -24,12 +42,11 @@ class EvoTheme {
 
   // button colors hover
   //dark
-  static const Color _buttonPrimaryColorHover = Color(0xFF0056B3); // Trustworthy blue
+  static const Color _buttonPrimaryColorHover =
+      Color(0xFF0056B3); // Trustworthy blue
   //light
-  static const Color _buttonPrimaryColorHoverLight = Color(0xFF007BFF); // Trustworthy blue
-
-
-
+  static const Color _buttonPrimaryColorHoverLight =
+      Color(0xFF007BFF); // Trustworthy blue
 
   // Text Styles
   static const TextStyle _lightAppBarTitle = TextStyle(
@@ -54,218 +71,84 @@ class EvoTheme {
     color: _darkTextColor,
   );
 
-  static final ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.light,
-    colorScheme: const ColorScheme.light(
-      primary: _primaryColor,
-      secondary: _secondaryColor,
-      surface: _lightSurfaceColor,
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onSurface: _lightTextColor,
-      // onPrimaryContainer: _buttonPrimaryColorHover,
+  // The defined light theme.
+  static ThemeData light = FlexThemeData.light(
+    colors: const FlexSchemeColor(
+      primary: Color(0xFF00296B),
+      primaryContainer: Color(0xFFA0C2ED),
+      primaryLightRef: Color(0xFF00296B),
+      secondary: Color(0xFFD26900),
+      secondaryContainer: Color(0xFFFFD270),
+      secondaryLightRef: Color(0xFFD26900),
+      tertiary: Color(0xFF5C5C95),
+      tertiaryContainer: Color(0xFFC8DBF8),
+      tertiaryLightRef: Color(0xFF5C5C95),
+      appBarColor: Color(0xFFC8DCF8),
+      error: Color(0x00000000),
+      errorContainer: Color(0x00000000),
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: _lightBackgroundColor,
-      foregroundColor: _primaryColor,
-      titleTextStyle: _lightAppBarTitle,
-      iconTheme: IconThemeData(color: _primaryColor),
-      elevation: 0,
+    subThemesData: const FlexSubThemesData(
+      interactionEffects:
+          true, // Enable interaction effects (hover, focus, etc.)
+      tintedDisabledControls: true,
+      useM2StyleDividerInM3: true,
+      inputDecoratorIsFilled: true,
+      inputDecoratorBorderType: FlexInputBorderType.outline,
+      alignedDropdown: true,
+      navigationRailUseIndicator: true,
+      navigationRailLabelType: NavigationRailLabelType.all,
+      // Customize button hover effects
+      elevatedButtonSchemeColor: SchemeColor.primary,
+      elevatedButtonSecondarySchemeColor: SchemeColor.secondary,
+      outlinedButtonSchemeColor: SchemeColor.primary,
+      outlinedButtonOutlineSchemeColor: SchemeColor.primary,
+      textButtonSchemeColor: SchemeColor.primary,
     ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: _primaryColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    ),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: _primaryColor,
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: _primaryColor,
-        side: const BorderSide(color: _primaryColor),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    ),
-    iconButtonTheme: IconButtonThemeData(
-      style: IconButton.styleFrom(
-        foregroundColor: _primaryColor,
-        iconSize: 18
-        
-      ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: _primaryColor),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: _lightTextColor.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ),
-    cardTheme: CardTheme(
-      color: Colors.white,
-      shadowColor: Colors.black26,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-    iconTheme: const IconThemeData(
-      color: _primaryColor,
-    ),
-    textTheme: TextTheme(
-      displayLarge: const TextStyle(
-          fontSize: 32, fontWeight: FontWeight.bold, color: _lightTextColor),
-      displayMedium: const TextStyle(
-          fontSize: 28, fontWeight: FontWeight.bold, color: _lightTextColor),
-      displaySmall: const TextStyle(
-          fontSize: 24, fontWeight: FontWeight.bold, color: _lightTextColor),
-      headlineMedium: const TextStyle(
-          fontSize: 20, fontWeight: FontWeight.bold, color: _lightTextColor),
-      titleLarge: const TextStyle(
-          fontSize: 18, fontWeight: FontWeight.bold, color: _lightTextColor),
-      bodyLarge: _lightBodyText,
-      bodyMedium: _lightBodyText.copyWith(fontSize: 14),
-    ),
-     // New AlertDialog theme
-    dialogTheme: DialogTheme(
-      backgroundColor: Colors.white,
-      elevation: 24,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titleTextStyle: const TextStyle(
-        color: _primaryColor,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-      contentTextStyle: const TextStyle(
-        color: _lightTextColor,
-        fontSize: 16,
-      ),
-    ),
-    // Dialog overlay color
-    dialogBackgroundColor: Colors.white,
-    // New ShowDialog overlay theme
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: {
-        TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-      },
-    ),
-    
-    scaffoldBackgroundColor: _lightBackgroundColor,
+    visualDensity: FlexColorScheme.comfortablePlatformDensity,
+    cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
   );
 
-  static final ThemeData darkTheme = ThemeData(
+  // The defined dark theme.
+  static ThemeData dark = FlexThemeData.dark(
+    scheme: FlexScheme.indigo,
+    surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+    blendLevel: 15,
     useMaterial3: true,
-    brightness: Brightness.dark,
-    colorScheme: const ColorScheme.dark( 
-      primary: _primaryColor,
-      secondary: _secondaryColor,
-      surface: _darkSurfaceColor,
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,      
-      onSurface: _darkTextColor,
-      onPrimaryContainer: _buttonPrimaryColorHover,
+    colors: const FlexSchemeColor(
+      primary: Color(0xFFB1CFF5),
+      primaryContainer: Color(0xFF3873BA),
+      primaryLightRef: Color(0xFF00296B),
+      secondary: Color(0xFFFFD270),
+      secondaryContainer: Color(0xFFD26900),
+      secondaryLightRef: Color(0xFFD26900),
+      tertiary: Color(0xFFC9CBFC),
+      tertiaryContainer: Color(0xFF535393),
+      tertiaryLightRef: Color(0xFF5C5C95),
+      appBarColor: Color(0xFF00102B),
+      error: Color(0x00000000),
+      errorContainer: Color(0x00000000),
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: _darkBackgroundColor,
-      foregroundColor: _primaryColor,
-      titleTextStyle: _darkAppBarTitle,
-      iconTheme: IconThemeData(color: _primaryColor),
-      elevation: 0,
+    subThemesData: const FlexSubThemesData(
+      interactionEffects:
+          true, // Enable interaction effects (hover, focus, etc.)
+      tintedDisabledControls: true,
+      blendOnColors: true,
+      useM2StyleDividerInM3: true,
+      inputDecoratorIsFilled: true,
+      inputDecoratorBorderType: FlexInputBorderType.outline,
+      alignedDropdown: true,
+      navigationRailUseIndicator: true,
+      navigationRailLabelType: NavigationRailLabelType.all,
+      // Customize button hover effects
+      elevatedButtonSchemeColor: SchemeColor.primary,
+      elevatedButtonSecondarySchemeColor: SchemeColor.secondary,
+      outlinedButtonSchemeColor: SchemeColor.primary,
+      outlinedButtonOutlineSchemeColor: SchemeColor.primary,
+      textButtonSchemeColor: SchemeColor.primary,
+      
     ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: _primaryColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    ),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: _primaryColor,
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: _primaryColor,
-        side: const BorderSide(color: _primaryColor),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: _darkSurfaceColor,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: _primaryColor),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: _darkTextColor.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ),
-    cardTheme: CardTheme(
-      color: _darkSurfaceColor,
-      shadowColor: Colors.black87,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-    iconTheme: const IconThemeData(
-      color: _primaryColor,
-    ),
-    textTheme: TextTheme(
-      displayLarge: const TextStyle(
-          fontSize: 32, fontWeight: FontWeight.bold, color: _darkTextColor),
-      displayMedium: const TextStyle(
-          fontSize: 28, fontWeight: FontWeight.bold, color: _darkTextColor),
-      displaySmall: const TextStyle(
-          fontSize: 24, fontWeight: FontWeight.bold, color: _darkTextColor),
-      headlineMedium: const TextStyle(
-          fontSize: 20, fontWeight: FontWeight.bold, color: _darkTextColor),
-      titleLarge: const TextStyle(
-          fontSize: 18, fontWeight: FontWeight.bold, color: _darkTextColor),
-      bodyLarge: _darkBodyText,
-      bodyMedium: _darkBodyText.copyWith(fontSize: 14),
-    ),
-    // New AlertDialog theme
-    dialogTheme: DialogTheme(
-      backgroundColor: _darkSurfaceColor,
-      elevation: 24,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titleTextStyle: const TextStyle(
-        color: _primaryColor,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-      contentTextStyle: const TextStyle(
-        color: _darkTextColor,
-        fontSize: 16,
-      ),
-    ),
-     // Dialog overlay color
-    dialogBackgroundColor: _darkSurfaceColor,
-    // New ShowDialog overlay theme
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: {
-        TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-      },
-    ),
-    scaffoldBackgroundColor: _darkBackgroundColor,
+    visualDensity: FlexColorScheme.comfortablePlatformDensity,
+    cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
   );
 
   // Existing utility methods
@@ -306,7 +189,6 @@ class EvoTheme {
   static TextStyle heading3 = const TextStyle(
     fontSize: 16.0,
     fontWeight: FontWeight.bold,
-    
   );
 
   // New utility methods
@@ -328,7 +210,7 @@ class EvoTheme {
         : _darkBackgroundColor;
   }
 
-   static Color getCardBackgroundColor(BuildContext context) {
+  static Color getCardBackgroundColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.light
         ? EvoColor.boxgreylight
         : _darkBackgroundColor;
@@ -340,7 +222,6 @@ class EvoTheme {
         : _darkTextColor;
   }
 
-  
   // Updated utility method for AlertDialog
   static Future<T?> showEvoDialog<T>({
     required BuildContext context,
@@ -381,7 +262,6 @@ class EvoTheme {
     );
   }
 
-  // New utility method for custom dialogs
   static Future<T?> showEvoCustomDialog<T>({
     required BuildContext context,
     required WidgetBuilder builder,
@@ -394,5 +274,4 @@ class EvoTheme {
       builder: builder,
     );
   }
-
 }

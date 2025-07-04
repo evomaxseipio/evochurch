@@ -31,7 +31,11 @@ final membershipControllers = [
   'baptismPastor',
   'membershipRole',
   'baptismChurchCity',
-  'baptismChurchCountry'
+  'baptismChurchCountry',
+  'hasCredential',
+  'credentialType',
+  'credetialYear',
+  'isBaptizedInSpirit',
 ];
 
 final historyControllers = [
@@ -48,6 +52,8 @@ final fundControllers = [
   'targetAmount',
   'startDate',
   'endDate',
+  'isPrimary',
+  'isActive',
 ];
 
 final collectionControllers = [

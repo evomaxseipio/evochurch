@@ -54,16 +54,16 @@ class Member {
   int? churchId;
   String firstName;
   String lastName;
-  String nickName;
+  String? nickName;
   DateTime dateOfBirth;
   String gender;
   String maritalStatus;
   String nationality;
-  String idType;
-  String idNumber;
+  String? idType;
+  String? idNumber;
   bool isActive;
   bool isMember;
-  String bio;
+  String? bio;
   String? membershipRole;
   AddressModel? address;
   ContactModel? contact;
@@ -73,13 +73,13 @@ class Member {
     this.churchId,
     required this.firstName,
     required this.lastName,
-    required this.nickName,
+    this.nickName,
     required this.dateOfBirth,
     required this.gender,
     required this.maritalStatus,
     required this.nationality,
-    required this.idType,
-    required this.idNumber,
+    this.idType,
+    this.idNumber,
     required this.isActive,
     required this.isMember,
     required this.bio,
