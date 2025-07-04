@@ -15,7 +15,8 @@ import 'package:evochurch/src/widgets/maintanceWidgets/status_chip_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../providers/members_notifier.dart';
 
 import '../../constants/grid_columns.dart';
 import '../../widgets/paginateDataTable/paginated_data_table.dart';
@@ -23,152 +24,28 @@ import 'add_member.dart';
 
 // final viewModel = MembersViewModel();
 
-class MemberList extends HookWidget {
+class MemberList extends HookConsumerWidget {
   const MemberList({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final viewModel = Provider.of<MembersViewModel>(context, listen: false);
-    final fundViewModel = Provider.of<FinanceViewModel>(context, listen: false);
-    final collectionViewModel =
-        Provider.of<CollectionViewModel>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membersState = ref.watch(membersNotifierProvider);
+    final membersNotifier = ref.read(membersNotifierProvider.notifier);
+    final fundViewModel = FinanceViewModel();
+    final collectionViewModel = CollectionViewModel();
 
-    final memberList = useState<List<Member>>([]);
-    final isLoading = useState<bool>(true);
-    final columns = memberListColumns;
-
-    StreamSubscription? membersSubscription;
-
-    useEffect(() {
-      fetchMembers() async {
-        try {
-          isLoading.value = true; // Set loading before fetching
-
-          membersSubscription = viewModel.getMembers().listen(
-            (members) async {
-              if (!context.mounted) return;
-              memberList.value = members['member_list'];
-              await fundViewModel.getFundList();
-              collectionViewModel.fetchActiveCollectionTypes();
-              isLoading.value =
-                  false; // Set loading to false after data arrives
-            },
-            onError: (e) {
-              if (!context.mounted) return;
-              debugPrint('Error loading members: $e');
-              isLoading.value = false; // Set loading to false on error
-            },
-            onDone: () {
-              if (!context.mounted) return;
-              isLoading.value = false; // Set loading to false on done
-            },
-          );
-        } catch (e) {
-          debugPrint('Failed to load members: $e');
-          isLoading.value = false;
-        }
-      }
-
-      fetchMembers();
-      return () {
-        membersSubscription!.cancel();
-        // realtimeSubscription!.cancel();
-      };
-    }, []);
-
-    void handleMemberAction(
-        BuildContext context, String action, Member member) {
-      switch (action) {
-        case 'edit':
-          viewModel.selectMember(member);
-          context.goNamed(MyAppRouteConstants.memberProfileRouteName,
-              extra: member);
-          break;
-
-        case 'tithes':
-          // Handle donations
-          debugPrint('Adding tithes for: ${member.lastName}');
-          callDonationModal(context, member, 'Diezmos');
-          break;
-
-        case 'donations':
-          // Handle donations
-          debugPrint('Adding donations for: ${member.lastName}');
-          callDonationModal(context, member, 'Ofrenda');
-          break;
-
-        case 'message':
-          // Handle messaging
-          debugPrint('Sending message to: ${member.bio}');
-          // Example:
-          // showDialog(
-          //   context: context,
-          //   builder: (context) => SendMessageDialog(member: member),
-          // );
-          break;
-        case 'configusers':
-          // Handle user configuration
-          debugPrint('Configuring user for: ${member.membershipRole}');
-          // Validate if the member is a member
-          if (member.membershipRole != 'Visita') {
-            debugPrint('Member is a member');
-          } else {
-            debugPrint('Member is not a member');
-            if (!context.mounted) return;
-            CupertinoModalOptions.show(
-              modalType: ModalTypeMessage.error,
-              context: context,
-              title: 'Error Creating User',
-              message: '${member.firstName} is not a member',
-              actions: [
-                ModalAction(
-                  text: 'OK',
-                  onPressed: () => true,
-                ),
-              ],
-            );
-            return;
-          }
-          callUserFormModal(context, member: member);
-          break;
-
-        case 'delete':
-          // Show delete confirmation
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Confirm Delete'),
-              content:
-                  Text('Are you sure you want to delete ${member.firstName}?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // Handle delete
-                    Navigator.pop(context);
-                  },
-                  child:
-                      const Text('Delete', style: TextStyle(color: Colors.red)),
-                ),
-              ],
-            ),
-          );
-          break;
-      }
+    if (membersState.isLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
-
-    return Scaffold(
-      body: isLoading.value
-          ? const Center(child: CircularProgressIndicator())
-          : memberList.value.isEmpty
-              ? const Center(child: Text('No Members Found'))
-              : ResponsiveMemberList(
-                  memberList: memberList,
-                  columns: columns,
-                  handleMemberAction: handleMemberAction),
+    if (membersState.error != null) {
+      return Center(child: Text('Error: \\${membersState.error}'));
+    }
+    return ResponsiveMemberList(
+      memberList: membersState.members,
+      fundViewModel: fundViewModel,
+      collectionViewModel: collectionViewModel,
+      onSelectMember: (member) => membersNotifier.selectMember(member),
+      ref: ref,
     );
   }
 }
@@ -177,13 +54,85 @@ class ResponsiveMemberList extends HookWidget {
   const ResponsiveMemberList({
     super.key,
     required this.memberList,
-    required this.columns,
-    required this.handleMemberAction,
+    required this.fundViewModel,
+    required this.collectionViewModel,
+    required this.onSelectMember,
+    required this.ref,
   });
 
-  final ValueNotifier<List<Member>> memberList;
-  final List<SortColumn> columns;
-  final Function handleMemberAction;
+  final List<Member> memberList;
+  final FinanceViewModel fundViewModel;
+  final CollectionViewModel collectionViewModel;
+  final void Function(Member) onSelectMember;
+  final WidgetRef ref;
+
+  void handleMemberAction(BuildContext context, String action, Member member) {
+    switch (action) {
+      case 'edit':
+        onSelectMember(member);
+        context.goNamed(MyAppRouteConstants.memberProfileRouteName,
+            extra: member);
+        break;
+      case 'tithes':
+        debugPrint('Adding tithes for: \\${member.lastName}');
+        callDonationModal(context, member, 'Diezmos');
+        break;
+      case 'donations':
+        debugPrint('Adding donations for: \\${member.lastName}');
+        callDonationModal(context, member, 'Ofrenda');
+        break;
+      case 'message':
+        debugPrint('Sending message to: \\${member.bio}');
+        break;
+      case 'configusers':
+        debugPrint('Configuring user for: \\${member.membershipRole}');
+        if (member.membershipRole != 'Visita') {
+          debugPrint('Member is a member');
+        } else {
+          debugPrint('Member is not a member');
+          if (!context.mounted) return;
+          CupertinoModalOptions.show(
+            modalType: ModalTypeMessage.error,
+            context: context,
+            title: 'Error Creating User',
+            message: '\\${member.firstName} is not a member',
+            actions: [
+              ModalAction(
+                text: 'OK',
+                onPressed: () => true,
+              ),
+            ],
+          );
+          return;
+        }
+        callUserFormModal(context, member: member);
+        break;
+      case 'delete':
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Confirm Delete'),
+            content:
+                Text('Are you sure you want to delete \\${member.firstName}?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Aquí podrías llamar a membersNotifier.deleteMember si lo implementas
+                  Navigator.pop(context);
+                },
+                child:
+                    const Text('Delete', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        );
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,18 +140,18 @@ class ResponsiveMemberList extends HookWidget {
     final searchQuery = useState('');
 
     // Create and manage the filtered list with useEffect
-    final filteredList = useState<List<Member>>([...memberList.value]);
+    final filteredList =useState<List<Member>>([...memberList]);
 
     // Effect to update filtered list when original list or search changes
     useEffect(() {
       void updateFilteredList() {
         if (searchQuery.value.isEmpty) {
-          filteredList.value = [...memberList.value];
+          filteredList.value = [...memberList];
           return;
         }
 
         final lowercaseQuery = searchQuery.value.toLowerCase();
-        filteredList.value = memberList.value.where((member) {
+        filteredList.value = memberList.where((member) {
           return member.firstName.toLowerCase().contains(lowercaseQuery) ||
               member.lastName.toLowerCase().contains(lowercaseQuery) ||
               member.contact!.email!.toLowerCase().contains(lowercaseQuery) ||
@@ -221,10 +170,12 @@ class ResponsiveMemberList extends HookWidget {
 
       // Listen for changes in the original list
       listener() => updateFilteredList();
-      memberList.addListener(listener);
+      // memberList.addListener(listener);
 
       // Cleanup
-      return () => memberList.removeListener(listener);
+      return () {
+        // memberList.removeListener(listener);
+      };
     }, [memberList, searchQuery.value]);
 
     // Determine if we're on a mobile device based on screen width
@@ -252,8 +203,8 @@ class ResponsiveMemberList extends HookWidget {
   Widget _buildWebView(BuildContext context) {
     return CustomPaginatedTable<Member>(
       title: 'Members Directory',
-      data: memberList.value,
-      columns: columns,
+      data: memberList,
+      columns: memberListColumns,
       getCells: (member) => [
         DataCell(Text('${member.firstName} ${member.lastName}')),
         DataCell(StatusChip(status: member.membershipRole!)),
@@ -276,7 +227,7 @@ class ResponsiveMemberList extends HookWidget {
       onActionSelected: (action, member) {
         handleMemberAction(context, action, member);
       },
-      tableButtons: _buildTableButtons(context),
+      tableButtons: _buildTableButtons(context, ref),
     );
   }
 
@@ -298,13 +249,12 @@ class ResponsiveMemberList extends HookWidget {
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: _buildTableButtons(context)
+                children: _buildTableButtons(context, ref)
                     .map((button) => Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: IconButton.filled(
                             onPressed: button.onPressed,
                             icon: button.icon ?? const Icon(Icons.help_outline),
-                            // label: Text(button.text),
                           ),
                         ))
                     .toList(),
@@ -387,8 +337,8 @@ class ResponsiveMemberList extends HookWidget {
                     ),
                   ),
           ),
-        ),
-      ],
+        )
+      ], // Closing bracket for the Column widget
     );
   }
 
@@ -459,7 +409,8 @@ class ResponsiveMemberList extends HookWidget {
     ];
   }
 
-  List<CustomTableButton> _buildTableButtons(BuildContext context) {
+  List<CustomTableButton> _buildTableButtons(
+      BuildContext context, WidgetRef ref) {
     return [
       CustomTableButton(
         text: 'Add Member',

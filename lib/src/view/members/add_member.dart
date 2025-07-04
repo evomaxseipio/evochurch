@@ -8,17 +8,19 @@ import 'package:evochurch/src/widgets/modal/modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:intl/intl.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../providers/members_notifier.dart';
 
 import '../../constants/constant_index.dart';
 import '../../widgets/button/button.dart';
 import '../../widgets/maintanceWidgets/maintance_widgets.dart';
 import '../../widgets/responsive_widgets.dart';
 
-class AddMember extends HookWidget {
+class AddMember extends HookConsumerWidget {
   const AddMember({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
       child: EvoButton(
           onPressed: () => callAddEmployeeModal(context), text: 'Add Member'),
@@ -182,17 +184,15 @@ callAddEmployeeModal(BuildContext context) {
               icon: const Icon(Icons.save),
               onPressed: () async {
                 String message = '';
-
                 DateTime birthDate = DateFormat('dd/MM/yyyy')
                     .parse(_memberControllers['dateOfBirth']!.text);
-
                 debugPrint(birthDate.toString());
                 if (false == false) {
                   try {
-                    MembersViewModel profileViewModel = MembersViewModel();
-                    AuthServices _authServices = AuthServices();
-                    final churchId = int.parse(_authServices.userMetaData?['church_id']);
-
+                    final membersNotifier = MembersNotifier();
+                    final authServices = AuthServices();
+                    final churchId =
+                        int.parse(authServices.userMetaData?['church_id']);
                     final newProfile = Member(
                       churchId: churchId,
                       firstName: _memberControllers['firstName']!.text,
@@ -208,8 +208,6 @@ callAddEmployeeModal(BuildContext context) {
                       isActive: true,
                       bio: _memberControllers['firstName']!.text,
                     );
-
-                    // Add address data
                     final addressData = AddressModel(
                         streetAddress:
                             _addressControllers['streetAddress']!.text,
@@ -217,20 +215,15 @@ callAddEmployeeModal(BuildContext context) {
                             _addressControllers['stateProvince']!.text,
                         cityState: _addressControllers['cityState']!.text,
                         country: _addressControllers['country']!.text);
-
-                    // Add contact data
                     final contactData = ContactModel(
                         phone: _contactControllers['phone']!.text,
                         mobilePhone: _contactControllers['mobilePhone']!.text,
                         email: _contactControllers['email']!.text);
-
-                    final responseData = await profileViewModel.addMember(
+                    final responseData = await membersNotifier.addMember(
                         newProfile, addressData, contactData);
-
                     if (responseData!['status'] == 'Success') {
                       message =
                           'New profile added with ID: ${responseData['profile_id']}';
-                      // Process the form data
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context)
                           .showSnackBar(SnackBar(content: Text(message)));
@@ -252,7 +245,6 @@ callAddEmployeeModal(BuildContext context) {
                 }
               },
               text: "Guardar",
-              //' Strings.cancelLoan,
               buttonType: ButtonType.success,
             );
           }),
@@ -268,9 +260,6 @@ callAddEmployeeModal(BuildContext context) {
     ],
   );
 }
-
-
-
 
 void clear() {
   _memberControllers.forEach((key, value) {
